@@ -11,3 +11,4 @@ export const Button = ({ text, onClick }: ButtonProps) => (
     {text}
   </button>
 );
+

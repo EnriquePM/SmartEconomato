@@ -1,0 +1,74 @@
+{
+"ingredientes": [
+  {
+    "id_ingrediente": 1,
+    "nombre": "Aceite de Oliva Virgen Extra",
+    "stock": 50,
+    "id_categoria": 1,
+    "id_proveedor": 101
+  },
+  {
+    "id_ingrediente": 2,
+    "nombre": "Arroz Bomba",
+    "stock": 100,
+    "id_categoria": 2,
+    "id_proveedor": 102
+  },
+  {
+    "id_ingrediente": 3,
+    "nombre": "Tomate Triturado (Lata)",
+    "stock": 30,
+    "id_categoria": 3,
+    "id_proveedor": 101
+  },
+  {
+    "id_ingrediente": 4,
+    "nombre": "Harina de Trigo (Fuerza)",
+    "stock": 25,
+    "id_categoria": 2,
+    "id_proveedor": 102
+  },
+  {
+    "id_ingrediente": 5,
+    "nombre": "Huevos Camperos L",
+    "stock": 200,
+    "id_categoria": 4,
+    "id_proveedor": 103
+  },
+  {
+    "id_ingrediente": 6,
+    "nombre": "Leche Entera",
+    "stock": 60,
+    "id_categoria": 4,
+    "id_proveedor": 103
+  },
+  {
+    "id_ingrediente": 7,
+    "nombre": "Sal Fina Yodada",
+    "stock": 40,
+    "id_categoria": 5,
+    "id_proveedor": 104
+  },
+  {
+    "id_ingrediente": 8,
+    "nombre": "Azúcar Blanco",
+    "stock": 15,
+    "id_categoria": 5,
+    "id_proveedor": 104
+  },
+  {
+    "id_ingrediente": 9,
+    "nombre": "Spaghetti Nº5",
+    "stock": 80,
+    "id_categoria": 2,
+    "id_proveedor": 102
+  },
+  {
+    "id_ingrediente": 10,
+    "nombre": "Vinagre de Jerez",
+    "stock": 20,
+    "id_categoria": 1,
+    "id_proveedor": 101
+  }
+]
+}
