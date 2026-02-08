@@ -69,12 +69,9 @@ const Inventario = () => {
         <p className="text-gray-500 mt-2">Consulta y gestiona el stock de productos en tiempo real.</p>
       </header>
 
-  {/* --- BARRA DE HERRAMIENTAS RESPONSIVE --- */}
+{/* --- BARRA DE HERRAMIENTAS RESPONSIVE --- */}
       <section 
         aria-label="Herramientas de filtrado" 
-        // 1. CAMBIO PRINCIPAL:
-        // - En Móvil/Tablet: 'flex flex-col' (Columna vertical).
-        // - En PC (lg): 'lg:grid lg:grid-cols-3 lg:items-end' (Tu fila de 3 alineada abajo).
         className="flex flex-col lg:grid lg:grid-cols-3 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100"
       >
         {/* 1. BUSCADOR */}
@@ -83,8 +80,6 @@ const Inventario = () => {
         </div>
         
         {/* 2. ORDENADOR */}
-        {/* En móvil: Ocupa todo el ancho (w-full) para que sea fácil tocarlo.
-            En PC (lg): Se centra (lg:justify-center) y se limita el tamaño. */}
         <div className="w-full flex lg:justify-center">
            <div className="w-full lg:max-w-[200px]">
              <Ordenador ordenActual={orden} onCambioOrden={setOrden} />
@@ -92,10 +87,12 @@ const Inventario = () => {
         </div>
 
         {/* 3. BOTÓN */}
-        {/* En móvil: Lo centramos (justify-center) para que quede elegante abajo.
-            En PC (lg): Lo mandamos a la derecha (lg:justify-end). */}
         <div className="w-full flex justify-center lg:justify-end">
-           <div className="w-56">
+           {/* CAMBIO AQUÍ: 
+               Añadimos 'mb-1' (o 'mb-2' si quieres más) para separarlo del suelo.
+               Al separarse del suelo, visualmente "sube" y se alinea con el dropdown. 
+           */}
+           <div className="w-56 mb-1">
              <Button 
                text="Limpiar Filtros" 
                onClick={handleLimpiarFiltros} 
