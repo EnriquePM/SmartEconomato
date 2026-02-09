@@ -10,3 +10,15 @@ npx prisma generate
 npm run dev
 # Paso 5: Montar Base de Datos:
 Crear la base de datos vacía solo el nombre, smartEconomato, y hacer este comando ---> npx prisma db push
+
+
+# Rutas
+- Registrar Alumno	        POST	http://localhost:3000/api/auth/register/alumno
+- Iniciar Sesión	        POST	http://localhost:3000/api/auth/login
+- Ver todos los usuarios	GET     http://localhost:3000/api/usuarios
+- ¿Modificar valores?       PUT     http://localhost:3000/api//usuarios/"id"
+- Listar todos              GET     http://localhost:3000/api/ingredientes
+- Ver un ingrediente        GET     http://localhost:3000/api/ingredientes/:id
+- Crear ingrediente         POST    http://localhost:3000/api/ingredientes
+- Editar ingrediente        PUT     http://localhost:3000/api/ingredientes/:id
+- Borrar ingrediente        DELETE  http://localhost:3000/api/ingredientes/:id

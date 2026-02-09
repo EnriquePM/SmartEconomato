@@ -132,12 +132,14 @@ model rol {
 
 model usuario {
   id_usuario         Int                  @id @default(autoincrement())
+  username           String               @unique
   nombre             String               @db.VarChar(100)
   apellido1          String               @db.VarChar(100)
   apellido2          String?              @db.VarChar(100)
-  email              String               @unique @db.VarChar(150)
+  email              String?              @unique
   contrasenya        String               @db.VarChar(255)
   fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
+  primer_login       Boolean              @default(true)
   id_rol             Int
   escandallo_detalle escandallo_detalle[]
   movimiento         movimiento[]
