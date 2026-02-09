@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
+import { Users } from "lucide-react";
 
 
 // --- COMPONENTE PRINCIPAL: SideBar ---
@@ -75,11 +76,10 @@ export default function SideBar() {
                 </NavLink>
               </li>
 
-               <li>
+              <li>
                 <NavLink to="/admin-usuarios" className={linkClass}>
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
+                  {/* Aquí cambiamos el SVG del '+' por el icono de Usuarios */}
+                  <Users className="w-5 h-5" />
                   <span className="ms-3">Administrar usuarios</span>
                 </NavLink>
               </li>

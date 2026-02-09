@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-// IMPORTAMOS LOS ICONOS
-import { Package, Search, Filter } from "lucide-react";
+// Importamos los iconos de flechas, la lupa y el filtro, pero QUITAMOS 'Package'
+import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Producto {
   id: string;
@@ -16,6 +16,9 @@ const Inventario = () => {
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("todos");
 
+  // ESTADO NUEVO: Para controlar el orden (campo y dirección)
+  const [orden, setOrden] = useState<{ campo: string, asc: boolean } | null>(null);
+
   useEffect(() => {
     fetch("http://localhost:3000/ingredientes")
       .then((res) => res.json())
@@ -23,6 +26,7 @@ const Inventario = () => {
       .catch((err) => console.error("Error cargando inventario:", err));
   }, []);
 
+  // 1. PRIMERO FILTRAMOS
   const productosFiltrados = productos.filter((producto) => {
     const texto = busqueda.toLowerCase();
     const coincideTexto = 
@@ -36,19 +40,57 @@ const Inventario = () => {
     return coincideTexto && coincideCategoria;
   });
 
+  // 2. DESPUÉS ORDENAMOS LOS FILTRADOS
+  const productosFinales = [...productosFiltrados].sort((a, b) => {
+      if (!orden) return 0; // Si no hay orden, dejar como está
+
+      let valorA, valorB;
+
+      // Preparamos los valores según el campo
+      if (orden.campo === 'nombre') {
+          valorA = a.nombre.toLowerCase();
+          valorB = b.nombre.toLowerCase();
+      } else if (orden.campo === 'stock') {
+          valorA = a.stock;
+          valorB = b.stock;
+      } else if (orden.campo === 'categoria') {
+          valorA = a.id_categoria;
+          valorB = b.id_categoria;
+      } else {
+          return 0;
+      }
+
+      // Comparamos
+      if (valorA < valorB) return orden.asc ? -1 : 1;
+      if (valorA > valorB) return orden.asc ? 1 : -1;
+      return 0;
+  });
+
+  // Función para cambiar el orden al hacer clic
+  const cambiarOrden = (campo: string) => {
+      if (orden && orden.campo === campo) {
+          // Si ya estábamos ordenando por este campo, invertimos la dirección
+          setOrden({ campo, asc: !orden.asc });
+      } else {
+          // Si es un campo nuevo, empezamos ascendente
+          setOrden({ campo, asc: true });
+      }
+  };
+
+  // Ayuda visual para saber qué icono mostrar
+  const IconoOrden = ({ campo }: { campo: string }) => {
+      if (orden?.campo !== campo) return <ArrowUpDown size={14} className="text-gray-300" />;
+      return orden.asc ? <ArrowUp size={14} className="text-blue-600" /> : <ArrowDown size={14} className="text-blue-600" />;
+  };
+
   return (
     <div className="space-y-6">
       
-      {/* CABECERA */}
+      {/* CABECERA (SIN ICONO) */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-gray-100 rounded-lg text-gray-800">
-             <Package size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
-            <p className="text-gray-500">Gestión de stock y existencias en tiempo real.</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
+          <p className="text-gray-500">Gestión de stock y existencias en tiempo real.</p>
         </div>
         
         <div className="flex gap-2">
@@ -101,14 +143,41 @@ const Inventario = () => {
             <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
                 <tr>
                     <th className="p-4">Código (EAN)</th>
-                    <th className="p-4">Producto</th>
-                    <th className="p-4">Categoría</th>
-                    <th className="p-4 text-center">Stock</th>
+                    
+                    {/* COLUMNA ORDENABLE: PRODUCTO */}
+                    <th 
+                        className="p-4 cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                        onClick={() => cambiarOrden('nombre')}
+                    >
+                        <div className="flex items-center gap-2">
+                            Producto <IconoOrden campo="nombre" />
+                        </div>
+                    </th>
+
+                    {/* COLUMNA ORDENABLE: CATEGORÍA */}
+                    <th 
+                        className="p-4 cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                        onClick={() => cambiarOrden('categoria')}
+                    >
+                        <div className="flex items-center gap-2">
+                            Categoría <IconoOrden campo="categoria" />
+                        </div>
+                    </th>
+
+                    {/* COLUMNA ORDENABLE: STOCK */}
+                    <th 
+                        className="p-4 text-center cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                        onClick={() => cambiarOrden('stock')}
+                    >
+                        <div className="flex items-center justify-center gap-2">
+                            Stock <IconoOrden campo="stock" />
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-                {productosFiltrados.length > 0 ? (
-                    productosFiltrados.map((item) => (
+                {productosFinales.length > 0 ? (
+                    productosFinales.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                             <td className="p-4">
                                 {item.codigo ? (

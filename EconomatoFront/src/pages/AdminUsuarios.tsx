@@ -1,6 +1,5 @@
 import { Button } from "../components/ui/Button";
-// 1. IMPORTAMOS LOS ICONOS
-import { Users, UserPlus, GraduationCap, Briefcase, Trash2 } from "lucide-react";
+import { Users, UserPlus, GraduationCap, Briefcase } from "lucide-react";
 
 const AdminUsuarios = () => {
   
@@ -12,18 +11,13 @@ const AdminUsuarios = () => {
   return (
     <main className="w-full space-y-8">
       
-      {/* CABECERA CON ICONO */}
-      <header className="text-left flex items-center gap-3">
-        <div className="p-3 bg-gray-100 rounded-lg text-gray-800">
-            <Users size={32} /> {/* Icono grande */}
-        </div>
-        <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-            <p className="text-gray-500">Panel de administración para alumnos y profesores.</p>
-        </div>
+      {/* 1. CABECERA (LIMPIA, SIN ICONO) */}
+      <header className="text-left">
+        <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+        <p className="text-gray-500 mt-2">Panel de administración para alumnos y profesores.</p>
       </header>
 
-      {/* FORMULARIO */}
+      {/* 2. FORMULARIO */}
       <section className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full">
         <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
             <UserPlus className="text-gray-500" size={20} />
@@ -62,7 +56,7 @@ const AdminUsuarios = () => {
         </form>
       </section>
 
-      {/* TABLA DE USUARIOS */}
+      {/* 3. TABLA DE USUARIOS */}
       <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <h3 className="font-bold text-gray-700 flex items-center gap-2">
