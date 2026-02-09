@@ -18,7 +18,7 @@ export default function Layout() {
                 <div className="flex-1 flex flex-col p-4 lg:p-4 overflow-hidden">
                     
                     {/* 4. Tarjeta Blanca: H-FULL para que ocupe todo el espacio y no crezca más */}
-                    <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 lg:p-10 overflow-hidden">
+                    <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 pr-2 lg:p-10 overflow-y-auto">
                         
                         {/* ¡IMPORTANTE! Si el contenido de la página (Outlet) es más grande 
                            que este hueco, se cortará. Aquí es donde vive tu página fija.

@@ -3,12 +3,12 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import LoginPage from "../pages/LoginPage";
 import Layout from "../layout/Layout";
 import Inicio from "../pages/inicioPrueba";
-import Inventario from "../pages/InvetarioPrueba";
+import IngresarProducto from "../pages/IngresarProducto";
+import Inventario from "../pages/Inventario";
 
 // Componentes temporales para las rutas que aún no tienen archivo propio
 const Recepcion = () => <div className="p-4"><h2>Módulo de Recepción de Pedidos</h2></div>;
 const Pedidos = () => <div className="p-4"><h2>Listado de Pedidos Actuales</h2></div>;
-const Registrar = () => <div className="p-4"><h2>Formulario de Registro de Producto</h2></div>;
 
 export const routes: RouteObject[] = [
   {
@@ -42,7 +42,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: "registrar",
-            element: <Registrar />,
+            element: <IngresarProducto />,
           },
         ],
       },

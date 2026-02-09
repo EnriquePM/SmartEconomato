@@ -135,6 +135,41 @@
       "stock": 2,
       "id_categoria": 2,
       "id_proveedor": 102
+    },
+    {
+      "id": "b182",
+      "nombre": "Tiramizú",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 102
+    },
+    {
+      "id": "b050",
+      "nombre": "dssdsds",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "f4b9",
+      "nombre": "sdsd",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "0c9e",
+      "nombre": "sergio",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "3291",
+      "nombre": "enrique",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
     }
   ]
 }
