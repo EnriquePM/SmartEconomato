@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Importar el hook
+
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
@@ -11,9 +13,16 @@ import fondo from '../assets/fondo.png';
 const LoginPage = () => {
   const [user, setUser] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const navigate = useNavigate(); // 2. Inicializarlo
 
   const handleLogin = () => {
-    console.log("Iniciando sesión con:", user, password);
+    // 3. Simulación de validación 
+    if (user === "admin" && password === "1234") {
+      localStorage.setItem("isAuthenticated", "true"); // Guardamos la marca
+      navigate("/"); // Redirigimos al Layout
+    } else {
+      alert("Usuario o contraseña incorrectos (Prueba admin / 1234)");
+    }
   };
 
   return (
