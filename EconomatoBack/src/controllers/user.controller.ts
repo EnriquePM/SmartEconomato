@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
+import bcrypt from 'bcryptjs';
+
+const PASSWORD_POR_DEFECTO = "Economato123";
 
 // OBTENER TODOS LOS USUARIOS (Para el panel de admin)
 export const getUsers = async (req: Request, res: Response) => {
@@ -33,5 +36,26 @@ export const updateUser = async (req: Request, res: Response) => {
         res.json(usuario);
     } catch (error) {
         res.status(500).json({ error: 'Error actualizando usuario' });
+    }
+};
+
+// RESTABLECER LA CONTRASEÑA (Solo para admin)
+export const resetPassword = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        const hashedPassword = await bcrypt.hash(PASSWORD_POR_DEFECTO, 10);
+        const usuario = await prisma.usuario.update({
+            where: { id_usuario: Number(id) },
+            data: {
+                contrasenya: hashedPassword, // Volvemos a poner 'Economato123'
+                primer_login: true
+            }
+        });
+        res.json({
+            mensaje: `Contraseña restablecida a '${PASSWORD_POR_DEFECTO}' para el usuario ${usuario.username}`
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error restableciendo la contraseña' });
     }
 };
