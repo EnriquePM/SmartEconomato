@@ -1,10 +1,11 @@
-import './App.css'
-import LoginPage from './pages/LoginPage'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { routes } from './app/router' 
 
-function App() {
+// Creamos el router aquí para que el main quede más corto
+const router = createBrowserRouter(routes);
+
+export default function App() {
   return (
-   <LoginPage />
-  )
+    <RouterProvider router={router} />
+  );
 }
-
-export default App
