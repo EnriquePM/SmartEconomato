@@ -1,134 +1,146 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-// --- IMPORTACIÓN DE COMPONENTES ---
-import { TablaInventario } from "../components/TablaInventario"; // La tabla bonita estilo tarjeta
-import { Buscador } from "../components/Buscador";             // El input de búsqueda
-import { Ordenador } from "../components/Ordenador";           // El desplegable para ordenar
-import { Button } from "../components/ui/Button";              // TU botón (sin modificar)
-
-// --- IMPORTACIÓN DE TIPOS ---
-import type { Ingrediente } from "../types/ingrediente";
+// 1. INTERFAZ
+interface Producto {
+  id: string;
+  codigo?: string;
+  nombre: string;
+  stock: number;
+  id_categoria: number;
+  id_proveedor: number;
+}
 
 const Inventario = () => {
-  // =========================================
-  // 1. ESTADOS (La memoria de la página)
-  // =========================================
-  const [ingredientes, setIngredientes] = useState<Ingrediente[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [busqueda, setBusqueda] = useState<string>("");
-  const [orden, setOrden] = useState<string>("alfabetico");
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("todos");
 
-  // =========================================
-  // 2. EFECTO DE CARGA (Al abrir la página)
-  // =========================================
+  // CARGAR DATOS
   useEffect(() => {
-    fetch("http://localhost:3000/ingredientes") 
-      .then((response) => {
-        if (!response.ok) throw new Error("Error conectando con el servidor");
-        return response.json();
-      })
-      .then((data) => setIngredientes(data))
-      .catch((err) => {
-        console.error(err);
-        setError("No se pudieron cargar los datos. Revisa json-server.");
-      });
+    fetch("http://localhost:3000/ingredientes")
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .catch((err) => console.error("Error cargando inventario:", err));
   }, []);
 
-  // =========================================
-  // 3. LÓGICA (Filtrar, Ordenar y Limpiar)
-  // =========================================
+  // LÓGICA DE FILTRADO
+  const productosFiltrados = productos.filter((producto) => {
+    const texto = busqueda.toLowerCase();
+    const coincideTexto = 
+        producto.nombre.toLowerCase().includes(texto) || 
+        (producto.codigo && producto.codigo.includes(texto));
 
-  // Función para el botón negro: Borra todo y deja la tabla como nueva
-  const handleLimpiarFiltros = () => {
-    setBusqueda("");        
-    setOrden("alfabetico"); 
-  };
+    const coincideCategoria = 
+        filtroCategoria === "todos" || 
+        producto.id_categoria.toString() === filtroCategoria;
 
-  // Paso A: Filtrar
-  const ingredientesFiltrados = ingredientes.filter((item) => {
-    return item.nombre.toLowerCase().includes(busqueda.toLowerCase());
+    return coincideTexto && coincideCategoria;
   });
 
-  // Paso B: Ordenar
-  const datosParaLaTabla = [...ingredientesFiltrados].sort((a, b) => {
-    if (orden === "alfabetico") return a.nombre.localeCompare(b.nombre);
-    if (orden === "stockMayor") return b.stock - a.stock;
-    if (orden === "stockMenor") return a.stock - b.stock;
-    if (orden === "proveedor") return a.id_proveedor - b.id_proveedor;
-    return 0;
-  });
-
-  // =========================================
-  // 4. VISTA (El diseño visual)
-  // =========================================
   return (
-    <main className="p-6 max-w-7xl mx-auto"> 
-      {/* Encabezado */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión de Inventario</h1>
-        <p className="text-gray-500 mt-2">Consulta y gestiona el stock de productos en tiempo real.</p>
-      </header>
-
-{/* --- BARRA DE HERRAMIENTAS RESPONSIVE --- */}
-      <section 
-        aria-label="Herramientas de filtrado" 
-        className="flex flex-col lg:grid lg:grid-cols-3 gap-6 mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100"
-      >
-        {/* 1. BUSCADOR */}
-        <div className="w-full">
-           <Buscador valor={busqueda} onBuscar={setBusqueda} />
+    <div className="space-y-6">
+      
+      {/* CABECERA */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
+          <p className="text-gray-500">Gestión de stock y existencias en tiempo real.</p>
         </div>
         
-        {/* 2. ORDENADOR */}
-        <div className="w-full flex lg:justify-center">
-           <div className="w-full lg:max-w-[200px]">
-             <Ordenador ordenActual={orden} onCambioOrden={setOrden} />
-           </div>
+        <div className="flex gap-2">
+            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full flex items-center">
+                Total: {productos.length} productos
+            </span>
+        </div>
+      </div>
+
+      {/* BARRA DE HERRAMIENTAS */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4">
+        
+        {/* Buscador */}
+        <div className="flex-1 relative">
+            <span className="absolute left-3 top-3 text-gray-400">🔍</span>
+            <input 
+                type="text" 
+                placeholder="Buscar por nombre o código de barras..." 
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+            />
         </div>
 
-        {/* 3. BOTÓN */}
-        <div className="w-full flex justify-center lg:justify-end">
-           {/* CAMBIO AQUÍ: 
-               Añadimos 'mb-1' (o 'mb-2' si quieres más) para separarlo del suelo.
-               Al separarse del suelo, visualmente "sube" y se alinea con el dropdown. 
-           */}
-           <div className="w-56 mb-1">
-             <Button 
-               text="Limpiar Filtros" 
-               onClick={handleLimpiarFiltros} 
-             />
-           </div>
-        </div>
-      </section>
-      
-      {/* --- MENSAJES DE ERROR --- */}
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-          <p className="font-bold">Error de conexión</p>
-          <p>{error}</p>
-        </div>
-      )}
-      
-      {/* --- TABLA DE RESULTADOS --- */}
-      {!error && ingredientes.length > 0 && (
-        <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-           <TablaInventario data={datosParaLaTabla} />
-           
-           {/* Mensaje vacío si buscamos algo raro */}
-           {datosParaLaTabla.length === 0 && (
-             <div className="text-center py-12 text-gray-500">
-               <p className="text-lg">No hemos encontrado "{busqueda}" 🕵️‍♂️</p>
-               <p className="text-sm mt-2">Prueba a limpiar los filtros.</p>
-             </div>
-           )}
-        </section>
-      )}
+        {/* Filtro Categoría */}
+        <select 
+            className="p-2 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500"
+            value={filtroCategoria}
+            onChange={(e) => setFiltroCategoria(e.target.value)}
+        >
+            <option value="todos">Todas las categorías</option>
+            <option value="1">Aceites y Grasas</option>
+            <option value="2">Granos y Harinas</option>
+            <option value="3">Conservas</option>
+            <option value="4">Lácteos y Huevos</option>
+            <option value="5">Condimentos</option>
+        </select>
+      </div>
 
-      {/* --- ESTADO DE CARGA --- */}
-      {!error && ingredientes.length === 0 && (
-        <p className="text-center mt-12 text-gray-400 animate-pulse">Cargando datos...</p>
-      )}
-    </main>
+      {/* TABLA DE PRODUCTOS (SIN COLUMNA EDITAR) */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
+                <tr>
+                    <th className="p-4">Código (EAN)</th>
+                    <th className="p-4">Producto</th>
+                    <th className="p-4">Categoría</th>
+                    <th className="p-4 text-center">Stock</th>
+                 
+                </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+                {productosFiltrados.length > 0 ? (
+                    productosFiltrados.map((item) => (
+                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="p-4">
+                                {item.codigo ? (
+                                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                        {item.codigo}
+                                    </span>
+                                ) : (
+                                    <span className="text-xs text-gray-300 italic">Sin código</span>
+                                )}
+                            </td>
+
+                            <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
+                            
+                            <td className="p-4 text-sm text-gray-500">
+                                {item.id_categoria === 1 && "Aceites"}
+                                {item.id_categoria === 2 && "Granos"}
+                                {item.id_categoria === 3 && "Conservas"}
+                                {item.id_categoria === 4 && "Lácteos"}
+                                {item.id_categoria === 5 && "Condimentos"}
+                            </td>
+
+                            <td className="p-4 text-center">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                    item.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                                }`}>
+                                    {item.stock} u.
+                                </span>
+                            </td>
+                      
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td colSpan={4} className="p-8 text-center text-gray-400">
+                            No se encontraron productos que coincidan.
+                        </td>
+                    </tr>
+                )}
+            </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 
