@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 export default function Layout() {
     return (
         /* 1. h-screen + overflow-hidden: Prohíbe cualquier scroll en la ventana */
-        <div className="h-screen w-full bg-[#F8F9FA] flex overflow-hidden">
+        <div className="h-screen w-full bg-[#F0F2F5] flex overflow-hidden">
             
             {/* SIDEBAR: Fijo */}
             <SideBar />
@@ -18,11 +18,8 @@ export default function Layout() {
                 <div className="flex-1 flex flex-col p-4 lg:p-4 overflow-hidden">
                     
                     {/* 4. Tarjeta Blanca: H-FULL para que ocupe todo el espacio y no crezca más */}
-                    <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 pr-2 lg:p-10 overflow-y-auto">
+                    <div className="flex-1 bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 pr-2 ml-4 lg:p-10  overflow-y-auto">
                         
-                        {/* ¡IMPORTANTE! Si el contenido de la página (Outlet) es más grande 
-                           que este hueco, se cortará. Aquí es donde vive tu página fija.
-                        */}
                         <Outlet />
                         
                     </div>
