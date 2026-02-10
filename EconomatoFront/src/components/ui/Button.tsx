@@ -6,9 +6,8 @@ interface ButtonProps {
 export const Button = ({ text, onClick }: ButtonProps) => (
   <button 
     onClick={onClick}
-    className="w-full bg-black text-white font-bold py-4 rounded-full hover:bg-gray-800 transition-colors mt-4"
+    className="w-full bg-primario text-white font-bold py-4 rounded-pill hover:opacity-90 transition-all mt-4 active:scale-[0.98]"
   >
     {text}
   </button>
 );
-
