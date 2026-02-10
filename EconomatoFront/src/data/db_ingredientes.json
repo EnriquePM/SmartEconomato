@@ -209,6 +209,22 @@
       "stock": 3,
       "id_categoria": 1,
       "id_proveedor": 101
+    },
+    {
+      "id": "c2cd",
+      "codigo": "",
+      "nombre": "sas",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "8df3",
+      "codigo": "",
+      "nombre": "sad",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
     }
   ]
 }

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "../components/ui/Button";
+// 1. IMPORTAMOS LOS NUEVOS ICONOS
+import { Globe, Search, Loader2 } from "lucide-react";
 
 // Definimos un tipo simple para el historial local
 type Movimiento = {
@@ -10,40 +12,37 @@ type Movimiento = {
 };
 
 const IngresarProducto = () => {
-  // 1. ESTADOS
-  const [codigoBarras, setCodigoBarras] = useState(""); // <--- NUEVO
+  // ESTADOS
+  const [codigoBarras, setCodigoBarras] = useState("");
   const [nombre, setNombre] = useState("");
   const [stock, setStock] = useState<number | "">(""); 
   const [categoria, setCategoria] = useState("1");
   const [proveedor, setProveedor] = useState("101");
-  const [buscando, setBuscando] = useState(false); // Para mostrar "Cargando..."
+  const [buscando, setBuscando] = useState(false);
   
   const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
   const [historial, setHistorial] = useState<Movimiento[]>([]);
 
-  // --- NUEVA FUNCIÓN: BUSCAR EN OPEN FOOD FACTS ---
+  // FUNCIÓN: BUSCAR EN OPEN FOOD FACTS
   const buscarProductoOFF = async () => {
     if (!codigoBarras) return;
 
     setBuscando(true);
-    setMensaje(null); // Limpiamos mensajes anteriores
+    setMensaje(null);
 
     try {
-        // Hacemos la petición a la API mundial
         const respuesta = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigoBarras}.json`);
         const data = await respuesta.json();
 
         if (data.status === 1) {
-            // ¡ENCONTRADO!
             const productoOFF = data.product;
-            // Intentamos coger el nombre en español, si no, el genérico
             const nombreEncontrado = productoOFF.product_name_es || productoOFF.product_name;
             
             setNombre(nombreEncontrado);
-            setMensaje({ texto: "¡Producto encontrado en la base de datos mundial! 🌍", tipo: 'exito' });
+            setMensaje({ texto: "¡Producto encontrado en la base de datos mundial!", tipo: 'exito' });
         } else {
             setMensaje({ texto: "No encontrado en Open Food Facts. Introdúcelo manual.", tipo: 'error' });
-            setNombre(""); // Limpiamos si falla
+            setNombre("");
         }
     } catch (error) {
         console.error(error);
@@ -53,7 +52,7 @@ const IngresarProducto = () => {
     }
   };
 
-  // 2. LOGICA DE ENVÍO (LOCAL)
+  // FUNCIÓN: GUARDAR LOCAL
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
 
@@ -63,7 +62,7 @@ const IngresarProducto = () => {
     }
 
     const nuevoProducto = {
-      codigo: codigoBarras, // Guardamos también el código
+      codigo: codigoBarras,
       nombre: nombre,
       stock: Number(stock),
       id_categoria: Number(categoria),
@@ -89,7 +88,6 @@ const IngresarProducto = () => {
         };
         setHistorial(prev => [nuevoMovimiento, ...prev].slice(0, 3));
 
-        // Limpiamos todo
         setNombre("");
         setStock("");
         setCodigoBarras("");
@@ -103,18 +101,17 @@ const IngresarProducto = () => {
   };
 
   return (
-    <main className="w-full"> 
+    <main className="w-full space-y-8"> 
       
-      <header className="mb-8 text-left">
+      <header className="text-left">
         <h1 className="text-3xl font-bold text-gray-900">Ingresar Nuevo Producto</h1>
         <p className="text-gray-500 mt-2">Escanea el código o escribe los datos manualmente.</p>
       </header>
 
-      <section className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-8 w-full">
-        {/* Usamos onSubmit en el form para que al dar Enter busque o guarde */}
+      <section className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full">
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           
-          {/* --- NUEVA ZONA: CÓDIGO DE BARRAS --- */}
+          {/* ZONA: CÓDIGO DE BARRAS */}
           <div className="flex gap-4 items-end">
             <div className="flex-1">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Código de Barras (EAN)</label>
@@ -126,14 +123,26 @@ const IngresarProducto = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
                 />
             </div>
-            <div className="pb-1"> {/* Un poco de padding para alinear con el input */}
+            <div className="pb-1">
+                {/* 2. BOTÓN ACTUALIZADO CON ICONOS LUCIDE */}
                 <button
-                    type="button" // Importante type="button" para que no envíe el formulario general
+                    type="button"
                     onClick={buscarProductoOFF}
                     disabled={buscando}
-                    className="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors"
+                    // Añadido 'flex items-center gap-2' para alinear icono y texto
+                    className="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
-                    {buscando ? "🔍 Buscando..." : "🌍 Buscar en OFF"}
+                    {buscando ? (
+                        <>
+                            <Loader2 size={20} className="animate-spin" /> {/* Icono de carga animado */}
+                            <span>Buscando...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Globe size={20} /> {/* Icono del mundo */}
+                            <span>Buscar en OFF</span>
+                        </>
+                    )}
                 </button>
             </div>
           </div>
