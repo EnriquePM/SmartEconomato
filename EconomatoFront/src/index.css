@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    /* bg-fondo viene de tu config */
+    @apply bg-fondo text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* H1: Ahora exactamente como en tu página de Gestión de Usuarios */
+  h1 {
+    @apply text-3xl font-bold text-gray-900;
+  }
+
+  /* Subtítulos (párrafos de apoyo debajo de títulos) */
+  .subtitle {
+    @apply text-lg text-secundario mt-1;
+  }
+
+  /* Estilo base para todas tus tablas */
+  table {
+    @apply w-full border-separate border-spacing-y-3;
+  }
+
+  /* Cabeceras de tabla */
+  th {
+    @apply text-secundario text-sm font-bold pb-2 px-4;
+  }
+
+  /* Filas de tabla (se aplica a los <tr>) */
+  tr.row-estandar {
+    /* bg-input es el gris clarito que definimos en el config */
+    @apply bg-input hover:bg-gray-200 transition-colors text-sm text-gray-700 font-medium;
+  }
+}

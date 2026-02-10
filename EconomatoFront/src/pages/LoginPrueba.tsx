@@ -1,113 +1,99 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Importar el hook
-
+import { useNavigate } from 'react-router-dom';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
 import logoSmart from '../assets/logoSmart.png';
 import fondo from '../assets/fondo.png';
 
-const LoginPage2 = () => {
-  const [user, setUser] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  // Estado para saber si es primera vez o login normal
-  const [isFirstTime, setIsFirstTime] = useState<boolean>(false);
+const LoginPage = () => {
+  // --- ESTADOS ---
+  const [user, setUser] = useState('');
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Este es el interruptor que decide qué formulario ver
+  const [step, setStep] = useState<'login' | 'change-password'>('login');
   
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (isFirstTime) {
-      // LÓGICA DE REGISTRO
-      if (password !== confirmPassword) {
-        alert("Las contraseñas no coinciden");
-        return;
-      }
-      if (password.length < 4) {
-        alert("La contraseña debe ser más larga");
-        return;
-      }
-      console.log("Registrando usuario:", user);
-      localStorage.setItem("isAuthenticated", "true");
-      navigate("/");
-    } else {
-      // LÓGICA DE LOGIN NORMAL
-      if (user === "admin" && password === "1234") {
+  // --- LÓGICA DE LOGIN (Lo que hablarás con Enrique) ---
+  const handleInitialLogin = () => {
+    // AQUÍ IRÁ LA LLAMADA AL BACKEND
+    // Enrique te dirá: "Si los datos son correctos, mira el campo 'mustChange'"
+    if (user === "admin" && password === "1234") {
+      const mustChange = true; // Esto vendrá del backend
+      
+      if (mustChange) {
+        setStep('change-password');
+      } else {
         localStorage.setItem("isAuthenticated", "true");
         navigate("/");
-      } else {
-        alert("Usuario o contraseña incorrectos");
       }
+    } else {
+      alert("Credenciales incorrectas");
     }
   };
 
+  // --- LÓGICA DE CAMBIO DE CLAVE ---
+  const handleChangePassword = () => {
+    if (newPassword !== confirmPassword) return alert("No coinciden");
+    
+    // Aquí enviarás la nueva clave al backend de Enrique
+    localStorage.setItem("hasChangedPassword", "true");
+    localStorage.setItem("isAuthenticated", "true");
+    navigate("/");
+  };
+
+  // --- SUB-COMPONENTES (Para no ensuciar el return principal) ---
+  
+  const LoginForm = (
+    <div className="space-y-4">
+      <Input type="text" placeholder="Usuario" value={user} id='u' onChange={setUser} />
+      <Input type="password" placeholder="Contraseña temporal" value={password} id='p' onChange={setPassword} />
+      <Button text="Acceder" onClick={handleInitialLogin} />
+    </div>
+  );
+
+  const ChangePasswordForm = (
+    <div className="space-y-4">
+      <p className="text-blue-600 font-medium text-sm">Debes actualizar tu contraseña</p>
+      <Input type="password" placeholder="Nueva Contraseña" value={newPassword} id='np' onChange={setNewPassword} />
+      <Input type="password" placeholder="Repetir Contraseña" value={confirmPassword} id='cp' onChange={setConfirmPassword} />
+      <Button text="Actualizar y Entrar" onClick={handleChangePassword} />
+    </div>
+  );
+
+  // --- RENDERIZADO PRINCIPAL ---
   return (
     <div className="min-h-screen bg-white flex flex-col px-4 py-4">
-      {/* Banner Superior (Igual al tuyo) */}
-      <div className="relative w-full h-64 md:h-75 overflow-hidden">
-        <img src={fondo} alt="Cocina" className="w-full h-full object-cover rounded-t-[15px] object-[50%_75%]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white from-0% via-white/20 via-20% to-transparent to-30% rounded-t-[20px]"></div>
+      {/* Banner */}
+      <div className="relative w-full h-64 overflow-hidden rounded-t-[20px]">
+        <img src={fondo} className="w-full h-full object-cover" alt="fondo" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
       </div>
 
-      <main className="max-w-6xl mx-auto w-full px-20 py-12 mt-4 flex flex-col md:flex-row justify-between">
+      <main className="max-w-6xl mx-auto w-full px-20 py-12 flex flex-col md:flex-row justify-between">
         <div className="md:w-1/2">
-          <img src={logoSmart} alt='Logo SmartEconomato' className="h-16 w-auto object-contain mb-4" />
-          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
-            {isFirstTime ? "Crea tu cuenta" : "Bienvenido a SmartEconomato"}
+          <img src={logoSmart} className="h-16 mb-4" alt="logo" />
+          <h1 className="text-5xl font-extrabold text-gray-900">
+            {step === 'login' ? 'Bienvenido' : 'Paso Obligatorio'}
           </h1>
           <p className="text-xl text-gray-500 mt-2">
-            {isFirstTime ? "Establece tu contraseña de acceso" : "Un economato a tu medida"}
+            {step === 'login' ? 'Accede a tu cuenta' : 'Cambia tu contraseña por seguridad'}
           </p>
         </div>
 
-        <div className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
-          <Input 
-            type="text" 
-            placeholder="Usuario o Código" 
-            value={user} 
-            id={'usuario'}
-            onChange={setUser} 
-          />
-          <Input 
-            type="password" 
-            placeholder={isFirstTime ? "Nueva Contraseña" : "Contraseña"} 
-            value={password} 
-            id={'contraseña'}
-            onChange={setPassword} 
-          />
-          
-          {/* Mostramos este input SOLO si es primera vez */}
-          {isFirstTime && (
-            <Input 
-              type="password" 
-              placeholder="Confirmar Contraseña" 
-              value={confirmPassword} 
-              id={'confirmar'}
-              onChange={setConfirmPassword} 
-            />
-          )}
-
-          <Button 
-            text={isFirstTime ? "Finalizar Registro" : "Entrar"} 
-            onClick={handleLogin} 
-          />
-
-          {/* Botón para alternar entre modos */}
-          <div className="text-center mt-4">
-            <button 
-              onClick={() => setIsFirstTime(!isFirstTime)}
-              className="text-sm text-blue-600 hover:underline font-medium"
-            >
-              {isFirstTime 
-                ? "¿Ya tienes cuenta? Inicia sesión aquí" 
-                : "¿Es tu primera vez? Registra tu contraseña"}
-            </button>
-          </div>
+        <div className="md:w-1/3 w-full mt-8 md:mt-0">
+          {/* Aquí ocurre la magia: mostramos un formulario u otro */}
+          {step === 'login' ? LoginForm : ChangePasswordForm}
         </div>
       </main>
+      
       <FooterBar />
     </div>
   );
 };
 
-export default LoginPage2;
+export default LoginPage;
