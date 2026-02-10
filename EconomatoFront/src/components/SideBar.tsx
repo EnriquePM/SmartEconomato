@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
-import { Users } from "lucide-react";
+// AÑADIDO: Importamos el icono 'Utensils' para el nuevo botón
+import { Users, PenTool, Utensils } from "lucide-react";
 
 
 // --- COMPONENTE PRINCIPAL: SideBar ---
@@ -38,7 +39,6 @@ export default function SideBar() {
 
             <ul className="space-y-1.5 font-medium">
               
-
               <li>
                 <NavLink to="/inventario" className={linkClass}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -66,6 +66,7 @@ export default function SideBar() {
                   <span className="ms-3">Pedidos</span>
                 </NavLink>
               </li>
+              
 
               <li>
                 <NavLink to="/registrar" className={linkClass}>
@@ -76,14 +77,25 @@ export default function SideBar() {
                 </NavLink>
               </li>
 
+
+                {/* --- NUEVO BOTÓN AÑADIDO AQUÍ --- */}
+              <li>
+                <NavLink to="/registrar-utensilio" className={linkClass}>
+                  {/* Icono de cubiertos/utensilios */}
+                  <Utensils className="w-5 h-5" />
+                  <span className="ms-3">Registrar Utensilio</span>
+                </NavLink>
+              </li>
+              
+
               <li>
                 <NavLink to="/admin-usuarios" className={linkClass}>
-                  {/* Aquí cambiamos el SVG del '+' por el icono de Usuarios */}
                   <Users className="w-5 h-5" />
                   <span className="ms-3">Administrar usuarios</span>
                 </NavLink>
               </li>
-
+              
+          
             </ul>
           </div>
 

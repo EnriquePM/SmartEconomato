@@ -6,8 +6,8 @@ import Inicio from "../pages/inicioPrueba";
 import IngresarProducto from "../pages/IngresarProducto";
 import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
-// 1. IMPORTAMOS LA PÁGINA NUEVA
 import Perfil from "../pages/Perfil";
+import RegistrarUtensilio from "../pages/RegistrarUtensilio";
 
 // Componentes temporales para las rutas que aún no tienen archivo propio
 const Recepcion = () => <div><h1>Módulo de Recepción de Pedidos</h1></div>;
@@ -55,6 +55,10 @@ export const routes: RouteObject[] = [
           {
             path: "perfil",
             element: <Perfil />,
+          },
+          {
+            path: "registrar-utensilio",
+            element: <RegistrarUtensilio />
           },
         ],
       },
