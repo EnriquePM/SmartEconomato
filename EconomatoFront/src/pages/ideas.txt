@@ -1,6 +1,0 @@
-pages (o views): Son las habitaciones de la casa.
-
-Aquí van los componentes que representan una pantalla completa.
-
-Ejemplos para vosotros: Catalogo.jsx, Carrito.jsx, Login.jsx, AdminPanel.jsx.
-
