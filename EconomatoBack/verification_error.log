@@ -1,0 +1,4 @@
+{
+  "stack": "Error: No se pudo conectar al servidor: fetch failed\n    at C:\\Users\\Sergio\\Downloads\\SmartEconomato-main_actu_seg\\SmartEconomato-main\\SmartEconomato-main\\EconomatoBack\\scripts\\verify_real_login.ts:134:20\n    at Generator.throw (<anonymous>)\n    at rejected (C:\\Users\\Sergio\\Downloads\\SmartEconomato-main_actu_seg\\SmartEconomato-main\\SmartEconomato-main\\EconomatoBack\\scripts\\verify_real_login.ts:6:65)",
+  "message": "No se pudo conectar al servidor: fetch failed"
+}

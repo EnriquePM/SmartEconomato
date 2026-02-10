@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model alumnado {
+  id_rol Int     @id
+  curso  String? @db.VarChar(50)
+  rol    rol     @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_alumno_rol")
+}
+
+model categoria {
+  id_categoria Int           @id @default(autoincrement())
+  nombre       String        @db.VarChar(100)
+  ingrediente  ingrediente[]
+  material     material[]
+}
+
+model material {
+  id_material    Int         @id @default(autoincrement())
+  nombre         String      @db.VarChar(150)
+  unidad_medida  String?     @db.VarChar(50)
+  precio_unidad  Decimal     @default(0.00) @db.Decimal(10, 2)
+  id_categoria   Int?
+  categoria      categoria?  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_material_categoria")
+}
+
+model escandallo {
+  id_escandallo      Int                  @id @default(autoincrement())
+  descripcion        String?              @db.VarChar(255)
+  fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
+  escandallo_detalle escandallo_detalle[]
+}
+
+model escandallo_detalle {
+  id_escandallo  Int
+  id_usuario     Int
+  id_ingrediente Int
+  escandallo     escandallo  @relation(fields: [id_escandallo], references: [id_escandallo], onDelete: Cascade, onUpdate: NoAction, map: "fk_ed_escandallo")
+  ingrediente    ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_ingrediente")
+  usuario        usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_usuario")
+
+  @@id([id_escandallo, id_usuario, id_ingrediente])
+}
+
+model ingrediente {
+  id_ingrediente     Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(150)
+  imagen             String?              @db.VarChar(255)
+  stock              Decimal?             @default(0.00) @db.Decimal(10, 2)
+  stock_minimo       Decimal?             @default(0.00) @db.Decimal(10, 2)
+  unidad_medida      String?              @db.VarChar(50)
+  id_categoria       Int?
+  id_proveedor       Int?
+  escandallo_detalle escandallo_detalle[]
+  categoria          categoria?           @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_categoria")
+  proveedor          proveedor?           @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_proveedor")
+  movimiento         movimiento[]
+  pedido_ingrediente pedido_ingrediente[]
+  receta_ingrediente receta_ingrediente[]
+  precio_unidad      Decimal              @default(0.00) @db.Decimal(10, 2)
+}
+
+model jefe_economato {
+  id_rol   Int     @id
+  permisos String? @db.VarChar(255)
+  rol      rol     @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_jefe_rol")
+}
+
+model movimiento {
+  id_movimiento   Int                  @id @default(autoincrement())
+  id_ingrediente  Int
+  id_usuario      Int
+  tipo_movimiento tipo_movimiento_enum
+  cantidad        Decimal              @db.Decimal(10, 2)
+  fecha           DateTime?            @default(now()) @db.Timestamp(6)
+  observaciones   String?              @db.VarChar(255)
+  ingrediente     ingrediente          @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_ingrediente")
+  usuario         usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_usuario")
+}
+
+model pedido {
+  id_pedido          Int                  @id @default(autoincrement())
+  fecha_pedido       DateTime?            @default(now()) @db.Timestamp(6)
+  id_usuario         Int
+  usuario            usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_usuario")
+  pedido_ingrediente pedido_ingrediente[]
+  estado             estado_pedido        @default(PENDIENTE)
+}
+
+enum estado_pedido {
+  PENDIENTE
+  VALIDADO
+}
+
+model pedido_ingrediente {
+  id_pedido           Int
+  id_ingrediente      Int
+  cantidad_solicitada Decimal     @db.Decimal(10, 2)
+  ingrediente         ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_pi_ingrediente")
+  pedido              pedido      @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction, map: "fk_pi_pedido")
+
+  @@id([id_pedido, id_ingrediente])
+}
+
+model profesorado {
+  id_rol      Int     @id
+  asignaturas String? @db.VarChar(255)
+  rol         rol     @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_profesor_rol")
+}
+
+model proveedor {
+  id_proveedor Int           @id @default(autoincrement())
+  nombre       String        @db.VarChar(150)
+  ingrediente  ingrediente[]
+}
+
+model receta {
+  id_receta          Int                  @id @default(autoincrement())
+  fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
+  cantidad_platos    Int?
+  receta_ingrediente receta_ingrediente[]
+}
+
+model receta_ingrediente {
+  id_receta      Int
+  id_ingrediente Int
+  cantidad       Decimal     @db.Decimal(10, 2)
+  rendimiento    Decimal?    @db.Decimal(5, 2)
+  ingrediente    ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_ri_ingrediente")
+  receta         receta      @relation(fields: [id_receta], references: [id_receta], onDelete: Cascade, onUpdate: NoAction, map: "fk_ri_receta")
+
+  @@id([id_receta, id_ingrediente])
+}
+
+model rol {
+  id_rol         Int             @id @default(autoincrement())
+  nombre         String          @db.VarChar(50)
+  tipo           String          @db.VarChar(50)
+  alumnado       alumnado?
+  jefe_economato jefe_economato?
+  profesorado    profesorado?
+  usuario        usuario[]
+}
+
+model usuario {
+  id_usuario         Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(100)
+  apellido1          String               @db.VarChar(100)
+  apellido2          String?              @db.VarChar(100)
+  username    String   @unique
+  email              String               @unique @db.VarChar(150)
+  contrasenya        String               @db.VarChar(255)
+  fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
+  id_rol             Int
+  escandallo_detalle escandallo_detalle[]
+  movimiento         movimiento[]
+  pedido             pedido[]
+  rol                rol                  @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_rol")
+}
+
+enum tipo_movimiento_enum {
+  ENTRADA
+  SALIDA
+  AJUSTE
+  MERMA
+}
