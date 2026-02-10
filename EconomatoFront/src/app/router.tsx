@@ -8,6 +8,7 @@ import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
 import Perfil from "../pages/Perfil";
 import RegistrarUtensilio from "../pages/RegistrarUtensilio";
+import CambiarPassword from "../pages/CambiarPassword";
 
 // Componentes temporales para las rutas que aún no tienen archivo propio
 const Recepcion = () => <div className="p-4"><h2>Módulo de Recepción de Pedidos</h2></div>;
@@ -18,6 +19,7 @@ export const routes: RouteObject[] = [
     // 1. RUTA PÚBLICA: El Login siempre debe ser accesible
     path: "/login",
     element: <LoginPage2 />,
+    
   },
   {
     // 2. RUTAS PROTEGIDAS: Todo lo que esté aquí dentro requiere localStorage

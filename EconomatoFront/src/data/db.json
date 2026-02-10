@@ -29,6 +29,14 @@
       "stock": 1,
       "id_categoria": 1,
       "id_proveedor": 101
+    },
+    {
+      "id": "783d",
+      "codigo": "",
+      "nombre": "sd",
+      "stock": -6,
+      "id_categoria": 1,
+      "id_proveedor": 101
     }
   ],
   "utensilios": [
