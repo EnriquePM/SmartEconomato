@@ -4,12 +4,12 @@ import { generateToken } from '../utils/jwt';
 // import bcrypt from 'bcryptjs'; // Descomentar cuando usemos encriptación
 
 export const login = async (req: Request, res: Response) => {
-    const { email, contrasenya } = req.body;
+    const { username, contrasenya } = req.body;
 
     try {
         // 1. Buscar usuario
         const usuario = await prisma.usuario.findUnique({
-            where: { email },
+            where: { username },
             include: { rol: true } // Traer el rol para saber si es PROFE o ADMIN
         });
 

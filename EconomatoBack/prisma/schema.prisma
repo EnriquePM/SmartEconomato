@@ -95,6 +95,7 @@ model pedido {
 enum estado_pedido {
   PENDIENTE
   VALIDADO
+  CONFIRMADO
 }
 
 model pedido_ingrediente {

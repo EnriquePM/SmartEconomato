@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
+import { estado_pedido } from '@prisma/client';
 
 // 1. CREAR PEDIDO (Cualquier usuario autenticado)
 export const createPedido = async (req: any, res: Response) => {
@@ -90,5 +91,52 @@ export const deletePedido = async (req: Request, res: Response) => {
         res.json({ message: 'Pedido eliminado correctamente' });
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar el pedido' });
+    }
+};
+
+// 5. CONFIRMAR PEDIDO (Llegada de mercancía -> Sumar Stock)
+export const confirmarPedido = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        // Usamos una transacción para asegurar que se actualiza el estado Y el stock, o nada.
+        const resultado = await prisma.$transaction(async (tx) => {
+            // 1. Obtener los ingredientes del pedido
+            const pedido = await tx.pedido.findUnique({
+                where: { id_pedido: Number(id) },
+                include: { pedido_ingrediente: true }
+            });
+
+            if (!pedido) {
+                throw new Error('Pedido no encontrado');
+            }
+
+            if (pedido.estado === (estado_pedido as any).CONFIRMADO) {
+                throw new Error('El pedido ya ha sido confirmado anteriormente');
+            }
+
+            // 2. Sumar stock de cada ingrediente
+            for (const item of pedido.pedido_ingrediente) {
+                await tx.ingrediente.update({
+                    where: { id_ingrediente: item.id_ingrediente },
+                    data: {
+                        stock: {
+                            increment: item.cantidad_solicitada
+                        }
+                    }
+                });
+            }
+
+            // 3. Actualizar estado del pedido
+            return await tx.pedido.update({
+                where: { id_pedido: Number(id) },
+                data: { estado: (estado_pedido as any).CONFIRMADO }
+            });
+        });
+
+        res.json(resultado);
+    } catch (error: any) {
+        console.error(error);
+        res.status(500).json({ error: error.message || 'Error al confirmar el pedido' });
     }
 };

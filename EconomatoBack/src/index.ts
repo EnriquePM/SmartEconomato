@@ -5,6 +5,7 @@ import ingredientRoutes from './routes/ingredient.routes';
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
 import pedidoRoutes from './routes/pedido.routes';
+import materialRoutes from './routes/material.routes';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ingredientes', ingredientRoutes);
 app.use('/api/usuarios', userRoutes);
 app.use('/api/pedidos', pedidoRoutes);
+app.use('/api/materiales', materialRoutes);
 
 // Arrancar servidor
 app.listen(port, () => {

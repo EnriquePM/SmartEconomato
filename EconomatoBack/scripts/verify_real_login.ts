@@ -86,8 +86,7 @@ async function main() {
             create: {
                 nombre: 'Ingrediente Prueba',
                 stock: 100,
-                stock_minimo: 10,
-                tipo: 'General'
+                stock_minimo: 10
             }
         });
         console.log(`   Ingrediente de prueba listo: ${ingrediente.nombre} (ID: ${ingrediente.id_ingrediente})`);
@@ -143,7 +142,7 @@ async function main() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: TEST_EMAIL,
+                    username: 'profesor_test',
                     contrasenya: TEST_PASS
                 })
             });
@@ -235,10 +234,10 @@ async function main() {
         if (!valRes.ok) throw new Error(`Validar pedido falló: ${valRes.status}`);
         const valData = await valRes.json() as any;
         
-        if (valData.estado === 'VALIDADO') {
+        if ((valData as any).estado === 'VALIDADO') {
             console.log('   Pedido validado correctamente.');
         } else {
-            throw new Error(`   ERROR: El estado del pedido no cambió a VALIDADO. Estado actual: ${valData.estado}`);
+            throw new Error(`   ERROR: El estado del pedido no cambió a VALIDADO. Estado actual: ${(valData as any).estado}`);
         }
 
         // 8. Borrar Pedido (Limpieza)
