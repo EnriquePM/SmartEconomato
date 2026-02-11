@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "../components/ui/Button";
 // 1. IMPORTAMOS LOS NUEVOS ICONOS
 import { Globe, Search, Loader2 } from "lucide-react";
+import Select from "../components/ui/select";
+import Input from "../components/ui/Input";
 
 // Definimos un tipo simple para el historial local
 type Movimiento = {
@@ -114,13 +116,13 @@ const IngresarProducto = () => {
           {/* ZONA: CÓDIGO DE BARRAS */}
           <div className="flex gap-4 items-end">
             <div className="flex-1">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Código de Barras (EAN)</label>
-                <input 
-                type="text" 
-                placeholder="Ej: 5449000000996 (Coca-Cola)"
-                value={codigoBarras}
-                onChange={(e) => setCodigoBarras(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
+                <Input 
+                  id="codigo-barras" 
+                  type="text" 
+                  label="Código de Barras (EAN)"
+                  placeholder="Ej: 5449000000996 (Coca-Cola)"
+                  value={codigoBarras}
+                  onChange={setCodigoBarras} 
                 />
             </div>
             <div className="pb-1">
@@ -151,25 +153,27 @@ const IngresarProducto = () => {
 
           {/* DATOS DEL PRODUCTO */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Nombre del Producto</label>
-            <input 
+           <Input 
+              id="nombre-producto"
+              label="Nombre del Producto"
               type="text" 
               placeholder="Se rellenará solo o escríbelo tú..."
               value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none transition-all bg-gray-50"
+              onChange={setNombre} 
+              className="" 
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Stock Inicial</label>
-                <input 
+                <Input 
+                  id="stock-inicial"
+                  label="Stock Inicial"
                   type="number" 
                   placeholder="0"
                   value={stock}
-                  onChange={(e) => setStock(Number(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none transition-all"
+                  onChange={(val) => setStock(Number(val))} 
+                  className="" 
                 />
              </div>
 

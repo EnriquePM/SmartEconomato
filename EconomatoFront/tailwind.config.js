@@ -26,9 +26,6 @@ export default {
       },
       spacing: {
         'sidebar': '15rem',           // El sm:ml-60 (60 * 0.25rem = 15rem)
-      },
-      boxShadow: {
-        'focus-rojo': '0 -4px 10px -2px rgba(220, 38, 38, 0.1)',
       }
     },
   },

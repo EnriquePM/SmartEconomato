@@ -186,33 +186,24 @@ const Inventario = () => {
         {/* Buscador */}
         <div className="flex-1 relative">
             <span className="absolute left-3 top-3 text-gray-400"><Search size={18} /></span>
-            <input 
+            <Input 
+                id="buscador-inventario" 
                 type="text" 
                 placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'}...`}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                value={busqueda}           
+                onChange={setBusqueda}     
+                className="pl-12"          
             />
         </div>
 
         {/* Filtro Categoría */}
         <div className="relative">
-            {/* 1. Icono de Filtro: 
-            - Usamos absolute para flotar sobre el select.
-            - top-1/2 y -translate-y-1/2 para que esté centrado verticalmente perfecto.
-            - pointer-events-none para que si el usuario hace clic en el icono, el select se abra igual.
-            */}
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secundario z-10 pointer-events-none">
                 <Filter size={16} />
             </span>
-
-            {/* 2. Componente Select:
-            - Quitamos todas las clases de bordes y colores porque ya están en el componente.
-            - Añadimos "pl-12" (padding-left) para dejarle hueco al icono del filtro.
-            */}
             <Select 
                 value={filtroCategoria}
-                onChange={(val) => setFiltroCategoria(val)} // Recuerda que nuestro componente ya devuelve el valor directamente
+                onChange={(val) => setFiltroCategoria(val)} 
                 className="pl-12" 
             >
                 <option value="todos">Todas las categorías</option>

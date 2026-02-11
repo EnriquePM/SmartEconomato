@@ -16,7 +16,7 @@ export const Input = ({ type, placeholder, value, onChange, id, label, className
     {label ? (
       <label 
         htmlFor={id} 
-        className="block text-size-etiqueta text-etiqueta mb-2 ml-4 uppercase tracking-wide"
+        className="block text-sm font-bold text-gray-700 mb-2"
       >
         {label}
       </label>
