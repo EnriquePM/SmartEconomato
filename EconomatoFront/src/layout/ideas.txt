@@ -1,0 +1,4 @@
+layout: Es el marco de la web.
+
+Componentes que se repiten en todas las páginas, como la estructura base que contiene la barra de navegación y el pie de página
+
