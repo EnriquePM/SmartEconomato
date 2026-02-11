@@ -56,3 +56,14 @@ export const updateIngrediente = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Error al actualizar' });
     }
 };
+export const deleteIngrediente = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        await prisma.ingrediente.delete({
+            where: { id_ingrediente: Number(id) }
+        })
+        res.json({ message: 'Ingrediente eliminado correctamente' })
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar ingrediente' })
+    }
+}

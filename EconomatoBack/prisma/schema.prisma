@@ -69,6 +69,7 @@ model categoria {
   id_categoria Int           @id @default(autoincrement())
   nombre       String        @db.VarChar(100)
   ingrediente  ingrediente[]
+  material     material[]
 }
 
 model proveedor {
@@ -77,6 +78,14 @@ model proveedor {
   ingrediente  ingrediente[]
 }
 
+model material {
+  id_material    Int         @id @default(autoincrement())
+  nombre         String      @db.VarChar(150)
+  unidad_medida  String?     @db.VarChar(50)
+  precio_unidad  Decimal     @default(0.00) @db.Decimal(10, 2)
+  id_categoria   Int?
+  categoria      categoria?  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_material_categoria")
+}
 model ingrediente {
   id_ingrediente     Int                  @id @default(autoincrement())
   nombre             String               @db.VarChar(150)
@@ -84,13 +93,13 @@ model ingrediente {
   stock              Decimal?             @default(0.00) @db.Decimal(10, 2)
   stock_minimo       Decimal?             @default(0.00) @db.Decimal(10, 2)
   tipo               String?              @db.VarChar(50)
+  unidad_medida      String?              @db.VarChar(50)
+  precio_unidad      Decimal              @default(0.00) @db.Decimal(10, 2)
   id_categoria       Int?
   id_proveedor       Int?
-  
   // Relaciones
   categoria          categoria?           @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_categoria")
   proveedor          proveedor?           @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_proveedor")
-  
   // Relaciones inversas
   escandallo_detalle escandallo_detalle[]
   movimiento         movimiento[]
@@ -117,11 +126,15 @@ model pedido {
   id_pedido          Int                  @id @default(autoincrement())
   fecha_pedido       DateTime?            @default(now()) @db.Timestamp(6)
   id_usuario         Int
-  
+  estado             estado_pedido        @default(PENDIENTE)
   usuario            usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_usuario")
   pedido_ingrediente pedido_ingrediente[]
 }
-
+enum estado_pedido {
+  PENDIENTE
+  VALIDADO
+  CONFIRMADO
+}
 model pedido_ingrediente {
   id_pedido           Int
   id_ingrediente      Int

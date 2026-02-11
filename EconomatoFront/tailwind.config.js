@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+<<<<<<< HEAD
 import colors from 'tailwindcss/colors'
 
 export default {
@@ -26,6 +27,15 @@ export default {
         'sidebar': '15rem',           // El sm:ml-60 (60 * 0.25rem = 15rem)
       }
     },
+=======
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+>>>>>>> origin/backend/sergio-updates
   },
   plugins: [],
 }
