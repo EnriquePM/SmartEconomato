@@ -1,6 +1,8 @@
+
 import React from 'react';
 
-interface Option {
+// Definimos la interfaz para las opciones 
+export interface SelectOption {
   value: string | number;
   label: string;
 }
@@ -9,12 +11,10 @@ interface SelectProps {
   id?: string;
   label?: string;
   value: string | number;
-  // Añadimos la posibilidad de que options sea undefined inicialmente mientras carga la API
-  options?: Option[]; 
+  options: SelectOption[]; 
   onChange: (val: string) => void;
   className?: string;
-  children?: React.ReactNode;
-  placeholder?: string; // Añadimos una prop opcional para el texto inicial
+  placeholder?: string; 
 }
 
 export const Select = ({ 
@@ -24,14 +24,13 @@ export const Select = ({
   options, 
   onChange, 
   className = "", 
-  children,
   placeholder = "Seleccione una opción..." 
 }: SelectProps) => (
   <div className="w-full text-left">
     {label && (
       <label 
         htmlFor={id} 
-        className="block text-size-etiqueta text-etiqueta mb-2 ml-4 uppercase tracking-wide"
+        className="block text-sm font-bold text-gray-700 mb-2 ml-4 uppercase tracking-wide"
       >
         {label}
       </label>
@@ -50,18 +49,15 @@ export const Select = ({
           ${className}
         `}
       >
-        {/* 1. Opción por defecto para que el select no esté vacío al inicio */}
+        {/* Opción por defecto para cuando no hay nada seleccionado */}
         <option value="" disabled>{placeholder}</option>
 
-        {/* 2. Renderizado dinámico */}
-        {options 
-          ? options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))
-          : children
-        }
+        {/* Renderizado dinámico  */}
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
       </select>
 
       {/* Icono de flecha */}

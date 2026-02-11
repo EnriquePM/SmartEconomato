@@ -1,71 +1,182 @@
 {
-  "ingredientes": [
+  "rol": [
+    { "id_rol": 1, "nombre": "Alumno", "tipo": "alumnado" },
+    { "id_rol": 2, "nombre": "Profesor", "tipo": "profesorado" },
+    { "id_rol": 3, "nombre": "Jefe Economato", "tipo": "jefe_economato" }
+  ],
+
+  "alumnado": [
+    { "id_rol": 1, "curso": "2º DAW" }
+  ],
+
+  "profesorado": [
+    { "id_rol": 2, "asignaturas": "Bases de Datos, Programación" }
+  ],
+
+  "jefe_economato": [
+    { "id_rol": 3, "permisos": "GESTION_TOTAL" }
+  ],
+
+  "usuario": [
     {
-      "id": "1",
-      "nombre": "Aceite de Oliva",
-      "stock": 10,
-      "categoria": "1",
-      "proveedor": "101"
+      "id_usuario": 1,
+      "nombre": "Ana",
+      "apellido1": "Pérez",
+      "apellido2": "López",
+      "email": "ana.perez@centro.es",
+      "contrasenya": "hash123",
+      "fecha_creacion": "2026-01-10T09:00:00Z",
+      "id_rol": 1
     },
     {
-      "id": "2",
-      "nombre": "Harina de Trigo",
-      "stock": 50,
-      "categoria": "2",
-      "proveedor": "102"
+      "id_usuario": 2,
+      "nombre": "Carlos",
+      "apellido1": "Gómez",
+      "apellido2": null,
+      "email": "carlos.gomez@centro.es",
+      "contrasenya": "hash456",
+      "fecha_creacion": "2026-01-10T09:05:00Z",
+      "id_rol": 2
     },
     {
-      "id": "964e",
-      "codigo": "",
-      "nombre": "pip",
-      "stock": 2,
-      "id_categoria": 1,
-      "id_proveedor": 101
-    },
-    {
-      "id": "8db3",
-      "codigo": "",
-      "nombre": "sda",
-      "stock": 1,
-      "id_categoria": 1,
-      "id_proveedor": 101
-    },
-    {
-      "id": "783d",
-      "codigo": "",
-      "nombre": "sd",
-      "stock": -6,
-      "id_categoria": 1,
-      "id_proveedor": 101
+      "id_usuario": 3,
+      "nombre": "Laura",
+      "apellido1": "Martín",
+      "apellido2": null,
+      "email": "laura.martin@centro.es",
+      "contrasenya": "hash789",
+      "fecha_creacion": "2026-01-10T09:10:00Z",
+      "id_rol": 3
     }
   ],
-  "utensilios": [
+
+  "categoria": [
+    { "id_categoria": 1, "nombre": "Verduras" },
+    { "id_categoria": 2, "nombre": "Carnes" },
+    { "id_categoria": 3, "nombre": "Lácteos" }
+  ],
+
+  "proveedor": [
+    { "id_proveedor": 1, "nombre": "Proveedor Local SL" },
+    { "id_proveedor": 2, "nombre": "Distribuciones Alimentarias SA" }
+  ],
+
+  "ingrediente": [
     {
-      "id": "u1",
-      "nombre": "Cuchillo Cebollero 20cm",
-      "categoria": "Cuchillos",
-      "stock": 15,
-      "estado": "Nuevo",
-      "id_proveedor": 101,
-      "codigo": "841001"
+      "id_ingrediente": 1,
+      "nombre": "Tomate",
+      "imagen": "tomate.jpg",
+      "stock": "50.00",
+      "stock_minimo": "10.00",
+      "tipo": "Fresco",
+      "id_categoria": 1,
+      "id_proveedor": 1
     },
     {
-      "id": "u2",
-      "nombre": "Tabla de Corte Roja",
-      "categoria": "Tablas",
-      "stock": 8,
-      "estado": "Usado",
-      "id_proveedor": 101,
-      "codigo": "841002"
+      "id_ingrediente": 2,
+      "nombre": "Pollo",
+      "imagen": "pollo.jpg",
+      "stock": "30.00",
+      "stock_minimo": "5.00",
+      "tipo": "Carne",
+      "id_categoria": 2,
+      "id_proveedor": 2
     },
     {
-      "id": "u3",
-      "nombre": "Sartén 24cm",
-      "categoria": "Sartenes",
-      "stock": 4,
-      "estado": "Nuevo",
-      "id_proveedor": 103,
-      "codigo": "841003"
+      "id_ingrediente": 3,
+      "nombre": "Leche",
+      "imagen": "leche.jpg",
+      "stock": "20.00",
+      "stock_minimo": "5.00",
+      "tipo": "Lácteo",
+      "id_categoria": 3,
+      "id_proveedor": 2
+    }
+  ],
+
+  "receta": [
+    {
+      "id_receta": 1,
+      "fecha_creacion": "2026-01-15T08:00:00Z",
+      "cantidad_platos": 4
+    }
+  ],
+
+  "receta_ingrediente": [
+    {
+      "id_receta": 1,
+      "id_ingrediente": 1,
+      "cantidad": "0.50",
+      "rendimiento": "95.00"
+    },
+    {
+      "id_receta": 1,
+      "id_ingrediente": 2,
+      "cantidad": "1.20",
+      "rendimiento": "90.00"
+    }
+  ],
+
+  "pedido": [
+    {
+      "id_pedido": 1,
+      "fecha_pedido": "2026-01-20T10:00:00Z",
+      "id_usuario": 3
+    }
+  ],
+
+  "pedido_ingrediente": [
+    {
+      "id_pedido": 1,
+      "id_ingrediente": 1,
+      "cantidad_solicitada": "20.00"
+    },
+    {
+      "id_pedido": 1,
+      "id_ingrediente": 3,
+      "cantidad_solicitada": "10.00"
+    }
+  ],
+
+  "movimiento": [
+    {
+      "id_movimiento": 1,
+      "id_ingrediente": 1,
+      "id_usuario": 3,
+      "tipo_movimiento": "ENTRADA",
+      "cantidad": "20.00",
+      "fecha": "2026-01-20T12:00:00Z",
+      "observaciones": "Entrada por pedido"
+    },
+    {
+      "id_movimiento": 2,
+      "id_ingrediente": 2,
+      "id_usuario": 2,
+      "tipo_movimiento": "SALIDA",
+      "cantidad": "2.00",
+      "fecha": "2026-01-21T09:00:00Z",
+      "observaciones": "Uso en receta"
+    }
+  ],
+
+  "escandallo": [
+    {
+      "id_escandallo": 1,
+      "descripcion": "Escandallo receta pollo con tomate",
+      "fecha_creacion": "2026-01-22T08:00:00Z"
+    }
+  ],
+
+  "escandallo_detalle": [
+    {
+      "id_escandallo": 1,
+      "id_usuario": 2,
+      "id_ingrediente": 1
+    },
+    {
+      "id_escandallo": 1,
+      "id_usuario": 2,
+      "id_ingrediente": 2
     }
   ]
 }
