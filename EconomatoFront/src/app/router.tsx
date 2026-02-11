@@ -10,10 +10,12 @@ import Inicio from "../pages/inicioPrueba"; // Ojo, revisa si cambiaste este nom
 import IngresarProducto from "../pages/IngresarProducto";
 import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
+import Perfil from "../pages/Perfil";
+import RegistrarUtensilio from "../pages/RegistrarUtensilio";
 
-// Componentes temporales
-const Recepcion = () => <div className="p-4"><h2>Módulo de Recepción de Pedidos</h2></div>;
-const Pedidos = () => <div className="p-4"><h2>Listado de Pedidos Actuales</h2></div>;
+// Componentes temporales para las rutas que aún no tienen archivo propio
+const Recepcion = () => <div><h1>Módulo de Recepción de Pedidos</h1></div>;
+const Pedidos = () => <div><h1>Listado de Pedidos Actuales</h1></div>;
 
 export const routes: RouteObject[] = [
   {
@@ -55,14 +57,20 @@ export const routes: RouteObject[] = [
             element: <IngresarProducto />,
           },
           {
-            path: "admin-usuarios",
-            element: <AdminUsuarios />,
+              path: "admin-usuarios",
+              element: <AdminUsuarios />,
+          },
+          // 2. AÑADIMOS LA RUTA DE PERFIL AQUÍ
+          {
+            path: "perfil",
+            element: <Perfil />,
+          },
+          {
+            path: "registrar-utensilio",
+            element: <RegistrarUtensilio />
           },
         ],
       },
     ],
   },
 ];
-
-// Opcional: si necesitas exportar el router creado directamente como hacías en App.tsx
-// export const router = createBrowserRouter(routes);

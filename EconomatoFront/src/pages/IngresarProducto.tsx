@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
+// 1. IMPORTAMOS LOS NUEVOS ICONOS
+import { Globe, Search, Loader2 } from "lucide-react";
 // 1. IMPORTAMOS EL SERVICIO
 import { getCategorias, getProveedores, type Categoria, type Proveedor } from "../services/recursos.service";
 
@@ -47,6 +49,7 @@ const IngresarProducto = () => {
     if (!codigoBarras) return;
     setBuscando(true);
     setMensaje(null);
+    setMensaje(null);
 
     try {
         const respuesta = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigoBarras}.json`);
@@ -56,9 +59,10 @@ const IngresarProducto = () => {
             const productoOFF = data.product;
             const nombreEncontrado = productoOFF.product_name_es || productoOFF.product_name;
             setNombre(nombreEncontrado);
-            setMensaje({ texto: "¡Producto encontrado en la base de datos mundial! 🌍", tipo: 'exito' });
+            setMensaje({ texto: "¡Producto encontrado en la base de datos mundial!", tipo: 'exito' });
         } else {
             setMensaje({ texto: "No encontrado en Open Food Facts. Introdúcelo manual.", tipo: 'error' });
+            setNombre("");
             setNombre("");
         }
     } catch (error) {
@@ -125,9 +129,9 @@ const IngresarProducto = () => {
   };
 
   return (
-    <main className="w-full"> 
+    <main className="w-full space-y-8"> 
       
-      <header className="mb-8 text-left">
+      <header className="text-left">
         <h1 className="text-3xl font-bold text-gray-900">Ingresar Nuevo Producto</h1>
         <p className="text-gray-500 mt-2">Escanea el código o escribe los datos manualmente.</p>
       </header>
@@ -152,9 +156,20 @@ const IngresarProducto = () => {
                     type="button" 
                     onClick={buscarProductoOFF}
                     disabled={buscando}
-                    className="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors"
+                    // Añadido 'flex items-center gap-2' para alinear icono y texto
+                    className="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
-                    {buscando ? "🔍..." : "🌍 Buscar"}
+                    {buscando ? (
+                        <>
+                            <Loader2 size={20} className="animate-spin" /> {/* Icono de carga animado */}
+                            <span>Buscando...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Globe size={20} /> {/* Icono del mundo */}
+                            <span>Buscar en OFF</span>
+                        </>
+                    )}
                 </button>
             </div>
           </div>

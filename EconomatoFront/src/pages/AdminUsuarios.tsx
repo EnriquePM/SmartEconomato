@@ -194,7 +194,7 @@ const AdminUsuarios = () => {
         </form>
       </section>
 
-      {/* TABLA DE USUARIOS */}
+      {/* 3. TABLA DE USUARIOS */}
       <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <h3 className="font-bold text-gray-700 flex items-center gap-2">
