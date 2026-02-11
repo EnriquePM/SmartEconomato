@@ -15,11 +15,11 @@ type LineaPedido = {
 };
 
 type Pedido = {
-    id: string;
+    id: string | number;
     tipo: 'productos' | 'utensilios';
     proveedor: string;
     fecha: string;
-    estado: 'Borrador' | 'Enviado';
+    estado: string; // 'BORRADOR', 'PENDIENTE', 'VALIDADO'...
     total: number;
     observaciones: string;
     lineas: LineaPedido[];
@@ -31,7 +31,7 @@ const Pedidos = () => {
     const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
     const [busqueda, setBusqueda] = useState('');
 
-    // --- ESTADOS DE DATOS (CONECTADOS A DB.JSON) ---
+    // --- ESTADOS DE DATOS ---
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
     const [catalogoProductos, setCatalogoProductos] = useState<any[]>([]);
     const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
@@ -41,34 +41,97 @@ const Pedidos = () => {
         tipo: 'productos',
         proveedor: '',
         fecha: new Date().toISOString().split('T')[0],
-        estado: 'Borrador',
+        estado: 'BORRADOR',
         total: 0,
         observaciones: '',
         lineas: []
     });
 
-    // --- EFECTO: CARGA INICIAL DE PEDIDOS ---
+    // --- 1. CARGA INICIAL DE PEDIDOS ---
     useEffect(() => {
-        fetch('http://localhost:3000/pedidos')
-            .then(res => res.json())
-            .then(data => setPedidos(data))
-            .catch(err => console.error("Error cargando pedidos:", err));
+        fetch('http://localhost:3000/api/pedidos')
+            .then(res => {
+                if (!res.ok) throw new Error("Error en la respuesta del servidor");
+                return res.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    const adaptados = data.map((p: any) => {
+                        
+                        let lineasRecuperadas: LineaPedido[] = [];
+
+                        if (p.tipo_pedido === 'utensilios' && p.pedido_material) {
+                            lineasRecuperadas = p.pedido_material.map((pm: any) => ({
+                                id: Date.now() + Math.random(), 
+                                productoId: pm.id_material,
+                                nombre: pm.material?.nombre || 'Utensilio desconocido',
+                                categoria: pm.material?.categoria?.nombre || 'General', 
+                                unidad: pm.material?.unidad_medida || 'u.',
+                                cantidad: Number(pm.cantidad_solicitada),
+                                precio: Number(pm.material?.precio_unidad || 0),
+                                subtotal: Number(pm.cantidad_solicitada) * Number(pm.material?.precio_unidad || 0)
+                            }));
+                        } else if (p.pedido_ingrediente) {
+                            lineasRecuperadas = p.pedido_ingrediente.map((pi: any) => ({
+                                id: Date.now() + Math.random(), 
+                                productoId: pi.id_ingrediente,
+                                nombre: pi.ingrediente?.nombre || 'Ingrediente desconocido',
+                                categoria: pi.ingrediente?.categoria?.nombre || 'General',
+                                unidad: pi.ingrediente?.unidad_medida || 'u.',
+                                cantidad: Number(pi.cantidad_solicitada),
+                                precio: Number(pi.ingrediente?.precio_actual || 0),
+                                subtotal: Number(pi.cantidad_solicitada) * Number(pi.ingrediente?.precio_actual || 0)
+                            }));
+                        }
+
+                        return {
+                            id: p.id_pedido,
+                            tipo: p.tipo_pedido || 'productos',
+                            proveedor: p.proveedor || '',
+                            fecha: p.fecha_pedido ? p.fecha_pedido.split('T')[0] : '',
+                            estado: p.estado,
+                            total: Number(p.total_estimado || 0),
+                            observaciones: p.observaciones || '',
+                            lineas: lineasRecuperadas 
+                        };
+                    });
+                    setPedidos(adaptados);
+                } else {
+                    setPedidos([]); 
+                }
+            })
+            .catch(err => {
+                console.error("Error cargando pedidos:", err);
+                setPedidos([]); 
+            });
     }, []);
 
-    // --- EFECTO: CARGA DE CATÁLOGOS SEGÚN TIPO DE PEDIDO ---
+    // --- 2. CARGA DE CATÁLOGOS ---
     useEffect(() => {
-        // Determinamos los endpoints basándonos en el db.json unificado
-        const prodEndpoint = tipoPedido === 'productos' ? 'catalogo_productos' : 'utensilios';
-        const provEndpoint = tipoPedido === 'productos' ? 'proveedores' : 'proveedores_utensilios';
+        const prodEndpoint = tipoPedido === 'productos' 
+            ? 'http://localhost:3000/api/ingredientes' 
+            : 'http://localhost:3000/api/materiales';
 
-        // Carga de productos/utensilios
-        fetch(`http://localhost:3000/${prodEndpoint}`)
+        const provEndpoint = 'http://localhost:3000/api/proveedores';
+
+        // Cargar Productos/Materiales
+        fetch(prodEndpoint)
             .then(res => res.json())
-            .then(data => setCatalogoProductos(data))
+            .then(data => {
+                if (!Array.isArray(data)) return;
+                const catalogoAdaptado = data.map((item: any) => ({
+                    id: tipoPedido === 'productos' ? item.id_ingrediente : item.id_material,
+                    nombre: item.nombre,
+                    categoria: item.categoria ? (typeof item.categoria === 'object' ? item.categoria.nombre : item.categoria) : 'General',
+                    unidad: item.unidad_medida || 'u.',
+                    precioUltimo: Number(item.precio_actual || item.precio_unidad || 0)
+                }));
+                setCatalogoProductos(catalogoAdaptado);
+            })
             .catch(err => console.error("Error cargando catálogo:", err));
 
-        // Carga de proveedores
-        fetch(`http://localhost:3000/${provEndpoint}`)
+        // Cargar Proveedores
+        fetch(provEndpoint)
             .then(res => res.json())
             .then(data => setCatalogoProveedores(data))
             .catch(err => console.error("Error cargando proveedores:", err));
@@ -76,11 +139,13 @@ const Pedidos = () => {
     }, [tipoPedido]);
 
     // --- LÓGICA DE FILTRADO ---
-    const pedidosFiltrados = pedidos.filter(p =>
-        p.tipo === tipoPedido && 
-        (p.proveedor.toLowerCase().includes(busqueda.toLowerCase()) ||
-        p.id.toLowerCase().includes(busqueda.toLowerCase()))
-    );
+    const pedidosFiltrados = pedidos?.filter(p => {
+        const coincideTipo = p.tipo === tipoPedido; 
+        const coincideBusqueda = 
+            p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
+            p.id.toString().includes(busqueda.toLowerCase());
+        return coincideTipo && coincideBusqueda;
+    });
 
     // --- LÓGICA DEL FORMULARIO ---
     const agregarLinea = () => {
@@ -100,8 +165,9 @@ const Pedidos = () => {
         });
     };
 
-    const seleccionarProducto = (lineaId: number, prodId: string) => {
-        const producto = catalogoProductos.find(p => p.id.toString() === prodId.toString());
+    const seleccionarProducto = (lineaId: number, prodIdStr: string) => {
+        const prodId = Number(prodIdStr);
+        const producto = catalogoProductos.find(p => p.id === prodId);
         if (!producto) return;
 
         const lineasActualizadas = pedidoActual.lineas.map(linea => {
@@ -113,7 +179,7 @@ const Pedidos = () => {
                     categoria: producto.categoria,
                     unidad: producto.unidad,
                     precio: producto.precioUltimo,
-                    subtotal: 1 * producto.precioUltimo
+                    subtotal: linea.cantidad * producto.precioUltimo
                 };
             }
             return linea;
@@ -144,45 +210,68 @@ const Pedidos = () => {
         recalcularTotal(nuevasLineas);
     };
 
-    const eliminarPedido = (id: string) => {
-        if (confirm("¿Estás seguro de eliminar este borrador?")) {
-            // Aquí se podría añadir un fetch DELETE a http://localhost:3000/pedidos/${id}
-            setPedidos(pedidos.filter(p => p.id !== id));
+    const guardarPedidoBD = async (estadoDeseado: 'BORRADOR' | 'PENDIENTE') => {
+        if (!pedidoActual.proveedor) return alert("Selecciona un proveedor");
+            const payload = {
+            tipoPedido: tipoPedido,
+            proveedor: pedidoActual.proveedor,
+            total: pedidoActual.total,
+            observaciones: pedidoActual.observaciones,
+            estado: estadoDeseado,
+            lineas: pedidoActual.lineas.map(l => ({
+                productoId: l.productoId,
+                cantidad: l.cantidad
+            }))
+        };
+
+        try {
+            const response = await fetch('http://localhost:3000/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Error al guardar");
+            }
+
+            const data = await response.json();
+            alert(`Pedido guardado correctamente con ID: ${data.id_pedido}`);
+            
+            // Recargamos la página para ver el pedido nuevo en la lista
+            window.location.reload();
+
+        } catch (error) {
+            console.error(error);
+            alert("Error al conectar con el servidor: " + error);
         }
     };
 
-    const guardarBorrador = () => {
-        if (!pedidoActual.proveedor) return alert("Selecciona un proveedor");
-        const idFinal = pedidoActual.id || `PED-${Math.floor(Math.random() * 1000)}`;
-        const pedidoGuardado = { ...pedidoActual, id: idFinal, estado: 'Borrador' as const };
-        actualizarListaPedidos(pedidoGuardado);
-        setVista('lista');
-    };
-
+    // Botones de acción
+    const guardarBorrador = () => guardarPedidoBD('BORRADOR');
+    
     const enviarPedido = () => {
-        if (!pedidoActual.proveedor) return alert("Selecciona un proveedor");
         if (pedidoActual.lineas.length === 0) return alert("Añade al menos un producto");
-        if (confirm("¿Enviar pedido al proveedor? No podrás editarlo después.")) {
-            const idFinal = pedidoActual.id || `PED-${Math.floor(Math.random() * 1000)}`;
-            const pedidoEnviado = { ...pedidoActual, id: idFinal, estado: 'Enviado' as const };
-            actualizarListaPedidos(pedidoEnviado);
-            setVista('lista');
+        if (confirm("¿Enviar pedido al proveedor? Pasará a estado PENDIENTE.")) {
+            guardarPedidoBD('PENDIENTE');
         }
     };
 
-    const actualizarListaPedidos = (pedido: Pedido) => {
-        const existe = pedidos.some(p => p.id === pedido.id);
-        if (existe) {
-            setPedidos(pedidos.map(p => p.id === pedido.id ? pedido : p));
-        } else {
-            setPedidos([pedido, ...pedidos]);
+    const eliminarPedido = async (id: string | number) => {
+        if (confirm("¿Estás seguro de eliminar este borrador?")) {
+             try {
+                await fetch(`http://localhost:3000/api/pedidos/${id}`, { method: 'DELETE' });
+                setPedidos(pedidos.filter(p => p.id !== id));
+             } catch (error) {
+                 alert("Error al eliminar");
+             }
         }
-        // Nota: Para persistencia real en db.json, aquí se dispararía un POST o PUT
     };
 
     // --- RENDERIZADO ---
     if (vista === 'formulario') {
-        const esSoloLectura = pedidoActual.estado === 'Enviado';
+        const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.estado !== ''; 
         const titulo = tipoPedido === 'productos' ? 'Productos' : 'Utensilios';
 
         return (
@@ -193,30 +282,26 @@ const Pedidos = () => {
                             onClick={() => setVista('lista')}
                             className="group flex items-center gap-2 text-gray-400 hover:text-black transition-colors duration-200 font-bold text-sm"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                            VOLVER
+                            <span>← VOLVER</span>
                         </button>
                         <div className="h-8 w-[1px] bg-gray-200 mx-2"></div>
                         <div>
                             <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                                {pedidoActual.id ? `Pedido ${pedidoActual.id}` : `Nuevo Pedido de ${titulo}`}
+                                {pedidoActual.id ? `Pedido #${pedidoActual.id}` : `Nuevo Pedido de ${titulo}`}
                             </h2>
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black tracking-widest uppercase ${
-                                pedidoActual.estado === 'Enviado' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
-                            }`}>
-                                {pedidoActual.estado}
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black tracking-widest uppercase bg-gray-100 text-gray-500`}>
+                                {pedidoActual.estado || 'NUEVO'}
                             </span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        {!esSoloLectura && (
+                    {!esSoloLectura && (
+                        <div className="flex items-center gap-3 w-full md:w-auto">
                             <div className="flex items-center bg-gray-100 p-1.5 rounded-pill shadow-inner w-full md:w-auto border border-gray-200/50">
                                 <button onClick={guardarBorrador} className="px-6 py-2.5 text-gray-600 rounded-pill font-bold text-xs hover:text-black transition-all duration-200 flex-1 md:flex-none uppercase tracking-wider">Guardar Borrador</button>
                                 <button onClick={enviarPedido} className="px-8 py-2.5 bg-black text-white rounded-pill font-bold text-xs hover:bg-gray-800 transition-all duration-200 shadow-md active:scale-95 flex-1 md:flex-none uppercase tracking-wider">Enviar Pedido</button>
                             </div>
-                        )}
-                        {esSoloLectura && <span className="text-sm font-bold text-gray-400 italic pr-4">Pedido finalizado (Modo lectura)</span>}
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -231,11 +316,11 @@ const Pedidos = () => {
                                     disabled={esSoloLectura}
                                 >
                                     <option value="">Selecciona proveedor...</option>
-                                    {catalogoProveedores.map(p => <option key={p.id} value={p.nombre}>{p.nombre}</option>)}
+                                    {/* CORREGIDO: KEY ÚNICA */}
+                                    {catalogoProveedores.map((p: any) => (
+                                        <option key={p.id_proveedor || p.id} value={p.nombre}>{p.nombre}</option>
+                                    ))}
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                </div>
                             </div>
                         </div>
                         <div className="w-full md:w-1/3">
@@ -274,7 +359,9 @@ const Pedidos = () => {
                                         <td className="p-3 w-1/3 align-middle">
                                             <select className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:border-black" value={linea.productoId} onChange={(e) => seleccionarProducto(linea.id, e.target.value)} disabled={esSoloLectura}>
                                                 <option value={0}>Buscar {titulo.toLowerCase().slice(0, -1)}...</option>
-                                                {catalogoProductos.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                                {catalogoProductos.map((p: any) => (
+                                                    <option key={p.id} value={p.id}>{p.nombre}</option>
+                                                ))}
                                             </select>
                                         </td>
                                         <td className="p-3 align-middle"><span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">{linea.categoria || '-'}</span></td>
@@ -317,7 +404,7 @@ const Pedidos = () => {
                     <p className="text-gray-500 mt-1">Gestiona y envía tus órdenes de compra</p>
                 </div>
                 <div className="w-full md:w-auto">
-                    <button onClick={() => { setPedidoActual({ id: '', tipo: tipoPedido, proveedor: '', fecha: new Date().toISOString().split('T')[0], estado: 'Borrador', total: 0, observaciones: '', lineas: [] }); setVista('formulario'); }} className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-pill font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95 w-full md:w-fit"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>NUEVO PEDIDO</button>
+                    <button onClick={() => { setPedidoActual({ id: '', tipo: tipoPedido, proveedor: '', fecha: new Date().toISOString().split('T')[0], estado: 'BORRADOR', total: 0, observaciones: '', lineas: [] }); setVista('formulario'); }} className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-pill font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95 w-full md:w-fit"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>NUEVO PEDIDO</button>
                 </div>
             </div>
 
@@ -345,17 +432,17 @@ const Pedidos = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {pedidosFiltrados.length > 0 ? (
+                            {pedidosFiltrados && pedidosFiltrados.length > 0 ? (
                                 pedidosFiltrados.map((pedido) => (
                                     <tr key={pedido.id} className="hover:bg-gray-50 transition group">
                                         <td className="p-5 font-mono text-xs text-gray-500">{pedido.id}</td>
                                         <td className="p-5 font-medium text-gray-900">{pedido.proveedor}</td>
                                         <td className="p-5 text-gray-600">{pedido.fecha}</td>
-                                        <td className="p-5 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${pedido.estado === 'Enviado' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-700'}`}>{pedido.estado}</span></td>
+                                        <td className="p-5 text-center"><span className={`px-3 py-1 rounded-full text-xs font-bold ${pedido.estado === 'PENDIENTE' ? 'bg-blue-100 text-blue-700' : 'bg-gray-200 text-gray-700'}`}>{pedido.estado}</span></td>
                                         <td className="p-5 text-right font-bold text-gray-800">{pedido.total.toFixed(2)} €</td>
                                         <td className="p-5 text-right flex justify-end items-center gap-4">
-                                            <button onClick={() => { setPedidoActual(pedido); setVista('formulario'); }} className="text-blue-600 hover:text-blue-800 font-medium text-sm">{pedido.estado === 'Borrador' ? 'Editar' : 'Ver'}</button>
-                                            {pedido.estado === 'Borrador' && (
+                                            <button onClick={() => { setPedidoActual(pedido); setVista('formulario'); }} className="text-blue-600 hover:text-blue-800 font-medium text-sm">{pedido.estado === 'BORRADOR' ? 'Editar' : 'Ver'}</button>
+                                            {pedido.estado === 'BORRADOR' && (
                                                 <button onClick={(e) => { e.stopPropagation(); eliminarPedido(pedido.id); }} className="text-gray-400 hover:text-red-500 transition-colors" title="Eliminar borrador"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                                             )}
                                         </td>

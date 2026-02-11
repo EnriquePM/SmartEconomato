@@ -2,57 +2,88 @@ import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import { estado_pedido } from '@prisma/client';
 
-// 1. CREAR PEDIDO (Cualquier usuario autenticado)
+// 1. CREAR O ACTUALIZAR PEDIDO (Soporta Ingredientes y Materiales)
 export const createPedido = async (req: any, res: Response) => {
-    const { ingredientes } = req.body; // Array de { id_ingrediente, cantidad }
-    const id_usuario = req.user.id_usuario;
+    console.log("1. --- INICIO CREATE PEDIDO ---");
+    console.log("2. Datos recibidos (Body):", req.body);
 
-    if (!ingredientes || !Array.isArray(ingredientes) || ingredientes.length === 0) {
-        res.status(400).json({ error: 'La lista de ingredientes es obligatoria' });
-        return;
-    }
+    // Verificamos el usuario
+    const id_usuario = req.user ? req.user.id_usuario : 1;
+    console.log("3. ID Usuario asignado:", id_usuario);
+
+    const {
+        proveedor, lineas, total, observaciones, tipoPedido, estado
+    } = req.body;
 
     try {
-        const nuevoPedido = await prisma.pedido.create({
-            data: {
-                id_usuario,
-                // estado: 'PENDIENTE' (Por defecto en schema)
-                pedido_ingrediente: {
-                    create: ingredientes.map((ing: any) => ({
-                        id_ingrediente: ing.id_ingrediente,
-                        cantidad_solicitada: ing.cantidad
+        console.log("4. Intentando crear objeto para Prisma...");
+
+        // Mapeo manual para debuggear
+        const estadoFinal = estado === 'BORRADOR' ? estado_pedido.BORRADOR : estado_pedido.PENDIENTE;
+        console.log("5. Estado final calculado:", estadoFinal);
+
+        const dataPedido: any = {
+            id_usuario,
+            fecha_pedido: new Date(),
+            estado: estadoFinal,
+            proveedor,
+            observaciones,
+            total_estimado: total,
+            tipo_pedido: tipoPedido
+        };
+
+        console.log("6. Objeto base preparado:", dataPedido);
+
+        if (lineas && lineas.length > 0) {
+            console.log(`7. Procesando ${lineas.length} líneas de tipo: ${tipoPedido}`);
+            if (tipoPedido === 'utensilios') {
+                dataPedido.pedido_material = {
+                    create: lineas.map((l: any) => ({
+                        id_material: Number(l.productoId), // Forzamos número
+                        cantidad_solicitada: Number(l.cantidad)
                     }))
-                }
-            },
-            include: {
-                pedido_ingrediente: {
-                    include: { ingrediente: true }
-                }
+                };
+            } else {
+                dataPedido.pedido_ingrediente = {
+                    create: lineas.map((l: any) => ({
+                        id_ingrediente: Number(l.productoId), // Forzamos número
+                        cantidad_solicitada: Number(l.cantidad)
+                    }))
+                };
             }
+        }
+
+        console.log("8. ¡ENVIANDO A PRISMA!");
+        const nuevoPedido = await prisma.pedido.create({
+            data: dataPedido
         });
 
+        console.log("9. ✅ ¡ÉXITO! Pedido creado con ID:", nuevoPedido.id_pedido);
         res.json(nuevoPedido);
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error al crear el pedido' });
+        console.error("❌ ERROR CRÍTICO EN PRISMA:", error);
+        // Esto nos dirá exactamente por qué falla la BD
+        res.status(500).json({ error: 'Error al guardar el pedido', detalle: error });
     }
 };
 
-// 2. LISTAR PEDIDOS PENDIENTES (Solo Profesores/Admin)
-export const getPedidosPendientes = async (req: Request, res: Response) => {
+// 2. LISTAR TODOS LOS PEDIDOS (Para la tabla del frontend)
+export const getPedidos = async (req: Request, res: Response) => {
     try {
         const pedidos = await prisma.pedido.findMany({
-            where: {
-                estado: 'PENDIENTE'
-            },
+            // Quitamos el 'where: PENDIENTE' para que se vean también los borradores y validados
             include: {
                 usuario: {
                     select: { nombre: true, apellido1: true, email: true }
                 },
+                // Incluimos ingredientes...
                 pedido_ingrediente: {
-                    include: {
-                        ingrediente: true
-                    }
+                    include: { ingrediente: true }
+                },
+                // ... Y TAMBIÉN materiales
+                pedido_material: {
+                    include: { material: true }
                 }
             },
             orderBy: {
@@ -61,18 +92,19 @@ export const getPedidosPendientes = async (req: Request, res: Response) => {
         });
         res.json(pedidos);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Error al obtener pedidos' });
     }
 };
 
-// 3. VALIDAR PEDIDO (Solo Profesores/Admin)
+// 3. VALIDAR PEDIDO (Cambiar estado a VALIDADO)
 export const validarPedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
         const pedidoValidado = await prisma.pedido.update({
             where: { id_pedido: Number(id) },
-            data: { estado: 'VALIDADO' }
+            data: { estado: estado_pedido.VALIDADO }
         });
         res.json(pedidoValidado);
     } catch (error) {
@@ -80,7 +112,7 @@ export const validarPedido = async (req: Request, res: Response) => {
     }
 };
 
-// 4. BORRAR PEDIDO (Solo Profesores/Admin - "Si están mal lo quiten")
+// 4. BORRAR PEDIDO
 export const deletePedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -94,43 +126,56 @@ export const deletePedido = async (req: Request, res: Response) => {
     }
 };
 
-// 5. CONFIRMAR PEDIDO (Llegada de mercancía -> Sumar Stock)
+// 5. CONFIRMAR PEDIDO (Recepción de mercancía -> Sumar Stock)
 export const confirmarPedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        // Usamos una transacción para asegurar que se actualiza el estado Y el stock, o nada.
         const resultado = await prisma.$transaction(async (tx) => {
-            // 1. Obtener los ingredientes del pedido
+            // 1. Obtener el pedido con AMBAS relaciones
             const pedido = await tx.pedido.findUnique({
                 where: { id_pedido: Number(id) },
-                include: { pedido_ingrediente: true }
+                include: {
+                    pedido_ingrediente: true,
+                    pedido_material: true
+                }
             });
 
-            if (!pedido) {
-                throw new Error('Pedido no encontrado');
-            }
+            if (!pedido) throw new Error('Pedido no encontrado');
 
-            if (pedido.estado === (estado_pedido as any).CONFIRMADO) {
+            if (pedido.estado === estado_pedido.CONFIRMADO) {
                 throw new Error('El pedido ya ha sido confirmado anteriormente');
             }
 
-            // 2. Sumar stock de cada ingrediente
-            for (const item of pedido.pedido_ingrediente) {
-                await tx.ingrediente.update({
-                    where: { id_ingrediente: item.id_ingrediente },
-                    data: {
-                        stock: {
-                            increment: item.cantidad_solicitada
+            // 2A. Si es de INGREDIENTES, sumamos stock en tabla ingrediente
+            if (pedido.pedido_ingrediente.length > 0) {
+                for (const item of pedido.pedido_ingrediente) {
+                    // OJO: Asegúrate que tu campo en DB es 'stock_actual' o 'stock'
+                    await tx.ingrediente.update({
+                        where: { id_ingrediente: item.id_ingrediente },
+                        data: {
+                            stock: { increment: item.cantidad_solicitada }
                         }
-                    }
-                });
+                    });
+                }
             }
 
-            // 3. Actualizar estado del pedido
+            // 2B. Si es de MATERIALES, sumamos stock en tabla material
+            if (pedido.pedido_material.length > 0) {
+                for (const item of pedido.pedido_material) {
+                    await tx.material.update({
+                        where: { id_material: item.id_material },
+                        data: {
+                            stock: { increment: item.cantidad_solicitada }
+                        }
+                    });
+                }
+            }
+
+            // 3. Cambiar estado a CONFIRMADO
             return await tx.pedido.update({
                 where: { id_pedido: Number(id) },
-                data: { estado: (estado_pedido as any).CONFIRMADO }
+                data: { estado: estado_pedido.CONFIRMADO }
             });
         });
 

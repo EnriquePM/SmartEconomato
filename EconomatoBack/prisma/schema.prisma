@@ -86,6 +86,7 @@ model material {
   stock          Int         @default(0)  
   id_categoria   Int?
   categoria      categoria?  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_material_categoria")
+  pedido_material pedido_material[]
 }
 model ingrediente {
   id_ingrediente     Int                  @id @default(autoincrement())
@@ -123,29 +124,46 @@ model movimiento {
   usuario         usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_usuario")
 }
 
-model pedido {
-  id_pedido          Int                  @id @default(autoincrement())
-  fecha_pedido       DateTime?            @default(now()) @db.Timestamp(6)
-  id_usuario         Int
-  estado             estado_pedido        @default(PENDIENTE)
-  usuario            usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_usuario")
-  pedido_ingrediente pedido_ingrediente[]
-}
 enum estado_pedido {
+  BORRADOR    
   PENDIENTE
   VALIDADO
   CONFIRMADO
   RECHAZADO
 }
+
+model pedido {
+  id_pedido      Int       @id @default(autoincrement())
+  fecha_pedido   DateTime? @default(now()) @db.Timestamp(6)
+  id_usuario     Int
+  estado         estado_pedido @default(PENDIENTE)
+  proveedor      String?       @db.VarChar(150) 
+  observaciones  String?       @db.Text         
+  total_estimado Decimal?      @db.Decimal(10,2)
+  tipo_pedido    String?       @db.VarChar(50)  
+  usuario        usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_usuario")
+  // Relaciones
+  pedido_ingrediente pedido_ingrediente[]
+  pedido_material    pedido_material[]   
+}
+
 model pedido_ingrediente {
   id_pedido           Int
   id_ingrediente      Int
   cantidad_solicitada Decimal     @db.Decimal(10, 2)
-  
   ingrediente         ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_pi_ingrediente")
   pedido              pedido      @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction, map: "fk_pi_pedido")
 
   @@id([id_pedido, id_ingrediente])
+}
+
+model pedido_material {
+  id_pedido           Int
+  id_material         Int
+  cantidad_solicitada Int         
+  material            material    @relation(fields: [id_material], references: [id_material], onDelete: NoAction, onUpdate: NoAction)
+  pedido              pedido      @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction)
+  @@id([id_pedido, id_material])
 }
 
 model receta {
