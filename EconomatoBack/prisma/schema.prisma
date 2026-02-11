@@ -83,13 +83,14 @@ model material {
   nombre         String      @db.VarChar(150)
   unidad_medida  String?     @db.VarChar(50)
   precio_unidad  Decimal     @default(0.00) @db.Decimal(10, 2)
+  stock          Int         @default(0)  
   id_categoria   Int?
   categoria      categoria?  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_material_categoria")
 }
 model ingrediente {
   id_ingrediente     Int                  @id @default(autoincrement())
   nombre             String               @db.VarChar(150)
-  imagen             String?              @db.VarChar(255)
+  imagen             String?                @db.VarChar(255)
   stock              Decimal?             @default(0.00) @db.Decimal(10, 2)
   stock_minimo       Decimal?             @default(0.00) @db.Decimal(10, 2)
   tipo               String?              @db.VarChar(50)

@@ -19,7 +19,7 @@ export const getMateriales = async (req: Request, res: Response) => {
 // 2. CREAR UN MATERIAL (Solo Profesores/Admin)
 export const createMaterial = async (req: Request, res: Response) => {
     try {
-        const { nombre, unidad_medida, precio_unidad, id_categoria } = req.body;
+        const { nombre, unidad_medida, precio_unidad, id_categoria, stock } = req.body;
 
         if (!nombre || !id_categoria) {
             res.status(400).json({ error: 'Nombre y Categoría son obligatorios' });
@@ -31,7 +31,8 @@ export const createMaterial = async (req: Request, res: Response) => {
                 nombre,
                 unidad_medida,
                 precio_unidad: precio_unidad || 0,
-                id_categoria: Number(id_categoria)
+                id_categoria: Number(id_categoria),
+                stock: stock ? Number(stock) : 0
             }
         });
 
