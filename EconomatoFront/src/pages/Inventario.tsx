@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-// IMPORTAMOS LOS ICONOS
 import { Package, Search, Filter } from "lucide-react";
 
 interface Producto {
-  id: string;
+  id: number;         
   codigo?: string;
   nombre: string;
   stock: number;
-  id_categoria: number;
-  id_proveedor: number;
+  precio?: number;     
+  id_categoria: number; 
+  id_proveedor?: number; 
 }
 
 const Inventario = () => {
@@ -17,17 +17,25 @@ const Inventario = () => {
   const [filtroCategoria, setFiltroCategoria] = useState("todos");
 
   useEffect(() => {
-    fetch("http://localhost:3000/ingredientes")
-      .then((res) => res.json())
-      .then((data) => setProductos(data))
+    fetch("http://localhost:3000/api/ingredientes")
+      .then((res) => {
+        if (!res.ok) throw new Error("Error en la respuesta del servidor");
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Datos recibidos del Backend:", data); 
+        setProductos(data);
+      })
       .catch((err) => console.error("Error cargando inventario:", err));
   }, []);
 
   const productosFiltrados = productos.filter((producto) => {
     const texto = busqueda.toLowerCase();
-    const coincideTexto = 
-        producto.nombre.toLowerCase().includes(texto) || 
-        (producto.codigo && producto.codigo.includes(texto));
+    // Validamos que producto.nombre y codigo existan antes de usar includes (por seguridad)
+    const nombreMatch = producto.nombre ? producto.nombre.toLowerCase().includes(texto) : false;
+    const codigoMatch = producto.codigo ? producto.codigo.includes(texto) : false;
+    
+    const coincideTexto = nombreMatch || codigoMatch;
 
     const coincideCategoria = 
         filtroCategoria === "todos" || 
@@ -123,11 +131,14 @@ const Inventario = () => {
                             <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
                             
                             <td className="p-4 text-sm text-gray-500">
+                                {/* NOTA: Esto asume que tus IDs de categoría en base de datos coinciden con estos números */}
                                 {item.id_categoria === 1 && "Aceites"}
                                 {item.id_categoria === 2 && "Granos"}
                                 {item.id_categoria === 3 && "Conservas"}
                                 {item.id_categoria === 4 && "Lácteos"}
                                 {item.id_categoria === 5 && "Condimentos"}
+                                {/* Si viene una categoría que no está en la lista, mostramos el ID */}
+                                {![1,2,3,4,5].includes(item.id_categoria) && `Cat. ${item.id_categoria}`}
                             </td>
 
                             <td className="p-4 text-center">

@@ -20,11 +20,15 @@ Crear la base de datos vacía solo el nombre, smartEconomato, y hacer este coman
 - Cambiar Contraseña	    POST	http://localhost:3000/api/auth/change-password
 - Resetear Password 	    PUT 	http://localhost:3000/api/usuarios/:id/reset-password
 - ¿Modificar valores?       PUT     http://localhost:3000/api//usuarios/:id
+- Registrar Profesor        POST    http://localhost:3000/api/auth/register/profesor
+- Eliminar Usuario          DELETE  http://localhost:3000/api/users/:id
 ## Ingredientes
 - Listar todos              GET     http://localhost:3000/api/ingredientes
 - Ver un ingrediente        GET     http://localhost:3000/api/ingredientes/:id
 - Crear ingrediente         POST    http://localhost:3000/api/ingredientes
 - Editar ingrediente        PUT     http://localhost:3000/api/ingredientes/:id
 - Borrar ingrediente        DELETE  http://localhost:3000/api/ingredientes/:id
-
+## Recursos
+- Categorías                GET     http://localhost:3000/api/categorias
+- Proveedores               GET     http://localhost:3000/api/proveedores 
 

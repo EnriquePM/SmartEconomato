@@ -8,16 +8,20 @@ const PASSWORD_POR_DEFECTO = "Economato123";
 export const getUsers = async (req: Request, res: Response) => {
     try {
         const usuarios = await prisma.usuario.findMany({
+            orderBy: { id_usuario: 'desc' },
             select: {
                 id_usuario: true,
+                username: true,
                 nombre: true,
                 apellido1: true,
+                apellido2: true,
                 email: true,
                 rol: true
             }
         });
         res.json(usuarios);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Error obteniendo usuarios' });
     }
 };
