@@ -1,71 +1,90 @@
 import { useState, useEffect } from "react";
-import { Package, Search, Filter,  ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
-// YA NO NECESITAMOS IMPORTAR EL JSON LOCAL
-// import utensiliosData from "../data/utensilios.json"; 
+// --- INTERFACES ---
+interface Categoria {
+  id_categoria: number;
+  nombre: string;
+}
 
 interface Producto {
-  id: string | number;
+  id: number;
   codigo?: string;
   nombre: string;
   stock: number;
-  precio?: number;     
+  unidad?: string;      // Nuevo: Para saber si son Kg, Litros, etc.
+  precio?: number;
   id_categoria: number; 
-  id_proveedor?: number; 
+  tipo: 'ingrediente' | 'material'; // Tipado estricto
 }
 
 const Inventario = () => {
+  // --- ESTADOS ---
   const [productos, setProductos] = useState<Producto[]>([]);
+  const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]); // Lista dinámica para el filtro
+  
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("todos");
   
-  // ESTADO VISTA
   const [vista, setVista] = useState<'ingredientes' | 'utensilios'>('ingredientes');
   const [orden, setOrden] = useState<{ campo: string, asc: boolean } | null>(null);
 
-  // --- EFECTO DE CARGA DE DATOS (ACTUALIZADO) ---
-useEffect(() => {
-    
-    // 1. Definimos la URL según la pestaña
+  // --- EFECTO 1: CARGAR CATEGORÍAS (Para el filtro dinámico) ---
+  useEffect(() => {
+    fetch("http://localhost:3000/api/categorias")
+      .then(res => res.json())
+      .then(data => setListaCategorias(data))
+      .catch(err => console.error("Error cargando categorías:", err));
+  }, []);
+
+  // --- EFECTO 2: CARGAR PRODUCTOS/MATERIALES ---
+  useEffect(() => {
     const endpoint = vista === 'ingredientes' 
         ? "http://localhost:3000/api/ingredientes" 
         : "http://localhost:3000/api/materiales";
 
-    // 2. Hacemos el fetch DIRECTO (Sin headers de Authorization)
     fetch(endpoint)
       .then((res) => {
         if (!res.ok) throw new Error("Error en la respuesta del servidor");
         return res.json();
       })
       .then((data) => {
-          // 3. Validación de seguridad básica (que sea un array)
           if (!Array.isArray(data)) {
-              console.error("El servidor devolvió algo raro (no es una lista):", data);
+              console.error("El servidor no devolvió una lista:", data);
               setProductos([]);
               return;
           }
 
-          // 4. Lógica de adaptación de datos
-          if (vista === 'utensilios') { // Ojo: vista 'utensilios' llama a API 'materiales'
+          // --- LOGICA DE ADAPTACIÓN DE DATOS ---
+          if (vista === 'utensilios') {
+             // Mapeo para Materiales
              const materialesAdaptados = data.map((m: any) => ({
-                 id: m.id_material,          // Adaptamos ID
+                 id: m.id_material,
                  nombre: m.nombre,
-                 codigo: 'MAT-' + m.id_material,
-                 stock: 0,                   // Materiales no tienen stock en tu DB aún
-                 // Si el back devuelve objeto categoria, cogemos el nombre, si no, "General"
-                 id_categoria: m.categoria ? m.categoria.nombre : (m.id_categoria || "General"),
-                 tipo: 'material'
+                 // Convertimos código a String para evitar error .includes()
+                 codigo: m.codigo ? m.codigo.toString() : `MAT-${m.id_material}`,
+                 
+                 stock: Number(m.stock || 0),        // Aseguramos número
+                 unidad: m.unidad_medida || 'u.',    // Unidad por defecto
+                 
+                 // Usamos el ID numérico real de la categoría
+                 id_categoria: m.id_categoria || 0,
+                 tipo: 'material' as const           // Tipado estricto
              }));
              setProductos(materialesAdaptados);
+
           } else {
-             // Lógica para ingredientes (que ya te funcionaba bien antes o similar)
+             // Mapeo para Ingredientes
              const ingredientesAdaptados = data.map((i: any) => ({
                  id: i.id_ingrediente,
                  nombre: i.nombre,
-                 codigo: i.codigo || 'ING-' + i.id_ingrediente,
-                 stock: i.stock_actual,
+                 codigo: i.codigo || `ING-${i.id_ingrediente}`,
+                 
+                 stock: Number(i.stock_actual || i.stock || 0),
+                 unidad: i.unidad_medida || 'u.',
+
                  id_categoria: i.id_categoria,
-                 tipo: 'ingrediente'
+                 tipo: 'ingrediente' as const
              }));
              setProductos(ingredientesAdaptados);
           }
@@ -75,22 +94,28 @@ useEffect(() => {
         setProductos([]); 
       });
     
-    // Reseteo de filtros visuales
+    // Reseteamos filtros al cambiar de pestaña
     setBusqueda("");
     setFiltroCategoria("todos");
     setOrden(null);
 
   }, [vista]);
 
-  // --- LÓGICA DE FILTRADO Y ORDENACIÓN ---
+  // --- LÓGICA DE FILTRADO ---
   const productosFiltrados = productos.filter((producto) => {
     const texto = busqueda.toLowerCase();
-    // Validamos que producto.nombre y codigo existan antes de usar includes (por seguridad)
-    const nombreMatch = producto.nombre ? producto.nombre.toLowerCase().includes(texto) : false;
-    const codigoMatch = producto.codigo ? producto.codigo.includes(texto) : false;
+    
+    // Buscamos por nombre
+    const nombreMatch = producto.nombre.toLowerCase().includes(texto);
+    
+    // Buscamos por código (Protegido con toString por seguridad)
+    const codigoMatch = producto.codigo 
+        ? producto.codigo.toString().toLowerCase().includes(texto) 
+        : false;
     
     const coincideTexto = nombreMatch || codigoMatch;
 
+    // Filtro de categoría (Numérico)
     const coincideCategoria = 
         filtroCategoria === "todos" || 
         producto.id_categoria.toString() === filtroCategoria;
@@ -98,9 +123,10 @@ useEffect(() => {
     return coincideTexto && coincideCategoria;
   });
 
+  // --- LÓGICA DE ORDENACIÓN ---
   const productosFinales = [...productosFiltrados].sort((a, b) => {
       if (!orden) return 0;
-      let valorA, valorB;
+      let valorA: any, valorB: any;
       
       if (orden.campo === 'nombre') {
           valorA = a.nombre.toLowerCase();
@@ -121,11 +147,7 @@ useEffect(() => {
   });
 
   const cambiarOrden = (campo: string) => {
-      if (orden && orden.campo === campo) {
-          setOrden({ campo, asc: !orden.asc });
-      } else {
-          setOrden({ campo, asc: true });
-      }
+      setOrden(prev => (prev && prev.campo === campo ? { campo, asc: !prev.asc } : { campo, asc: true }));
   };
 
   const IconoOrden = ({ campo }: { campo: string }) => {
@@ -133,19 +155,21 @@ useEffect(() => {
       return orden.asc ? <ArrowUp size={14} className="text-red-600" /> : <ArrowDown size={14} className="text-red-600" />;
   };
 
-  const renderizarCategoria = (producto: Producto) => {
-    // Si estamos en utensilios, usamos el texto directo de la categoría
-    if (vista === 'utensilios') return <span className="capitalize">{producto.id_categoria}</span>;
-    
-    // Si estamos en ingredientes, usamos el switch numérico
-    switch (Number(producto.id_categoria)) {
-        case 1: return "Aceites";
-        case 2: return "Granos";
-        case 3: return "Conservas";
-        case 4: return "Lácteos";
-        case 5: return "Condimentos";
-        default: return "Varios";
-    }
+  // Función mejorada para mostrar el nombre de la categoría buscando en la lista cargada
+  const renderizarCategoria = (idCat: number) => {
+      // 1. Buscamos en la lista dinámica que cargamos de la BD
+      const catEncontrada = listaCategorias.find(c => c.id_categoria === idCat);
+      if (catEncontrada) return <span className="capitalize">{catEncontrada.nombre}</span>;
+
+      // 2. Fallback manual (por si acaso falla la carga o son IDs antiguos)
+      switch (idCat) {
+          case 1: return "Aceites / Limpieza";
+          case 2: return "Granos / Menaje";
+          case 3: return "Conservas";
+          case 4: return "Lácteos";
+          case 5: return "Condimentos";
+          default: return "Otro";
+      }
   };
 
   return (
@@ -169,10 +193,8 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* --- ZONA DE PESTAÑAS --- */}
+      {/* --- PESTAÑAS --- */}
       <div className="flex gap-2 border-b border-gray-200 items-end pl-2">
-        
-        {/* PESTAÑA PRODUCTOS */}
         <button
           onClick={() => setVista('ingredientes')}
           className={`
@@ -186,7 +208,6 @@ useEffect(() => {
           PRODUCTOS
         </button>
 
-        {/* PESTAÑA UTENSILIOS */}
         <button
           onClick={() => setVista('utensilios')}
           className={`
@@ -199,7 +220,6 @@ useEffect(() => {
         >
           UTENSILIOS
         </button>
-
       </div>
 
       {/* BARRA DE HERRAMIENTAS */}
@@ -217,7 +237,7 @@ useEffect(() => {
             />
         </div>
 
-        {/* Filtro Categoría */}
+        {/* --- FILTRO CATEGORÍA DINÁMICO --- */}
         <div className="relative">
              <span className="absolute left-3 top-3 text-gray-500"><Filter size={16} /></span>
             <select 
@@ -226,22 +246,26 @@ useEffect(() => {
                 onChange={(e) => setFiltroCategoria(e.target.value)}
             >
                 <option value="todos">Todas las categorías</option>
+
+                {/* Si estamos en ingredientes, mostramos las categorías fijas (o podrías usar las dinámicas también) */}
                 {vista === 'ingredientes' ? (
                     <>
-                        <option value="1">Aceites y Grasas</option>
-                        <option value="2">Granos y Harinas</option>
-                        <option value="3">Conservas</option>
-                        <option value="4">Lácteos y Huevos</option>
-                        <option value="5">Condimentos</option>
+                        {listaCategorias.map((cat) => (
+                            <option key={cat.id_categoria} value={cat.id_categoria}>
+                                {cat.nombre}
+                            </option>
+                        ))}
+                        {listaCategorias.length === 0 && <option disabled>Cargando categorías...</option>}
                     </>
                 ) : (
+                    /* AQUÍ ESTÁ EL CAMBIO: Categorías dinámicas para Utensilios/Materiales */
                     <>
-                        <option value="Menaje">Menaje General</option>
-                        <option value="Cuchillos">Cuchillería</option>
-                        <option value="Sartenes">Sartenes y Ollas</option>
-                        <option value="Electrico">Pequeño Electrodoméstico</option>
-                        <option value="Limpieza">Material de Limpieza</option>
-                        <option value="Textil">Textil / Uniformes</option>
+                        {listaCategorias.map((cat) => (
+                            <option key={cat.id_categoria} value={cat.id_categoria}>
+                                {cat.nombre}
+                            </option>
+                        ))}
+                        {listaCategorias.length === 0 && <option disabled>Cargando categorías...</option>}
                     </>
                 )}
             </select>
@@ -277,18 +301,26 @@ useEffect(() => {
                         <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                             <td className="p-4">
                                 {item.codigo ? (
-                                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">{item.codigo}</span>
+                                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">
+                                        {item.codigo}
+                                    </span>
                                 ) : (
                                     <span className="text-xs text-gray-300 italic">Sin código</span>
                                 )}
                             </td>
                             <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
-                            <td className="p-4 text-sm text-gray-500">{renderizarCategoria(item)}</td>
+                            
+                            {/* Renderizamos el nombre de la categoría basándonos en el ID */}
+                            <td className="p-4 text-sm text-gray-500">
+                                {renderizarCategoria(item.id_categoria)}
+                            </td>
+                            
                             <td className="p-4 text-center">
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                                     item.stock < 10 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'
                                 }`}>
-                                    {item.stock} u.
+                                    {/* Mostramos Stock + Unidad Dinámica */}
+                                    {item.stock} {item.unidad}
                                 </span>
                             </td>
                         </tr>
