@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 async function main() {
     // Usamos el nombre corto que sabemos que funciona
     const fileName = 'ESCANDALLO 24-25 MENÚ 20 DE MARZO.xlsx';
-    const filePath = path.join(__dirname, '..', fileName);
+    const filePath = path.join(__dirname, '..', 'resources', fileName);
     const targetSheetName = "LISTA DE PRECIOS MATERIALES";
 
     console.log(`📂 Buscando archivo en: ${filePath}`);
