@@ -1,6 +1,5 @@
 @tailwind base;
 @tailwind components;
-<<<<<<< HEAD
 @tailwind utilities;
 
 @layer base {
@@ -36,6 +35,3 @@
     @apply bg-input hover:bg-gray-200 transition-colors text-sm text-gray-700 font-medium;
   }
 }
-=======
-@tailwind utilities;
->>>>>>> origin/backend/sergio-updates

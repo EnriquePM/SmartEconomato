@@ -24,26 +24,50 @@ const Inventario = () => {
   const [orden, setOrden] = useState<{ campo: string, asc: boolean } | null>(null);
 
   // --- EFECTO DE CARGA DE DATOS (ACTUALIZADO) ---
-  useEffect(() => {
+useEffect(() => {
     
-    // URL dinámica: si estamos en 'ingredientes' pide una cosa, si no, la otra
+    // 1. Definimos la URL según la pestaña
     const endpoint = vista === 'ingredientes' 
         ? "http://localhost:3000/api/ingredientes" 
-        : "http://localhost:3000/api/utensilios";
+        : "http://localhost:3000/api/materiales";
 
+    // 2. Hacemos el fetch DIRECTO (Sin headers de Authorization)
     fetch(endpoint)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Error en la respuesta del servidor");
+        return res.json();
+      })
       .then((data) => {
-          // Si estamos cargando utensilios, normalizamos los datos para que 'id_categoria' tenga valor
-          if (vista === 'utensilios') {
-             const utensiliosFormateados = data.map((u: any) => ({
-                 ...u,
-                 // El servidor devuelve 'categoria' (texto), lo mapeamos a id_categoria para que el filtro funcione
-                 id_categoria: u.categoria || "General" 
+          // 3. Validación de seguridad básica (que sea un array)
+          if (!Array.isArray(data)) {
+              console.error("El servidor devolvió algo raro (no es una lista):", data);
+              setProductos([]);
+              return;
+          }
+
+          // 4. Lógica de adaptación de datos
+          if (vista === 'utensilios') { // Ojo: vista 'utensilios' llama a API 'materiales'
+             const materialesAdaptados = data.map((m: any) => ({
+                 id: m.id_material,          // Adaptamos ID
+                 nombre: m.nombre,
+                 codigo: 'MAT-' + m.id_material,
+                 stock: 0,                   // Materiales no tienen stock en tu DB aún
+                 // Si el back devuelve objeto categoria, cogemos el nombre, si no, "General"
+                 id_categoria: m.categoria ? m.categoria.nombre : (m.id_categoria || "General"),
+                 tipo: 'material'
              }));
-             setProductos(utensiliosFormateados);
+             setProductos(materialesAdaptados);
           } else {
-             setProductos(data);
+             // Lógica para ingredientes (que ya te funcionaba bien antes o similar)
+             const ingredientesAdaptados = data.map((i: any) => ({
+                 id: i.id_ingrediente,
+                 nombre: i.nombre,
+                 codigo: i.codigo || 'ING-' + i.id_ingrediente,
+                 stock: i.stock_actual,
+                 id_categoria: i.id_categoria,
+                 tipo: 'ingrediente'
+             }));
+             setProductos(ingredientesAdaptados);
           }
       })
       .catch((err) => {
@@ -51,7 +75,7 @@ const Inventario = () => {
         setProductos([]); 
       });
     
-    // Reseteamos filtros al cambiar de pestaña
+    // Reseteo de filtros visuales
     setBusqueda("");
     setFiltroCategoria("todos");
     setOrden(null);

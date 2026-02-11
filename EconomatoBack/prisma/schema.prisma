@@ -134,6 +134,7 @@ enum estado_pedido {
   PENDIENTE
   VALIDADO
   CONFIRMADO
+  RECHAZADO
 }
 model pedido_ingrediente {
   id_pedido           Int
