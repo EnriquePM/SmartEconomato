@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router-dom";
 import { ProtectedRoute } from "../components/ProtectedRoute";
-import LoginPage2 from "../pages/LoginPrueba";
+import LoginPage from "../pages/LoginPage";
 import Layout from "../layout/Layout";
 import Inicio from "../pages/inicioPrueba";
 import IngresarProducto from "../pages/IngresarProducto";
@@ -17,7 +17,7 @@ export const routes: RouteObject[] = [
   {
     // 1. RUTA PÚBLICA: El Login siempre debe ser accesible
     path: "/login",
-    element: <LoginPage2 />,
+    element: <LoginPage />,
   },
   {
     // 2. RUTAS PROTEGIDAS: Todo lo que esté aquí dentro requiere localStorage

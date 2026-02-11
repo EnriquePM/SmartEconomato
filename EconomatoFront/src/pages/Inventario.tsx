@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import Select from "../components/ui/select";
+import Input from "../components/ui/Input";
 
 // YA NO NECESITAMOS IMPORTAR EL JSON LOCAL
 // import utensiliosData from "../data/utensilios.json"; 
@@ -195,11 +197,23 @@ const Inventario = () => {
 
         {/* Filtro Categoría */}
         <div className="relative">
-             <span className="absolute left-3 top-3 text-gray-500"><Filter size={16} /></span>
-            <select 
-                className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+            {/* 1. Icono de Filtro: 
+            - Usamos absolute para flotar sobre el select.
+            - top-1/2 y -translate-y-1/2 para que esté centrado verticalmente perfecto.
+            - pointer-events-none para que si el usuario hace clic en el icono, el select se abra igual.
+            */}
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secundario z-10 pointer-events-none">
+                <Filter size={16} />
+            </span>
+
+            {/* 2. Componente Select:
+            - Quitamos todas las clases de bordes y colores porque ya están en el componente.
+            - Añadimos "pl-12" (padding-left) para dejarle hueco al icono del filtro.
+            */}
+            <Select 
                 value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
+                onChange={(val) => setFiltroCategoria(val)} // Recuerda que nuestro componente ya devuelve el valor directamente
+                className="pl-12" 
             >
                 <option value="todos">Todas las categorías</option>
                 {vista === 'ingredientes' ? (
@@ -220,7 +234,7 @@ const Inventario = () => {
                         <option value="Textil">Textil / Uniformes</option>
                     </>
                 )}
-            </select>
+            </Select>
         </div>
       </div>
 
