@@ -94,11 +94,9 @@ const Inventario = () => {
         setProductos([]); 
       });
     
-    // Reseteamos filtros al cambiar de pestaña
     setBusqueda("");
     setFiltroCategoria("todos");
     setOrden(null);
-
   }, [vista]);
 
   // --- LÓGICA DE FILTRADO ---
@@ -118,7 +116,9 @@ const Inventario = () => {
     // Filtro de categoría (Numérico)
     const coincideCategoria = 
         filtroCategoria === "todos" || 
-        producto.id_categoria.toString() === filtroCategoria;
+        (vista === 'ingredientes' 
+            ? producto.id_categoria.toString() === filtroCategoria 
+            : producto.id_categoria === parseInt(filtroCategoria));
 
     return coincideTexto && coincideCategoria;
   });
@@ -174,49 +174,45 @@ const Inventario = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      
       {/* CABECERA */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
-          <p className="text-gray-500">Gestión de stock y existencias en tiempo real.</p>
+          <p className="text-gray-500">Gestión de stock en tiempo real.</p>
         </div>
-        
         <div className="flex gap-2">
             <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center border ${
-                vista === 'utensilios' 
-                ? 'bg-red-50 text-red-700 border-red-100' 
-                : 'bg-blue-50 text-blue-700 border-blue-100'
+                vista === 'utensilios' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
             }`}>
                 Total: {productos.length} {vista === 'ingredientes' ? 'productos' : 'utensilios'}
             </span>
         </div>
       </div>
 
-      {/* --- PESTAÑAS --- */}
-      <div className="flex gap-2 border-b border-gray-200 items-end pl-2">
+      {/* --- ZONA DE PESTAÑAS (ESTILO ACTUALIZADO) --- */}
+      <div className="flex gap-2 mt-8 pl-2 relative items-end">
+        {/* Línea base gris de fondo */}
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
+
+        {/* PESTAÑA PRODUCTOS */}
         <button
           onClick={() => setVista('ingredientes')}
-          className={`
-            relative px-8 py-3 rounded-t-[2rem] font-bold text-sm transition-all duration-200 border-t border-l border-r
-            ${vista === 'ingredientes'
-              ? 'bg-white text-red-600 border-red-500 border-b-white -mb-px z-10 shadow-[0_-4px_10px_-2px_rgba(255,0,0,0.1)] pt-4'
-              : 'bg-gray-100 text-gray-400 border-transparent hover:bg-red-50 hover:text-red-500 mb-1 scale-95 origin-bottom'
-            }
-          `}
+          className={`px-8 py-4 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${
+            vista === 'ingredientes'
+              ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-4 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]'
+              : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-3'
+          }`}
         >
           PRODUCTOS
         </button>
 
         <button
           onClick={() => setVista('utensilios')}
-          className={`
-            relative px-8 py-3 rounded-t-[2rem] font-bold text-sm transition-all duration-200 border-t border-l border-r
-            ${vista === 'utensilios'
-              ? 'bg-white text-red-600 border-red-500 border-b-white -mb-px z-10 shadow-[0_-4px_10px_-2px_rgba(255,0,0,0.1)] pt-4'
-              : 'bg-gray-100 text-gray-400 border-transparent hover:bg-red-50 hover:text-red-500 mb-1 scale-95 origin-bottom'
-            }
-          `}
+          className={`px-8 py-4 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${
+            vista === 'utensilios'
+              ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-4 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]'
+              : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-3'
+          }`}
         >
           UTENSILIOS
         </button>
@@ -224,20 +220,12 @@ const Inventario = () => {
 
       {/* BARRA DE HERRAMIENTAS */}
       <div className="bg-white p-4 rounded-b-xl rounded-tr-[2rem] shadow-sm border border-gray-100 border-t-0 flex flex-col md:flex-row gap-4">
-        
-        {/* Buscador */}
         <div className="flex-1 relative">
             <span className="absolute left-3 top-3 text-gray-400"><Search size={18} /></span>
-            <input 
-                type="text" 
-                placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'}...`}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-            />
+            <input type="text" placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'}...`} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
         </div>
 
-        {/* --- FILTRO CATEGORÍA DINÁMICO --- */}
+        {/* Filtro Categoría */}
         <div className="relative">
              <span className="absolute left-3 top-3 text-gray-500"><Filter size={16} /></span>
             <select 
@@ -278,21 +266,9 @@ const Inventario = () => {
             <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
                 <tr>
                     <th className="p-4">Código</th>
-                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('nombre')}>
-                        <div className="flex items-center gap-2">
-                            {vista === 'ingredientes' ? 'Producto' : 'Utensilio'} <IconoOrden campo="nombre" />
-                        </div>
-                    </th>
-                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('categoria')}>
-                        <div className="flex items-center gap-2">
-                            Categoría <IconoOrden campo="categoria" />
-                        </div>
-                    </th>
-                    <th className="p-4 text-center cursor-pointer" onClick={() => cambiarOrden('stock')}>
-                        <div className="flex items-center justify-center gap-2">
-                            Stock <IconoOrden campo="stock" />
-                        </div>
-                    </th>
+                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('nombre')}><div className="flex items-center gap-2">{vista === 'ingredientes' ? 'Producto' : 'Utensilio'} <IconoOrden campo="nombre" /></div></th>
+                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('categoria')}><div className="flex items-center gap-2">Categoría <IconoOrden campo="categoria" /></div></th>
+                    <th className="p-4 text-center cursor-pointer" onClick={() => cambiarOrden('stock')}><div className="flex items-center justify-center gap-2">Stock <IconoOrden campo="stock" /></div></th>
                 </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

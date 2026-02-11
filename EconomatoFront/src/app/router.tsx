@@ -12,10 +12,11 @@ import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
 import Perfil from "../pages/Perfil";
 import RegistrarUtensilio from "../pages/RegistrarUtensilio";
+import Pedidos from "../pages/Pedidos";
 
 // Componentes temporales para las rutas que aún no tienen archivo propio
 const Recepcion = () => <div><h1>Módulo de Recepción de Pedidos</h1></div>;
-const Pedidos = () => <div><h1>Listado de Pedidos Actuales</h1></div>;
+
 
 export const routes: RouteObject[] = [
   {
@@ -48,9 +49,9 @@ export const routes: RouteObject[] = [
             path: "recepcion",
             element: <Recepcion />,
           },
-          {
+         {
             path: "pedidos",
-            element: <Pedidos />,
+            element: <Pedidos />, 
           },
           {
             path: "registrar",

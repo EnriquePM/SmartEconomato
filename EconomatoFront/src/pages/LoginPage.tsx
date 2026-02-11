@@ -97,9 +97,7 @@ const LoginPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
             Bienvenido a SmartEconomato
           </h1>
-          <p className="text-xl text-gray-500 mt-2">
-            Un economato a tu medida
-          </p>
+          
         </div>
 
         {/* Formulario */}
