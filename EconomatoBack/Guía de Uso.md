@@ -12,6 +12,7 @@ npm run dev
 Crear la base de datos vacía solo el nombre, smartEconomato, y hacer este comando ---> npx prisma db push
 
 
+
 # Rutas
 ## Usuario
 - Registrar Alumno	        POST	http://localhost:3000/api/auth/register/alumno
@@ -31,4 +32,26 @@ Crear la base de datos vacía solo el nombre, smartEconomato, y hacer este coman
 ## Recursos
 - Categorías                GET     http://localhost:3000/api/categorias
 - Proveedores               GET     http://localhost:3000/api/proveedores 
+## Pedidos 
+- Listar pedidos            GET     http://localhost:3000/api/pedidos
+- Crear Pedido              POST    http://localhost:3000/api/pedidos
+- Eliminar Pedido           DELETE  http://localhost:3000/api/pedidos/:id
+- Validar                   PUT     http://localhost:3000/api/pedidos/:id
+- Confirmar                 PUT     http://localhost:3000/api/pedidos/:id/confirmar
 
+
+# Como crear un usuario mediante Thunder Client
+## Paso 1
+http://localhost:3000/api/auth/register Método POST
+body:
+{
+  "nombre": "Nombre",
+  "apellido1": "Apellido1",
+  "apellido2": "Apellido2",
+  "email": "",
+  "rol": "PROFESOR"
+}
+
+Dale a Send y comprueba a la derecha que te devuelve el código 200OK
+Si está correcto vete al login e introduce el usuario que te genera y la contraeña genérica Economato123, ahora te redirigirá al
+cambio de contraseña segura. Una vez establecida, repite el login pero con tu contraseña nueva.
