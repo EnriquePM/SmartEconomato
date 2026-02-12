@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Button } from "../components/ui/Button";
-// 1. IMPORTAMOS LOS NUEVOS ICONOS
 import { Globe, Search, Loader2 } from "lucide-react";
 import Select from "../components/ui/select";
 import Input from "../components/ui/Input";
+import { useProveedores } from "../hooks/useProveedor";
+import { useCategories } from "../hooks/useCategoria";
+import type { Producto } from "../models/Producto";
+import { crearIngrediente } from "../services/inventarioService";
+
 
 // Definimos un tipo simple para el historial local
 type Movimiento = {
@@ -14,13 +18,15 @@ type Movimiento = {
 };
 
 const IngresarProducto = () => {
+  const categorias = useCategories(); 
+  const { options: proveedores } = useProveedores(); 
   // ESTADOS
   const [codigoBarras, setCodigoBarras] = useState("");
   const [nombre, setNombre] = useState("");
   const [stock, setStock] = useState<number | "">(""); 
-  const [categoria, setCategoria] = useState("1");
-  const [proveedor, setProveedor] = useState("101");
   const [buscando, setBuscando] = useState(false);
+  const [categoria, setCategoria] = useState("");
+  const [proveedor, setProveedor] = useState("");
   
   const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
   const [historial, setHistorial] = useState<Movimiento[]>([]);
@@ -63,47 +69,55 @@ const IngresarProducto = () => {
         return;
     }
 
-    const nuevoProducto = {
-      codigo: codigoBarras,
-      nombre: nombre,
-      stock: Number(stock),
-      id_categoria: Number(categoria),
-      id_proveedor: Number(proveedor)
-    };
-
-    try {
-      const respuesta = await fetch("http://localhost:3000/ingredientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoProducto),
-      });
-
-      if (respuesta.ok) {
-        setMensaje({ texto: "Producto guardado correctamente en TU inventario.", tipo: 'exito' });
-        
-        const horaActual = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        const nuevoMovimiento: Movimiento = {
-            id: Date.now(),
-            nombre: nombre,
-            stock: Number(stock),
-            hora: horaActual
-        };
-        setHistorial(prev => [nuevoMovimiento, ...prev].slice(0, 3));
-
-        setNombre("");
-        setStock("");
-        setCodigoBarras("");
-      } else {
-        throw new Error("Error al guardar");
-      }
-    } catch (error) {
-      console.error(error);
-      setMensaje({ texto: "Error de conexión con el servidor local.", tipo: 'error' });
-    }
+    const nuevoProducto: Producto = {
+    id: codigoBarras,
+    nombre: nombre,
+    stock: Number(stock),
+    stockMinimo: Number(stock),
+    categoria: categoria,
+    proveedor: proveedor,
+    imagen: "default.png",
+    tipo: "producto" //no estoy segura de esto!!!!!
+ 
   };
 
+    try {
+    // 3. LLAMADA AL SERVICIO
+    await crearIngrediente(nuevoProducto);
+
+    // 4. LÓGICA DE ÉXITO (UI)
+    setMensaje({ texto: "Producto guardado correctamente.", tipo: 'exito' });
+    
+    const horaActual = new Date().toLocaleTimeString('es-ES', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+
+    const nuevoMovimiento: Movimiento = {
+        id: Date.now(),
+        nombre: nombre,
+        stock: Number(stock),
+        hora: horaActual
+    };
+
+    setHistorial(prev => [nuevoMovimiento, ...prev].slice(0, 3));
+
+    // Limpiar campos
+    setNombre("");
+    setStock("");
+    setCodigoBarras("");
+    setCategoria("");
+    setProveedor("");
+
+  } catch (error) {
+    // 5. MANEJO DE ERRORES
+    console.error(error);
+    setMensaje({ texto: "Error de conexión con el servidor local.", tipo: 'error' });
+  }
+};
+
   return (
-    <main className="w-full space-y-8"> 
+    <main className="w-full space-y-8 animate-fade-in"> 
       
       <header className="text-left">
         <h1 className="text-3xl font-bold text-gray-900">Ingresar Nuevo Producto</h1>
@@ -120,28 +134,26 @@ const IngresarProducto = () => {
                   id="codigo-barras" 
                   type="text" 
                   label="Código de Barras (EAN)"
-                  placeholder="Ej: 5449000000996 (Coca-Cola)"
+                  placeholder="Ej: 5449000000996"
                   value={codigoBarras}
                   onChange={setCodigoBarras} 
                 />
             </div>
             <div className="pb-1">
-                {/* 2. BOTÓN ACTUALIZADO CON ICONOS LUCIDE */}
                 <button
                     type="button"
                     onClick={buscarProductoOFF}
                     disabled={buscando}
-                    // Añadido 'flex items-center gap-2' para alinear icono y texto
-                    className="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="bg-gray-800 text-white font-bold py-3 px-6 rounded-pill hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2 mb-[2px]"
                 >
                     {buscando ? (
                         <>
-                            <Loader2 size={20} className="animate-spin" /> {/* Icono de carga animado */}
+                            <Loader2 size={20} className="animate-spin" />
                             <span>Buscando...</span>
                         </>
                     ) : (
                         <>
-                            <Globe size={20} /> {/* Icono del mundo */}
+                            <Globe size={20} />
                             <span>Buscar en OFF</span>
                         </>
                     )}
@@ -152,104 +164,90 @@ const IngresarProducto = () => {
           <hr className="border-gray-100" />
 
           {/* DATOS DEL PRODUCTO */}
-          <div>
-           <Input 
-              id="nombre-producto"
-              label="Nombre del Producto"
-              type="text" 
-              placeholder="Se rellenará solo o escríbelo tú..."
-              value={nombre}
-              onChange={setNombre} 
-              className="" 
-            />
-          </div>
+          <Input 
+            id="nombre-producto"
+            label="Nombre del Producto"
+            type="text" 
+            placeholder="Se rellenará solo o escríbelo tú..."
+            value={nombre}
+            onChange={setNombre} 
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <div>
-                <Input 
-                  id="stock-inicial"
-                  label="Stock Inicial"
-                  type="number" 
-                  placeholder="0"
-                  value={stock}
-                  onChange={(val) => setStock(Number(val))} 
-                  className="" 
-                />
-             </div>
+             <Input 
+               id="stock-inicial"
+               label="Stock Inicial"
+               type="number" 
+               placeholder="0"
+               value={stock}
+               onChange={(val) => setStock(val === "" ? "" : Number(val))} 
+             />
 
-             <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Categoría</label>
-                <select 
-                  value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white cursor-pointer focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                >
-                    <option value="1">Aceites y Grasas</option>
-                    <option value="2">Granos y Harinas</option>
-                    <option value="3">Conservas</option>
-                    <option value="4">Lácteos y Huevos</option>
-                    <option value="5">Condimentos</option>
-                </select>
-             </div>
+             {/* SELECT CATEGORÍA */}
+             <Select 
+                id="id_categoria"
+                label="Categoría"
+                value={categoria}
+                options={categorias} // Viene del hook useCategories
+                onChange={setCategoria}
+                placeholder="Seleccione categoría"
+             />
 
-             <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Proveedor</label>
-                <select 
-                  value={proveedor}
-                  onChange={(e) => setProveedor(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white cursor-pointer focus:ring-2 focus:ring-gray-900 outline-none transition-all"
-                >
-                    <option value="101">Mercadona Tech</option>
-                    <option value="102">Carrefour</option>
-                    <option value="103">Makro Mayorista</option>
-                    <option value="104">Lidl</option>
-                </select>
-             </div>
+             {/* SELECT PROVEEDOR*/}
+             <Select 
+                id="id_proveedor"
+                label="Proveedor"
+                value={proveedor}
+                options={proveedores} // Viene del hook useProveedores
+                onChange={setProveedor}
+                placeholder="Seleccione proveedor"
+             />
           </div>
 
           {mensaje && (
-            <div className={`p-4 rounded-lg text-center font-medium ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+            <div className={`p-4 rounded-lg text-center font-bold border ${
+                mensaje.tipo === 'exito' 
+                ? 'bg-green-50 text-green-700 border-green-200' 
+                : 'bg-red-50 text-red-700 border-red-200'
+            }`}>
                 {mensaje.texto}
             </div>
           )}
 
           <div className="pt-4">
-             <div className="w-full"> 
-               <Button 
-                 text="Guardar en Inventario Local" 
-                 onClick={handleSubmit} 
-               />
-            </div>
+             <Button 
+                text="Guardar en Inventario Local" 
+                onClick={handleSubmit} 
+                className="w-full"
+             />
           </div>
 
         </form>
       </section>
 
-      {/* Historial */}
+      {/* Historial de sesión */}
       {historial.length > 0 && (
         <section className="animate-fade-in-up w-full">
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 ml-2">
                 Historial de sesión
             </h3>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <ul>
-                    {historial.map((item, index) => (
-                        <li key={item.id} className={`p-4 flex justify-between items-center ${index !== historial.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-xs">
-                                  OK
-                                </div>
-                                <div>
-                                  <p className="font-bold text-gray-900">{item.nombre}</p>
-                                  <p className="text-xs text-gray-500">{item.hora}</p>
-                                </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-100">
+                {historial.map((item) => (
+                    <div key={item.id} className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 font-bold text-xs border border-green-100">
+                              OK
                             </div>
-                            <div className="bg-gray-50 border border-gray-200 text-gray-600 text-xs font-bold px-3 py-1 rounded-md">
-                                Stock: {item.stock}
+                            <div>
+                              <p className="font-bold text-gray-900">{item.nombre}</p>
+                              <p className="text-xs text-gray-500">{item.hora}</p>
                             </div>
-                        </li>
-                    ))}
-                </ul>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-200 text-gray-600 text-xs font-bold px-3 py-1 rounded-md">
+                            + {item.stock} u.
+                        </div>
+                    </div>
+                ))}
             </div>
         </section>
       )}
