@@ -1,17 +1,20 @@
 import { useState, useEffect } from "react";
-import { getProveedores } from "../services/proveedorService";
-import type { ProveedorOption } from "../models/Proveedor";
+import { getProveedores } from "../services/proveedorService"; 
+import type { Proveedor, ProveedorOption } from "../models/Proveedor";
+import { mapProveedoresOptions } from "../services/mappers/proveedorMapper";
 
 export const useProveedores = () => {
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [options, setOptions] = useState<ProveedorOption[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getProveedores()
-      .then(setOptions)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .then(data => {
+        setProveedores(data);
+        setOptions(mapProveedoresOptions(data));
+      })
+      .catch(console.error);
   }, []);
 
-  return { options, loading };
+  return { proveedores, options };
 };

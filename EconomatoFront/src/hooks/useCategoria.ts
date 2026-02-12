@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
 import { getCategoria } from "../services/categoriaService";
-import type { CategoriaOption } from "../models/Categoria";
+import type { Categoria, CategoriaOption } from "../models/Categoria";
+import { mapCategoriasOptions } from "../services/mappers/categoriaMapper";
 
-export const useCategories = () => {
+
+export const useCategorias = () => {
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [options, setOptions] = useState<CategoriaOption[]>([]);
-  
+
   useEffect(() => {
-    // Si la carga falla, el array se queda vacío []
-    getCategoria().then(setOptions).catch(() => setOptions([]));
+    getCategoria()
+      .then(data => {
+        setCategorias(data);
+        setOptions(mapCategoriasOptions(data));
+      })
+      .catch(console.error);
   }, []);
 
-  return options; 
+  return { categorias, options };
 };

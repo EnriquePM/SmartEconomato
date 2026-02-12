@@ -1,225 +1,216 @@
-import { useState } from "react";
-// Importamos TUS componentes reutilizables
+import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input"; 
-// Ya no necesitamos iconos extra
-// import { Search } from "lucide-react"; 
 
-// Tipo para el historial local (actualizado sin ubicación)
-type Movimiento = {
-  id: number;
+// Interfaces para TypeScript (para que sepa qué forma tienen tus datos)
+interface Categoria {
+  id_categoria: number;
   nombre: string;
-  hora: string;
-};
+}
+
+interface Proveedor {
+  id_proveedor: number;
+  nombre: string;
+}
 
 const RegistrarUtensilio = () => {
-  // --- ESTADOS ---
+  // --- ESTADOS DEL FORMULARIO ---
   const [codigo, setCodigo] = useState("");
   const [nombre, setNombre] = useState("");
   const [stock, setStock] = useState("");
   
-  // Selects
-  const [categoria, setCategoria] = useState("Menaje");
-  const [proveedor, setProveedor] = useState("101"); // Por defecto Mercadona Tech
+  // Estados para lo que seleccionamos
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
+  const [proveedorSeleccionado, setProveedorSeleccionado] = useState("");
 
+  // --- ESTADOS DE DATOS (Listas que vienen del Back) ---
+  const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
+  const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  // Estados de UI
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
-  const [historial, setHistorial] = useState<Movimiento[]>([]);
 
-  // --- LÓGICA DE GUARDADO ---
+  // --- 1. CARGAR DATOS AL INICIAR ---
+  useEffect(() => {
+    const cargarDatos = async () => {
+        try {
+            // Hacemos las dos peticiones a la vez
+            const [resCat, resProv] = await Promise.all([
+                fetch("http://localhost:3000/api/categorias"),
+                fetch("http://localhost:3000/api/proveedores")
+            ]);
+
+            // Procesar Categorías
+            if (resCat.ok) {
+                const data = await resCat.json();
+                setListaCategorias(data);
+                // Si hay datos, pre-seleccionamos el primero para que el select no se quede vacío
+                if (data.length > 0) setCategoriaSeleccionada(data[0].id_categoria);
+            }
+
+            // Procesar Proveedores
+            if (resProv.ok) {
+                const data = await resProv.json();
+                setListaProveedores(data);
+                if (data.length > 0) setProveedorSeleccionado(data[0].id_proveedor);
+            }
+
+        } catch (error) {
+            console.error("Error cargando listas:", error);
+            setMensaje({ texto: "Error conectando con la base de datos", tipo: "error" });
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    cargarDatos();
+  }, []);
+
+  // --- 2. ENVIAR FORMULARIO ---
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
 
-    // Validación básica
-    if (!nombre || !stock) {
-        setMensaje({ texto: "Por favor, rellena el nombre y el stock.", tipo: 'error' });
+    if (!nombre) {
+        setMensaje({ texto: "El nombre es obligatorio.", tipo: 'error' });
         return;
     }
 
     setGuardando(true);
 
-    const nuevoUtensilio = {
-      codigo,
-      nombre,
-      stock: Number(stock),
-      categoria,
-      id_proveedor: Number(proveedor), // Guardamos el ID del proveedor
-      fecha_registro: new Date().toISOString()
+    // Preparamos el objeto para tu Controller 'createMaterial'
+    const nuevoMaterial = {
+        nombre: nombre,
+        // Convertimos a número porque el select devuelve string
+        id_categoria: Number(categoriaSeleccionada), 
+        // id_proveedor: Number(proveedorSeleccionado), // <-- DESCOMENTAR SI TU BD YA TIENE ESTE CAMPO
+        stock : Number(stock),
+        precio_unidad: 0,   // Valor por defecto
+        unidad_medida: "U." // Valor por defecto
     };
 
-    console.log("Enviando a guardar:", nuevoUtensilio);
+    try {
+        const response = await fetch("http://localhost:3000/api/materiales", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(nuevoMaterial)
+        });
 
-    // SIMULACIÓN DE GUARDADO
-    setTimeout(() => {
+        if (!response.ok) throw new Error("Error al guardar");
+
         setMensaje({ texto: "Utensilio registrado correctamente.", tipo: 'exito' });
         
-        // Añadir al historial visual
-        const horaActual = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        setHistorial(prev => [{
-            id: Date.now(),
-            nombre: nombre,
-            hora: horaActual
-        }, ...prev].slice(0, 3));
-
-        // Limpiar formulario
+        // Limpiar campos de texto (no limpiamos los selects para facilitar registros masivos)
         setNombre("");
         setStock("");
         setCodigo("");
-        // Mantenemos la categoría y proveedor por si quiere meter varios seguidos
+
+    } catch (error) {
+        console.error(error);
+        setMensaje({ texto: "Error al guardar el utensilio.", tipo: 'error' });
+    } finally {
         setGuardando(false);
-    }, 800);
+    }
   };
 
   return (
     <main className="w-full space-y-8 animate-fade-in"> 
       
       <header className="text-left">
-        <h1 className="text-3xl font-bold text-gray-900">
-            Registrar Utensilio
-        </h1>
-        <p className="text-gray-500 mt-2">Da de alta herramientas, menaje y material de cocina.</p>
+        <h1 className="text-3xl font-bold text-gray-900">Registrar Utensilio</h1>
+        <p className="text-gray-500 mt-2">Los datos de categorías y proveedores se cargan desde la BD.</p>
       </header>
 
       <section className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full">
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           
-          {/* --- ZONA: CÓDIGO (SIN LUPA) --- */}
+          {/* CÓDIGO */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Código / Referencia</label>
-            <Input 
-                id="codigo"
-                type="text" 
-                placeholder="Ej: REF-9901"
-                value={codigo}
-                onChange={setCodigo} 
-            />
+            <Input id="codigo" type="text" placeholder="Ej: REF-9901" value={codigo} onChange={setCodigo} />
           </div>
 
-          {/* --- ZONA: NOMBRE --- */}
+          {/* NOMBRE */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Nombre del Utensilio</label>
-            <Input 
-                id="nombre"
-                type="text" 
-                placeholder="Ej: Cuchillo Cebollero 20cm"
-                value={nombre}
-                onChange={setNombre}
-            />
+            <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Nombre</label>
+            <Input id="nombre" type="text" placeholder="Ej: Cuchillo Cebollero" value={nombre} onChange={setNombre} />
           </div>
 
           <hr className="border-gray-100" />
 
-          {/* --- GRID DE 3 COLUMNAS: STOCK | CATEGORÍA | PROVEEDOR --- */}
+          {/* GRID DE SELECTS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              
-             {/* 1. STOCK */}
+             {/* STOCK (Solo visual por ahora) */}
              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Cantidad (Stock)</label>
-                <Input 
-                    id="stock"
-                    type="text"
-                    placeholder="0"
-                    value={stock}
-                    onChange={setStock}
-                />
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Stock Inicial</label>
+                <Input id="stock" type="text" placeholder="0" value={stock} onChange={setStock} />
              </div>
 
-             {/* 2. CATEGORÍA */}
+             {/* SELECT CATEGORÍA (DINÁMICO) */}
              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Categoría</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+                    Categoría {cargando && <span className="text-xs font-normal text-gray-400">Loading...</span>}
+                </label>
                 <div className="relative">
                     <select 
-                      value={categoria}
-                      onChange={(e) => setCategoria(e.target.value)}
-                      className="w-full bg-gray-100 border-none rounded-[30px] py-4 px-6 text-gray-700 focus:ring-2 focus:ring-gray-200 outline-none transition-all cursor-pointer appearance-none"
+                      value={categoriaSeleccionada}
+                      onChange={(e) => setCategoriaSeleccionada(e.target.value)}
+                      className="w-full bg-gray-100 border-none rounded-[30px] py-4 px-6 text-gray-700 focus:ring-2 focus:ring-gray-200 outline-none appearance-none cursor-pointer"
+                      disabled={cargando}
                     >
-                        <option value="Menaje">Menaje General</option>
-                        <option value="Cuchillos">Cuchillería</option>
-                        <option value="Sartenes">Sartenes y Ollas</option>
-                        <option value="Electrico">Pequeño Electrodoméstico</option>
-                        <option value="Limpieza">Material de Limpieza</option>
-                        <option value="Textil">Textil / Uniformes</option>
+                        {/* Mapeamos la lista que vino del backend */}
+                        {listaCategorias.map((cat) => (
+                            <option key={cat.id_categoria} value={cat.id_categoria}>
+                                {cat.nombre}
+                            </option>
+                        ))}
+                        
+                        {listaCategorias.length === 0 && !cargando && <option>No hay categorías</option>}
                     </select>
-                    {/* Flecha personalizada */}
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-gray-500">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
                 </div>
              </div>
 
-             {/* 3. PROVEEDOR (NUEVO) */}
+             {/* SELECT PROVEEDOR (DINÁMICO) */}
              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Proveedor</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">
+                    Proveedor {cargando && <span className="text-xs font-normal text-gray-400">Loading...</span>}
+                </label>
                 <div className="relative">
                     <select 
-                      value={proveedor}
-                      onChange={(e) => setProveedor(e.target.value)}
-                      className="w-full bg-gray-100 border-none rounded-[30px] py-4 px-6 text-gray-700 focus:ring-2 focus:ring-gray-200 outline-none transition-all cursor-pointer appearance-none"
+                      value={proveedorSeleccionado}
+                      onChange={(e) => setProveedorSeleccionado(e.target.value)}
+                      className="w-full bg-gray-100 border-none rounded-[30px] py-4 px-6 text-gray-700 focus:ring-2 focus:ring-gray-200 outline-none appearance-none cursor-pointer"
+                      disabled={cargando}
                     >
-                        <option value="101">Mercadona Tech</option>
-                        <option value="102">Carrefour</option>
-                        <option value="103">Makro Mayorista</option>
-                        <option value="104">Lidl</option>
-                        <option value="999">Otro / Genérico</option>
+                        {listaProveedores.map((prov) => (
+                            <option key={prov.id_proveedor} value={prov.id_proveedor}>
+                                {prov.nombre}
+                            </option>
+                        ))}
+
+                        {listaProveedores.length === 0 && !cargando && <option>No hay proveedores</option>}
                     </select>
-                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-gray-500">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
                 </div>
              </div>
+
           </div>
 
-          {/* MENSAJES */}
+          {/* MENSAJES DE ALERTA */}
           {mensaje && (
-            <div className={`p-4 rounded-xl text-center font-medium animate-fade-in ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+            <div className={`p-4 rounded-xl text-center font-medium ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                 {mensaje.texto}
             </div>
           )}
 
-          {/* BOTÓN GUARDAR */}
+          {/* BOTÓN */}
           <div className="pt-4">
-             <div className="w-full"> 
-               <Button 
-                 text={guardando ? "Guardando..." : "Registrar Utensilio"} 
-                 onClick={handleSubmit} 
-               />
-            </div>
+               <Button text={guardando ? "Guardando..." : "Registrar Utensilio"} onClick={handleSubmit} />
           </div>
 
         </form>
       </section>
-
-      {/* HISTORIAL LOCAL */}
-      {historial.length > 0 && (
-        <section className="animate-fade-in-up w-full">
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3 ml-2">
-                Añadidos recientemente
-            </h3>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <ul>
-                    {historial.map((item, index) => (
-                        <li key={item.id} className={`p-4 flex justify-between items-center ${index !== historial.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                                    U
-                                </div>
-                                <div>
-                                  <p className="font-bold text-gray-900">{item.nombre}</p>
-                                  <p className="text-xs text-gray-500">
-                                    Registrado a las {item.hora}
-                                  </p>
-                                </div>
-                            </div>
-                            <div className="text-green-600 font-bold text-sm">
-                                Guardado
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </section>
-      )}
-
     </main>
   );
 };

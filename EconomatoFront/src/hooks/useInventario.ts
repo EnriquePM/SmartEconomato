@@ -1,34 +1,33 @@
-import { useState, useEffect } from "react";
-import { getInventarioCompleto } from "../services/inventarioService";
-import type { Producto } from "../models/Producto";
+import { useState, useEffect, useCallback } from "react";
+import { getIngredientes } from "../services/inventarioService";
+import { getMateriales } from "../services/materialesService";
+import type { ItemInventario } from "../models/ItemInventario";
 
-export const useInventario = () => {
-  const [productos, setProductos] = useState<Producto[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+export const useInventario = (vista: 'ingredientes' | 'utensilios') => {
+  const [items, setItems] = useState<ItemInventario[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const cargarDatos = async () => {
+  // Usamos useCallback para que la función no se cree de nuevo en cada render
+  const cargarDatos = useCallback(async () => {
+    setLoading(true);
+    setError(null); // Limpiamos errores anteriores antes de intentar
     try {
-      setLoading(true);
-      setError(null);
-      const data = await getInventarioCompleto();
-      setProductos(data);
+      const data = vista === 'ingredientes' 
+        ? await getIngredientes() 
+        : await getMateriales();
+      setItems(data);
     } catch (err) {
-      setError("No se pudo cargar el inventario. Inténtalo de nuevo más tarde.");
+      setError("No se pudo establecer conexión con la base de datos.");
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [vista]);
 
   useEffect(() => {
     cargarDatos();
-  }, []);
+  }, [cargarDatos]);
 
-  return {
-    productos,
-    loading,
-    error,
-    refetch: cargarDatos // Por si quieres un botón de "actualizar"
-  };
+  return { items, loading, error, refetch: cargarDatos };
 };

@@ -1,8 +1,15 @@
-import type { CategoriaOption } from "../../models/Categoria";
+import type { Categoria, CategoriaOption } from "../../models/Categoria";
 
-export const mapApiToCategoryOptions = (apiData: any[]): CategoriaOption[] => {
-  return apiData.map(cat => ({
-    value: String(cat.id_categoria),
+export const mapCategorias = (data: any[]): Categoria[] => {
+  return data.map(cat => ({
+    id: cat.id_categoria,
+    nombre: cat.nombre
+  }));
+};
+
+export const mapCategoriasOptions = (categorias: Categoria[]): CategoriaOption[] => {
+  return categorias.map(cat => ({
+    value: String(cat.id),
     label: cat.nombre
   }));
 };

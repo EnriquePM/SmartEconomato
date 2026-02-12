@@ -1,129 +1,148 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lock, CheckCircle2, AlertCircle, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import FooterBar from '../components/ui/Footer';
+import logoSmart from '../assets/logoSmart.png';
+import fondo from '../assets/fondo.png';
 
 const CambiarPassword = () => {
   const navigate = useNavigate();
-  
-  const [passwords, setPasswords] = useState({
-    nueva: '',
-    confirmar: ''
-  });
-  const [error, setError] = useState('');
+  const location = useLocation();
+
+  // Recuperamos los datos que nos pasó el Login
+  const { username, oldPassword } = location.state || {};
+
+  // Estados
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  // Protección de ruta
+  useEffect(() => {
+    if (!username || !oldPassword) {
+      navigate('/login');
+    }
+  }, [username, oldPassword, navigate]);
 
-    // 1. Validaciones simples
-    if (passwords.nueva.length < 4) {
-      setError('La contraseña debe tener al menos 4 caracteres.');
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    // 1. Validaciones
+    if (!newPassword || !confirmPassword) {
+      alert("Por favor, rellena ambos campos.");
       return;
     }
 
-    if (passwords.nueva !== passwords.confirmar) {
-      setError('Las contraseñas no coinciden.');
+    if (newPassword !== confirmPassword) {
+      alert("Las contraseñas no coinciden.");
       return;
     }
 
-    // 2. Simulación de guardado
-    setLoading(true);
     
-    // Aquí es donde conectaríamos con el Backend real.
-    // Simulamos un retraso de 1 segundo
-    setTimeout(() => {
-      // Guardamos en localStorage que ya NO es la primera vez
-      localStorage.setItem('firstLogin', 'false');
-      
-      // Redirigimos al Dashboard principal
-      navigate('/'); 
-    }, 1500);
+    setLoading(true);
+
+    try {
+      // 2. Llamada al Backend
+      const response = await fetch('http://localhost:3000/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username,
+          oldPassword: oldPassword, 
+          newPassword: newPassword      
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "Error al cambiar la contraseña");
+        setLoading(false);
+        return;
+      }
+
+      // 3. Éxito
+      alert("¡Contraseña actualizada con éxito! Por favor, inicia sesión con tu nueva clave.");
+      navigate('/login'); 
+
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error de conexión con el servidor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 animate-fade-in">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="min-h-screen bg-white flex flex-col px-4 py-4">
+      {/* Banner Superior */}
+      <div className="relative w-full h-64 md:h-75 overflow-hidden">
+        <img 
+          src={fondo} 
+          alt="Cocina" 
+          className="w-full h-full object-cover rounded-t-[15px] object-[50%_75%]" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-white from-0% via-white/20 via-20% to-transparent to-30% rounded-t-[20px]"></div>
+      </div>
+
+      <main className="max-w-6xl mx-auto w-full px-20 py-12 mt-4 flex flex-col md:flex-row justify-between items-start">
         
-        {/* Cabecera bonita */}
-        <div className="bg-blue-600 p-6 text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-            <Lock className="text-white w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-white">Seguridad de la Cuenta</h2>
-          <p className="text-blue-100 text-sm mt-2">
-            Al ser tu primer acceso, necesitas establecer una contraseña personal.
+        {/* Lado Izquierdo: Mensaje de Seguridad */}
+        <div className="md:w-1/2">
+          <img
+            src={logoSmart}
+            alt='Logo SmartEconomato' 
+            className="h-16 w-auto object-contain mb-4"
+          />
+          <h1 className="text-5xl font-extrabold tracking-tight text-red-600">
+            Paso Obligatorio
+          </h1>
+          <p className="text-xl text-gray-500 mt-4">
+            Por motivos de seguridad, detectamos que es tu primer acceso.
+          </p>
+          <p className="text-lg text-gray-800 font-medium mt-2">
+            Debes configurar una nueva contraseña personal para continuar.
           </p>
         </div>
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        {/* Lado Derecho: Formulario */}
+        <form onSubmit={handleSubmit} className="md:w-1/3 w-full space-y-6 mt-8 md:mt-0 bg-gray-50 p-6 rounded-xl border border-gray-100">
           
-          {/* Input 1: Nueva */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 block">Nueva Contraseña</label>
-            <div className="relative">
-                <input
-                    type="password"
-                    required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    placeholder="Escribe tu nueva clave"
-                    value={passwords.nueva}
-                    onChange={(e) => setPasswords({...passwords, nueva: e.target.value})}
+          <div className="space-y-4">
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Nueva Contraseña</label>
+                <Input 
+                    type="password" 
+                    placeholder="Escribe tu nueva clave" 
+                    value={newPassword} 
+                    id={'newPass'}
+                    onChange={setNewPassword} 
                 />
-                <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-            </div>
-          </div>
+             </div>
 
-          {/* Input 2: Confirmar */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 block">Repetir Contraseña</label>
-            <div className="relative">
-                <input
-                    type="password"
-                    required
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 outline-none transition-all ${
-                        passwords.confirmar && passwords.nueva !== passwords.confirmar 
-                        ? 'border-red-300 focus:ring-red-200' 
-                        : 'border-gray-200 focus:ring-blue-500'
-                    }`}
-                    placeholder="Confirma la clave"
-                    value={passwords.confirmar}
-                    onChange={(e) => setPasswords({...passwords, confirmar: e.target.value})}
+             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Confirmar Contraseña</label>
+                <Input 
+                    type="password" 
+                    placeholder="Repite la clave" 
+                    value={confirmPassword} 
+                    id={'confirmPass'}
+                    onChange={setConfirmPassword} 
                 />
-                <CheckCircle2 className={`w-5 h-5 absolute left-3 top-3.5 ${
-                    passwords.confirmar && passwords.nueva === passwords.confirmar 
-                    ? 'text-green-500' 
-                    : 'text-gray-400'
-                }`} />
-            </div>
+             </div>
           </div>
-
-          {/* Mensaje de Error */}
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 animate-pulse">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-
-          {/* Botón de Guardar */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-lg transition-all transform active:scale-95 flex justify-center items-center gap-2"
-          >
-            {loading ? (
-              <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
-            ) : (
-              <>
-                <Save size={18} />
-                Guardar y Entrar
-              </>
-            )}
-          </button>
+          
+          <Button 
+            text={loading ? "Actualizando..." : "Guardar y Salir"} 
+            onClick={() => handleSubmit()} 
+          />
         </form>
-      </div>
+      </main>
+      
+      <FooterBar />
     </div>
   );
 };

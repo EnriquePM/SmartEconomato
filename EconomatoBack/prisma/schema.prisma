@@ -7,51 +7,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model alumnado {
-  id_rol Int     @id
-  curso  String? @db.VarChar(50)
-  rol    rol     @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_alumno_rol")
+// USUARIOS Y ROLES (Núcleo del sistema)
+
+model rol {
+  id_rol         Int             @id @default(autoincrement())
+  nombre         String          @db.VarChar(50)
+  tipo           String          @db.VarChar(50)
+  
+  // Relaciones
+  usuario        usuario[]
+  jefe_economato jefe_economato? // <--- FALTABA ESTO (Relación 1 a 1 opcional)
 }
 
-model categoria {
-  id_categoria Int           @id @default(autoincrement())
-  nombre       String        @db.VarChar(100)
-  ingrediente  ingrediente[]
-}
+model usuario {
+  id_usuario   Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(50)
+  nombre       String   @db.VarChar(50)
+  apellido1    String   @db.VarChar(50)
+  apellido2    String?  @db.VarChar(50)
+  email        String?  @unique @db.VarChar(100)
+  contrasenya  String   @db.VarChar(255)
+  primer_login Boolean  @default(true)
+  
+  // Relación con el Rol
+  id_rol       Int
+  rol          rol      @relation(fields: [id_rol], references: [id_rol])
 
-model escandallo {
-  id_escandallo      Int                  @id @default(autoincrement())
-  descripcion        String?              @db.VarChar(255)
-  fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
-  escandallo_detalle escandallo_detalle[]
-}
-
-model escandallo_detalle {
-  id_escandallo  Int
-  id_usuario     Int
-  id_ingrediente Int
-  escandallo     escandallo  @relation(fields: [id_escandallo], references: [id_escandallo], onDelete: Cascade, onUpdate: NoAction, map: "fk_ed_escandallo")
-  ingrediente    ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_ingrediente")
-  usuario        usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_usuario")
-
-  @@id([id_escandallo, id_usuario, id_ingrediente])
-}
-
-model ingrediente {
-  id_ingrediente     Int                  @id @default(autoincrement())
-  nombre             String               @db.VarChar(150)
-  imagen             String?              @db.VarChar(255)
-  stock              Decimal?             @default(0.00) @db.Decimal(10, 2)
-  stock_minimo       Decimal?             @default(0.00) @db.Decimal(10, 2)
-  tipo               String?              @db.VarChar(50)
-  id_categoria       Int?
-  id_proveedor       Int?
-  escandallo_detalle escandallo_detalle[]
-  categoria          categoria?           @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_categoria")
-  proveedor          proveedor?           @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_proveedor")
+  // Relaciones inversas (Detalles de perfil)
+  alumnado     alumnado?
+  profesorado  profesorado?
+  
+  // Relaciones inversas (Operaciones) <--- FALTABAN ESTAS LÍNEAS
+  pedido             pedido[]
   movimiento         movimiento[]
-  pedido_ingrediente pedido_ingrediente[]
-  receta_ingrediente receta_ingrediente[]
+  escandallo_detalle escandallo_detalle[]
+}
+
+model alumnado {
+  id_usuario Int     @id
+  curso      String? @db.VarChar(50)
+  
+  usuario    usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+}
+
+model profesorado {
+  id_usuario  Int     @id
+  asignaturas String? @db.VarChar(255)
+  
+  usuario     usuario @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
 }
 
 model jefe_economato {
@@ -59,6 +62,54 @@ model jefe_economato {
   permisos String? @db.VarChar(255)
   rol      rol     @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_jefe_rol")
 }
+
+// INVENTARIO Y PRODUCTOS
+
+model categoria {
+  id_categoria Int           @id @default(autoincrement())
+  nombre       String        @db.VarChar(100)
+  ingrediente  ingrediente[]
+  material     material[]
+}
+
+model proveedor {
+  id_proveedor Int           @id @default(autoincrement())
+  nombre       String        @db.VarChar(150)
+  ingrediente  ingrediente[]
+}
+
+model material {
+  id_material    Int         @id @default(autoincrement())
+  nombre         String      @db.VarChar(150)
+  unidad_medida  String?     @db.VarChar(50)
+  precio_unidad  Decimal     @default(0.00) @db.Decimal(10, 2)
+  stock          Int         @default(0)  
+  id_categoria   Int?
+  categoria      categoria?  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_material_categoria")
+  pedido_material pedido_material[]
+}
+model ingrediente {
+  id_ingrediente     Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(150)
+  imagen             String?                @db.VarChar(255)
+  stock              Decimal?             @default(0.00) @db.Decimal(10, 2)
+  stock_minimo       Decimal?             @default(0.00) @db.Decimal(10, 2)
+  tipo               String?              @db.VarChar(50)
+  unidad_medida      String?              @db.VarChar(50)
+  precio_unidad      Decimal              @default(0.00) @db.Decimal(10, 2)
+  id_categoria       Int?
+  id_proveedor       Int?
+  // Relaciones
+  categoria          categoria?           @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_categoria")
+  proveedor          proveedor?           @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_proveedor")
+  // Relaciones inversas
+  escandallo_detalle escandallo_detalle[]
+  movimiento         movimiento[]
+  pedido_ingrediente pedido_ingrediente[]
+  receta_ingrediente receta_ingrediente[]
+}
+
+// OPERATIVA (Movimientos, Pedidos, Recetas)
 
 model movimiento {
   id_movimiento   Int                  @id @default(autoincrement())
@@ -68,16 +119,32 @@ model movimiento {
   cantidad        Decimal              @db.Decimal(10, 2)
   fecha           DateTime?            @default(now()) @db.Timestamp(6)
   observaciones   String?              @db.VarChar(255)
+  
   ingrediente     ingrediente          @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_ingrediente")
   usuario         usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_usuario")
 }
 
+enum estado_pedido {
+  BORRADOR    
+  PENDIENTE
+  VALIDADO
+  CONFIRMADO
+  RECHAZADO
+}
+
 model pedido {
-  id_pedido          Int                  @id @default(autoincrement())
-  fecha_pedido       DateTime?            @default(now()) @db.Timestamp(6)
-  id_usuario         Int
-  usuario            usuario              @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_usuario")
+  id_pedido      Int       @id @default(autoincrement())
+  fecha_pedido   DateTime? @default(now()) @db.Timestamp(6)
+  id_usuario     Int
+  estado         estado_pedido @default(PENDIENTE)
+  proveedor      String?       @db.VarChar(150) 
+  observaciones  String?       @db.Text         
+  total_estimado Decimal?      @db.Decimal(10,2)
+  tipo_pedido    String?       @db.VarChar(50)  
+  usuario        usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_usuario")
+  // Relaciones
   pedido_ingrediente pedido_ingrediente[]
+  pedido_material    pedido_material[]   
 }
 
 model pedido_ingrediente {
@@ -90,16 +157,13 @@ model pedido_ingrediente {
   @@id([id_pedido, id_ingrediente])
 }
 
-model profesorado {
-  id_rol      Int     @id
-  asignaturas String? @db.VarChar(255)
-  rol         rol     @relation(fields: [id_rol], references: [id_rol], onDelete: Cascade, onUpdate: NoAction, map: "fk_profesor_rol")
-}
-
-model proveedor {
-  id_proveedor Int           @id @default(autoincrement())
-  nombre       String        @db.VarChar(150)
-  ingrediente  ingrediente[]
+model pedido_material {
+  id_pedido           Int
+  id_material         Int
+  cantidad_solicitada Int         
+  material            material    @relation(fields: [id_material], references: [id_material], onDelete: NoAction, onUpdate: NoAction)
+  pedido              pedido      @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction)
+  @@id([id_pedido, id_material])
 }
 
 model receta {
@@ -114,35 +178,30 @@ model receta_ingrediente {
   id_ingrediente Int
   cantidad       Decimal     @db.Decimal(10, 2)
   rendimiento    Decimal?    @db.Decimal(5, 2)
+  
   ingrediente    ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_ri_ingrediente")
   receta         receta      @relation(fields: [id_receta], references: [id_receta], onDelete: Cascade, onUpdate: NoAction, map: "fk_ri_receta")
 
   @@id([id_receta, id_ingrediente])
 }
 
-model rol {
-  id_rol         Int             @id @default(autoincrement())
-  nombre         String          @db.VarChar(50)
-  tipo           String          @db.VarChar(50)
-  alumnado       alumnado?
-  jefe_economato jefe_economato?
-  profesorado    profesorado?
-  usuario        usuario[]
+model escandallo {
+  id_escandallo      Int                  @id @default(autoincrement())
+  descripcion        String?              @db.VarChar(255)
+  fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
+  escandallo_detalle escandallo_detalle[]
 }
 
-model usuario {
-  id_usuario         Int                  @id @default(autoincrement())
-  nombre             String               @db.VarChar(100)
-  apellido1          String               @db.VarChar(100)
-  apellido2          String?              @db.VarChar(100)
-  email              String               @unique @db.VarChar(150)
-  contrasenya        String               @db.VarChar(255)
-  fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
-  id_rol             Int
-  escandallo_detalle escandallo_detalle[]
-  movimiento         movimiento[]
-  pedido             pedido[]
-  rol                rol                  @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_rol")
+model escandallo_detalle {
+  id_escandallo  Int
+  id_usuario     Int
+  id_ingrediente Int
+  
+  escandallo     escandallo  @relation(fields: [id_escandallo], references: [id_escandallo], onDelete: Cascade, onUpdate: NoAction, map: "fk_ed_escandallo")
+  ingrediente    ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_ingrediente")
+  usuario        usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_usuario")
+
+  @@id([id_escandallo, id_usuario, id_ingrediente])
 }
 
 enum tipo_movimiento_enum {
