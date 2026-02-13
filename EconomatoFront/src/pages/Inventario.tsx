@@ -35,7 +35,7 @@ const Inventario = () => {
       : false;
     */
   
-    return nombreMatch || idMatch && categoriaMatch;
+    return (nombreMatch || idMatch) && categoriaMatch;
   });
 
     // 2. Ordenar
@@ -172,7 +172,7 @@ return (
                         {item.id}
                       </span>
                     </td>
-                    <td className="p-4 font-bold text-gray-900 uppercase tracking-tight">
+                    <td className="p-4 font-bold text-gray-900 tracking-tight">
                       {item.nombre}
                     </td>
                     <td className="p-4">
