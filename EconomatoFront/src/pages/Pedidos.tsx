@@ -1,144 +1,20 @@
-import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-
-// --- TIPOS ---
-type LineaPedido = {
-    id: number;
-    productoId: number;
-    nombre: string;
-    categoria: string;
-    unidad: string;
-    cantidad: number;
-    precio: number;
-    subtotal: number;
-};
-
-type Pedido = {
-    id: string | number;
-    tipo: 'productos' | 'utensilios';
-    proveedor: string;
-    fecha: string;
-    estado: string; // 'BORRADOR', 'PENDIENTE', 'VALIDADO'...
-    total: number;
-    observaciones: string;
-    lineas: LineaPedido[];
-};
+import { usePedidos } from '../hooks/usePedidos';
 
 const Pedidos = () => {
-    // --- ESTADOS DE LA VISTA ---
-    const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
-    const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
-    const [busqueda, setBusqueda] = useState('');
+    // Usamos el Hook para obtener toda la lógica y estado
+    const {
+        vista, setVista,
+        tipoPedido, setTipoPedido,
+        busqueda, setBusqueda,
+        pedidos, catalogoProductos, catalogoProveedores,
+        pedidoActual, setPedidoActual,
+        agregarLinea, seleccionarProducto, actualizarLinea, borrarLinea,
+        guardarPedido, eliminarPedido
+    } = usePedidos();
 
-    // --- ESTADOS DE DATOS ---
-    const [pedidos, setPedidos] = useState<Pedido[]>([]);
-    const [catalogoProductos, setCatalogoProductos] = useState<any[]>([]);
-    const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
-
-    const [pedidoActual, setPedidoActual] = useState<Pedido>({
-        id: '',
-        tipo: 'productos',
-        proveedor: '',
-        fecha: new Date().toISOString().split('T')[0],
-        estado: 'BORRADOR',
-        total: 0,
-        observaciones: '',
-        lineas: []
-    });
-
-    // --- 1. CARGA INICIAL DE PEDIDOS ---
-    useEffect(() => {
-        fetch('http://localhost:3000/api/pedidos')
-            .then(res => {
-                if (!res.ok) throw new Error("Error en la respuesta del servidor");
-                return res.json();
-            })
-            .then(data => {
-                if (Array.isArray(data)) {
-                    const adaptados = data.map((p: any) => {
-                        
-                        let lineasRecuperadas: LineaPedido[] = [];
-
-                        if (p.tipo_pedido === 'utensilios' && p.pedido_material) {
-                            lineasRecuperadas = p.pedido_material.map((pm: any) => ({
-                                id: Date.now() + Math.random(), 
-                                productoId: pm.id_material,
-                                nombre: pm.material?.nombre || 'Utensilio desconocido',
-                                categoria: pm.material?.categoria?.nombre || 'General', 
-                                unidad: pm.material?.unidad_medida || 'u.',
-                                cantidad: Number(pm.cantidad_solicitada),
-                                precio: Number(pm.material?.precio_unidad || 0),
-                                subtotal: Number(pm.cantidad_solicitada) * Number(pm.material?.precio_unidad || 0)
-                            }));
-                        } else if (p.pedido_ingrediente) {
-                            lineasRecuperadas = p.pedido_ingrediente.map((pi: any) => ({
-                                id: Date.now() + Math.random(), 
-                                productoId: pi.id_ingrediente,
-                                nombre: pi.ingrediente?.nombre || 'Ingrediente desconocido',
-                                categoria: pi.ingrediente?.categoria?.nombre || 'General',
-                                unidad: pi.ingrediente?.unidad_medida || 'u.',
-                                cantidad: Number(pi.cantidad_solicitada),
-                                precio: Number(pi.ingrediente?.precio_actual || 0),
-                                subtotal: Number(pi.cantidad_solicitada) * Number(pi.ingrediente?.precio_actual || 0)
-                            }));
-                        }
-
-                        return {
-                            id: p.id_pedido,
-                            tipo: p.tipo_pedido || 'productos',
-                            proveedor: p.proveedor || '',
-                            fecha: p.fecha_pedido ? p.fecha_pedido.split('T')[0] : '',
-                            estado: p.estado,
-                            total: Number(p.total_estimado || 0),
-                            observaciones: p.observaciones || '',
-                            lineas: lineasRecuperadas 
-                        };
-                    });
-                    setPedidos(adaptados);
-                } else {
-                    setPedidos([]); 
-                }
-            })
-            .catch(err => {
-                console.error("Error cargando pedidos:", err);
-                setPedidos([]); 
-            });
-    }, []);
-
-    // --- 2. CARGA DE CATÁLOGOS ---
-    useEffect(() => {
-        const prodEndpoint = tipoPedido === 'productos' 
-            ? 'http://localhost:3000/api/ingredientes' 
-            : 'http://localhost:3000/api/materiales';
-
-        const provEndpoint = 'http://localhost:3000/api/proveedores';
-
-        // Cargar Productos/Materiales
-        fetch(prodEndpoint)
-            .then(res => res.json())
-            .then(data => {
-                if (!Array.isArray(data)) return;
-                const catalogoAdaptado = data.map((item: any) => ({
-                    id: tipoPedido === 'productos' ? item.id_ingrediente : item.id_material,
-                    nombre: item.nombre,
-                    categoria: item.categoria ? (typeof item.categoria === 'object' ? item.categoria.nombre : item.categoria) : 'General',
-                    unidad: item.unidad_medida || 'u.',
-                    precioUltimo: Number(item.precio_actual || item.precio_unidad || 0)
-                }));
-                setCatalogoProductos(catalogoAdaptado);
-            })
-            .catch(err => console.error("Error cargando catálogo:", err));
-
-        // Cargar Proveedores
-        fetch(provEndpoint)
-            .then(res => res.json())
-            .then(data => setCatalogoProveedores(data))
-            .catch(err => console.error("Error cargando proveedores:", err));
-
-    }, [tipoPedido]);
-
-    // --- LÓGICA DE FILTRADO ---
+    // Lógica de filtrado visual (se mantiene ligera aquí)
     const pedidosFiltrados = pedidos?.filter(p => {
         const coincideTipo = p.tipo === tipoPedido; 
         const coincideBusqueda = 
@@ -147,133 +23,21 @@ const Pedidos = () => {
         return coincideTipo && coincideBusqueda;
     });
 
-    // --- LÓGICA DEL FORMULARIO ---
-    const agregarLinea = () => {
-        const nuevaLinea: LineaPedido = {
-            id: Date.now(),
-            productoId: 0,
-            nombre: '',
-            categoria: '',
-            unidad: '',
-            cantidad: 1,
-            precio: 0,
-            subtotal: 0
-        };
-        setPedidoActual({
-            ...pedidoActual,
-            lineas: [...pedidoActual.lineas, nuevaLinea]
-        });
-    };
+    const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.estado !== ''; 
+    const titulo = tipoPedido === 'productos' ? 'Productos' : 'Utensilios';
 
-    const seleccionarProducto = (lineaId: number, prodIdStr: string) => {
-        const prodId = Number(prodIdStr);
-        const producto = catalogoProductos.find(p => p.id === prodId);
-        if (!producto) return;
-
-        const lineasActualizadas = pedidoActual.lineas.map(linea => {
-            if (linea.id === lineaId) {
-                return {
-                    ...linea,
-                    productoId: producto.id,
-                    nombre: producto.nombre,
-                    categoria: producto.categoria,
-                    unidad: producto.unidad,
-                    precio: producto.precioUltimo,
-                    subtotal: linea.cantidad * producto.precioUltimo
-                };
-            }
-            return linea;
-        });
-        recalcularTotal(lineasActualizadas);
-    };
-
-    const actualizarLinea = (lineaId: number, campo: 'cantidad' | 'precio', valorTexto: string) => {
-        const valorNumerico = parseFloat(valorTexto) || 0;
-        const lineasActualizadas = pedidoActual.lineas.map(linea => {
-            if (linea.id === lineaId) {
-                const nuevaLinea = { ...linea, [campo]: valorNumerico };
-                nuevaLinea.subtotal = nuevaLinea.cantidad * nuevaLinea.precio;
-                return nuevaLinea;
-            }
-            return linea;
-        });
-        recalcularTotal(lineasActualizadas);
-    };
-
-    const recalcularTotal = (nuevasLineas: LineaPedido[]) => {
-        const nuevoTotal = nuevasLineas.reduce((acc, curr) => acc + curr.subtotal, 0);
-        setPedidoActual({ ...pedidoActual, lineas: nuevasLineas, total: nuevoTotal });
-    };
-
-    const borrarLinea = (lineaId: number) => {
-        const nuevasLineas = pedidoActual.lineas.filter(l => l.id !== lineaId);
-        recalcularTotal(nuevasLineas);
-    };
-
-    const guardarPedidoBD = async (estadoDeseado: 'BORRADOR' | 'PENDIENTE') => {
-        if (!pedidoActual.proveedor) return alert("Selecciona un proveedor");
-            const payload = {
-            tipoPedido: tipoPedido,
-            proveedor: pedidoActual.proveedor,
-            total: pedidoActual.total,
-            observaciones: pedidoActual.observaciones,
-            estado: estadoDeseado,
-            lineas: pedidoActual.lineas.map(l => ({
-                productoId: l.productoId,
-                cantidad: l.cantidad
-            }))
-        };
-
-        try {
-            const response = await fetch('http://localhost:3000/api/pedidos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Error al guardar");
-            }
-
-            const data = await response.json();
-            alert(`Pedido guardado correctamente con ID: ${data.id_pedido}`);
-            
-            // Recargamos la página para ver el pedido nuevo en la lista
-            window.location.reload();
-
-        } catch (error) {
-            console.error(error);
-            alert("Error al conectar con el servidor: " + error);
-        }
-    };
-
-    // Botones de acción
-    const guardarBorrador = () => guardarPedidoBD('BORRADOR');
+    // Funciones wrappers para los botones
+    const guardarBorrador = () => guardarPedido('BORRADOR');
     
     const enviarPedido = () => {
         if (pedidoActual.lineas.length === 0) return alert("Añade al menos un producto");
         if (confirm("¿Enviar pedido al proveedor? Pasará a estado PENDIENTE.")) {
-            guardarPedidoBD('PENDIENTE');
+            guardarPedido('PENDIENTE');
         }
     };
 
-    const eliminarPedido = async (id: string | number) => {
-        if (confirm("¿Estás seguro de eliminar este borrador?")) {
-             try {
-                await fetch(`http://localhost:3000/api/pedidos/${id}`, { method: 'DELETE' });
-                setPedidos(pedidos.filter(p => p.id !== id));
-             } catch (error) {
-                 alert("Error al eliminar");
-             }
-        }
-    };
-
-    // --- RENDERIZADO ---
+    // --- RENDERIZADO DEL FORMULARIO ---
     if (vista === 'formulario') {
-        const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.estado !== ''; 
-        const titulo = tipoPedido === 'productos' ? 'Productos' : 'Utensilios';
-
         return (
             <div className="flex flex-col animate-fade-in-up space-y-6 pb-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 shrink-0 gap-4">
@@ -316,7 +80,6 @@ const Pedidos = () => {
                                     disabled={esSoloLectura}
                                 >
                                     <option value="">Selecciona proveedor...</option>
-                                    {/* CORREGIDO: KEY ÚNICA */}
                                     {catalogoProveedores.map((p: any) => (
                                         <option key={p.id_proveedor || p.id} value={p.nombre}>{p.nombre}</option>
                                     ))}
@@ -395,7 +158,7 @@ const Pedidos = () => {
         );
     }
 
-    // Vista: LISTADO DE PEDIDOS
+    // --- RENDERIZADO DEL LISTADO ---
     return (
         <div className="h-full flex flex-col animate-fade-in-up">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
