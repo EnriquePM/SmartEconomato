@@ -11,7 +11,6 @@ import Inicio from "../pages/inicioPrueba";
 import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
 import Perfil from "../pages/Perfil";
-import RegistrarUtensilio from "../pages/RegistrarUtensilio";
 import Pedidos from "../pages/Pedidos";
 import IngresoGeneral from "../pages/IngresoGeneral";
 
@@ -57,13 +56,9 @@ export const routes: RouteObject[] = [
             element: <Pedidos />, 
           },
           {
-            path: "ingreso-general",
+            path: "registrar-general",
             element: <IngresoGeneral />, 
           },
-          /*{
-            path: "registrar",
-            element: <IngresarProducto />,
-          },*/
           {
               path: "admin-usuarios",
               element: <AdminUsuarios />,
@@ -71,10 +66,6 @@ export const routes: RouteObject[] = [
           {
             path: "perfil",
             element: <Perfil />,
-          },
-          {
-            path: "registrar-utensilio",
-            element: <RegistrarUtensilio />
           },
         ],
       },

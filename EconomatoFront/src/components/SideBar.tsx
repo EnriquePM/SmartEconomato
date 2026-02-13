@@ -69,30 +69,13 @@ export default function SideBar() {
               
 
               <li>
-                <NavLink to="/registrar" className={linkClass}>
+                <NavLink to="/registrar-general" className={linkClass}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
                   <span className="ms-3">Registrar producto</span>
                 </NavLink>
               </li>
-              <li>
-                <NavLink to="/registrar-general" className={linkClass}>
-                  <Utensils className="w-5 h-5" />
-                  <span className="ms-3">Registrar General</span>
-                </NavLink>
-              </li>
-
-                {/* --- NUEVO BOTÓN AÑADIDO AQUÍ --- */}
-              <li>
-                <NavLink to="/registrar-utensilio" className={linkClass}>
-                  {/* Icono de cubiertos/utensilios */}
-                  <Utensils className="w-5 h-5" />
-                  <span className="ms-3">Registrar Utensilio</span>
-                </NavLink>
-              </li>
-              
-
               <li>
                 <NavLink to="/admin-usuarios" className={linkClass}>
                   <Users className="w-5 h-5" />
