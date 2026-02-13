@@ -76,7 +76,12 @@ export default function SideBar() {
                   <span className="ms-3">Registrar producto</span>
                 </NavLink>
               </li>
-
+              <li>
+                <NavLink to="/registrar-general" className={linkClass}>
+                  <Utensils className="w-5 h-5" />
+                  <span className="ms-3">Registrar General</span>
+                </NavLink>
+              </li>
 
                 {/* --- NUEVO BOTÓN AÑADIDO AQUÍ --- */}
               <li>
