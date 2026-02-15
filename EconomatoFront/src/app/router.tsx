@@ -54,12 +54,12 @@ export const routes: RouteObject[] = [
           },
           {
             // Ajustado para coincidir con el botón del Home
-            path: "ingreso-general", 
+            path: "registrar-general", 
             element: <IngresoGeneral />, 
           },
           {
             // Ajustado para coincidir con el botón del Home
-            path: "admin/usuarios", 
+            path: "admin-usuarios", 
             element: <AdminUsuarios />,
           },
           {
