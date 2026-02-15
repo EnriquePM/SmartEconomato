@@ -1,3 +1,5 @@
+// src/hooks/usePedidos.ts
+
 import { useState, useEffect } from 'react';
 // "import type" para los modelos
 import type { Pedido, LineaPedido, ItemCatalogo } from '../models/Pedidos';
@@ -68,26 +70,42 @@ export const usePedidos = () => {
         recalcularTotal(pedidoActual.lineas.filter(l => l.id !== id));
     };
 
+    // --- AQUÍ ESTÁ LA MAGIA ---
     const guardarPedido = async (estado: 'BORRADOR' | 'PENDIENTE') => {
         if (!pedidoActual.proveedor) return alert("Selecciona proveedor");
+
+        // 1. Determinar nombres de campos según el tipo
+        const campoRelacion = tipoPedido === 'productos' ? 'pedido_ingrediente' : 'pedido_material';
+        const campoIdProducto = tipoPedido === 'productos' ? 'id_ingrediente' : 'id_material';
+
+        // 2. Preparar el objeto para enviar
         const payload = {
             tipo_pedido: tipoPedido,
             proveedor: pedidoActual.proveedor,
-            total_estimado: pedidoActual.total,
+            total_estimado: Number(pedidoActual.total),
             observaciones: pedidoActual.observaciones,
             estado,
-            [tipoPedido === 'productos' ? 'pedido_ingrediente' : 'pedido_material']: pedidoActual.lineas.map(l => ({
-                [tipoPedido === 'productos' ? 'id_ingrediente' : 'id_material']: l.productoId,
-                cantidad_solicitada: l.cantidad
-            }))
+            // 3. ESTRUCTURA PRISMA: Usamos "create" para guardar los hijos
+            [campoRelacion]: {
+                create: pedidoActual.lineas.map(l => ({
+                    [campoIdProducto]: Number(l.productoId),
+                    cantidad_solicitada: Number(l.cantidad)
+                }))
+            }
         };
 
         try {
+            console.log("📦 Payload enviado:", payload);
             await guardarPedidoService(payload);
-            alert("Guardado correctamente");
+            
+            alert("¡Pedido guardado correctamente! 🎉");
             window.location.reload();
-        } catch (e) { alert("Error al guardar"); console.error(e); }
+        } catch (e: any) {
+            console.error(e);
+            alert("Error al guardar: " + (e.message || "Desconocido"));
+        }
     };
+    // ---------------------------
 
     const eliminarPedido = async (id: string | number) => {
         if (!confirm("¿Eliminar?")) return;
