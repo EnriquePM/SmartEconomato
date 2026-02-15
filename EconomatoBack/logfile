@@ -78,3 +78,19 @@
 2026-02-13 08:39:21.124 WET [1251] LOG:  checkpoint starting: end-of-recovery immediate wait
 2026-02-13 08:39:21.135 WET [1251] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.001 s, total=0.012 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1B69B68, redo lsn=0/1B69B68
 2026-02-13 08:39:21.150 WET [1249] LOG:  database system is ready to accept connections
+2026-02-13 18:50:06.280 WET [1456] LOG:  starting PostgreSQL 16.11 (Homebrew) on x86_64-apple-darwin21.6.0, compiled by Apple clang version 14.0.0 (clang-1400.0.29.202), 64-bit
+2026-02-13 18:50:06.283 WET [1456] LOG:  listening on IPv6 address "::1", port 5432
+2026-02-13 18:50:06.284 WET [1456] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-02-13 18:50:06.284 WET [1456] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2026-02-13 18:50:06.293 WET [1459] LOG:  database system was interrupted; last known up at 2026-02-13 08:39:21 WET
+2026-02-13 18:50:06.401 WET [1459] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-02-13 18:50:06.405 WET [1459] LOG:  redo starts at 0/1B69BE0
+2026-02-13 18:50:06.405 WET [1459] LOG:  invalid record length at 0/1B69C18: expected at least 24, got 0
+2026-02-13 18:50:06.405 WET [1459] LOG:  redo done at 0/1B69BE0 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-02-13 18:50:06.409 WET [1457] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-02-13 18:50:06.411 WET [1457] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.001 s, total=0.003 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1B69C18, redo lsn=0/1B69C18
+2026-02-13 18:50:06.414 WET [1456] LOG:  database system is ready to accept connections
+2026-02-13 19:20:06.425 WET [1457] LOG:  checkpoint starting: time
+2026-02-13 19:20:06.935 WET [1457] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.506 s, sync=0.003 s, total=0.510 s; sync files=6, longest=0.002 s, average=0.001 s; distance=1 kB, estimate=1 kB; lsn=0/1B6A300, redo lsn=0/1B6A2C8
+2026-02-15 11:41:43.877 WET [1457] LOG:  checkpoint starting: time
+2026-02-15 11:41:46.922 WET [1457] LOG:  checkpoint complete: wrote 33 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.033 s, sync=0.006 s, total=3.047 s; sync files=26, longest=0.002 s, average=0.001 s; distance=31 kB, estimate=31 kB; lsn=0/1B72020, redo lsn=0/1B71FD0
