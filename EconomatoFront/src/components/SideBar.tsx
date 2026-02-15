@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LayoutDashboard } from "lucide-react";
 import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
@@ -39,6 +40,16 @@ export default function SideBar() {
 
             <ul className="space-y-1.5 font-medium">
               
+
+              <li>
+                <NavLink to="/" className={linkClass} end>
+                   {/* 'end' es importante para que no se quede siempre marcado */}
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span className="ms-3">Panel Principal</span>
+                </NavLink>
+              </li>
+
+
               <li>
                 <NavLink to="/inventario" className={linkClass}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
