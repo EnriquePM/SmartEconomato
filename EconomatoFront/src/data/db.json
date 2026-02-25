@@ -1,35 +1,182 @@
 {
-  "ingredientes": [
-    { "id_ingrediente": 1, "nombre": "Aceite de Oliva Virgen Extra", "stock": 50, "id_categoria": 1, "id_proveedor": 101, "id": "538a" },
-    { "id_ingrediente": 2, "nombre": "Arroz Bomba", "stock": 100, "id_categoria": 2, "id_proveedor": 102, "id": "1aab" },
-    { "id_ingrediente": 3, "nombre": "Tomate Triturado (Lata)", "stock": 30, "id_categoria": 3, "id_proveedor": 101, "id": "bd68" },
-    { "id_ingrediente": 4, "nombre": "Harina de Trigo (Fuerza)", "stock": 25, "id_categoria": 2, "id_proveedor": 102, "id": "7e9d" },
-    { "id_ingrediente": 5, "nombre": "Huevos Camperos L", "stock": 200, "id_categoria": 4, "id_proveedor": 103, "id": "69bb" },
-    { "id_ingrediente": 6, "nombre": "Leche Entera", "stock": 60, "id_categoria": 4, "id_proveedor": 103, "id": "2664" },
-    { "id_ingrediente": 7, "nombre": "Sal Fina Yodada", "stock": 40, "id_categoria": 5, "id_proveedor": 104, "id": "df2b" },
-    { "id_ingrediente": 8, "nombre": "Azúcar Blanco", "stock": 15, "id_categoria": 5, "id_proveedor": 104, "id": "3669" },
-    { "id_ingrediente": 9, "nombre": "Spaghetti Nº5", "stock": 80, "id_categoria": 2, "id_proveedor": 102, "id": "d2d9" },
-        { "id_ingrediente": 9, "nombre": "pruebajson", "stock": 20, "id_categoria": 12, "id_proveedor": 100, "id": "d2d8" },
-    { "id_ingrediente": 10, "nombre": "Vinagre de Jerez", "stock": 20, "id_categoria": 1, "id_proveedor": 101, "id": "5a00" }
+  "rol": [
+    { "id_rol": 1, "nombre": "Alumno", "tipo": "alumnado" },
+    { "id_rol": 2, "nombre": "Profesor", "tipo": "profesorado" },
+    { "id_rol": 3, "nombre": "Jefe Economato", "tipo": "jefe_economato" }
   ],
-  "catalogo_productos": [
-    { "id": 1, "nombre": "Tomate Pera", "categoria": "Verduras", "unidad": "kg", "precioUltimo": 1.50 },
-    { "id": 2, "nombre": "Leche Entera", "categoria": "Lácteos", "unidad": "litros", "precioUltimo": 0.90 },
-    { "id": 3, "nombre": "Harina Trigo", "categoria": "Secos", "unidad": "kg", "precioUltimo": 0.80 },
-    { "id": 4, "nombre": "Aceite Oliva V.", "categoria": "Aceites", "unidad": "litros", "precioUltimo": 5.50 }
+
+  "alumnado": [
+    { "id_rol": 1, "curso": "2º DAW" }
   ],
-  "utensilios": [
-    { "id": "u1", "nombre": "Cuchillo Cebollero 20cm", "categoria": "Cuchillos", "stock": 15, "estado": "Nuevo", "ubicacion": "Cajón 1", "codigo_barras": "841000000001", "id_proveedor": 101 },
-    { "id": "u2", "nombre": "Tabla de Corte Roja (Carnes)", "categoria": "Tablas", "stock": 8, "estado": "Usado", "ubicacion": "Estantería B", "codigo_barras": "841000000002", "id_proveedor": 101 },
-    { "id": "u3", "nombre": "Espátula de Silicona", "categoria": "Pequeño Material", "stock": 25, "estado": "Nuevo", "ubicacion": "Cajón 2", "codigo_barras": "841000000003", "id_proveedor": 102 },
-    { "id": "u4", "nombre": "Sartén Antiadherente 24cm", "categoria": "Sartenes", "stock": 10, "estado": "Nuevo", "ubicacion": "Ganchos Pared", "codigo_barras": "841000000004", "id_proveedor": 103 },
-    { "id": "u5", "nombre": "Trapos de Cocina (Pack 10)", "categoria": "Textil", "stock": 5, "estado": "Nuevo", "ubicacion": "Almacén", "codigo_barras": "841000000005", "id_proveedor": 104 }
+
+  "profesorado": [
+    { "id_rol": 2, "asignaturas": "Bases de Datos, Programación" }
   ],
-  "proveedores": [
-    { "id": 101, "nombre": "Makro Mayorista" },
-    { "id": 102, "nombre": "Menaje Profesional SL" },
-    { "id": 103, "nombre": "Suministros Hosteleros Pepe" },
-    { "id": 104, "nombre": "IKEA Business" }
+
+  "jefe_economato": [
+    { "id_rol": 3, "permisos": "GESTION_TOTAL" }
   ],
-  "pedidos": []
+
+  "usuario": [
+    {
+      "id_usuario": 1,
+      "nombre": "Ana",
+      "apellido1": "Pérez",
+      "apellido2": "López",
+      "email": "ana.perez@centro.es",
+      "contrasenya": "hash123",
+      "fecha_creacion": "2026-01-10T09:00:00Z",
+      "id_rol": 1
+    },
+    {
+      "id_usuario": 2,
+      "nombre": "Carlos",
+      "apellido1": "Gómez",
+      "apellido2": null,
+      "email": "carlos.gomez@centro.es",
+      "contrasenya": "hash456",
+      "fecha_creacion": "2026-01-10T09:05:00Z",
+      "id_rol": 2
+    },
+    {
+      "id_usuario": 3,
+      "nombre": "Laura",
+      "apellido1": "Martín",
+      "apellido2": null,
+      "email": "laura.martin@centro.es",
+      "contrasenya": "hash789",
+      "fecha_creacion": "2026-01-10T09:10:00Z",
+      "id_rol": 3
+    }
+  ],
+
+  "categoria": [
+    { "id_categoria": 1, "nombre": "Verduras" },
+    { "id_categoria": 2, "nombre": "Carnes" },
+    { "id_categoria": 3, "nombre": "Lácteos" }
+  ],
+
+  "proveedor": [
+    { "id_proveedor": 1, "nombre": "Proveedor Local SL" },
+    { "id_proveedor": 2, "nombre": "Distribuciones Alimentarias SA" }
+  ],
+
+  "ingrediente": [
+    {
+      "id_ingrediente": 1,
+      "nombre": "Tomate",
+      "imagen": "tomate.jpg",
+      "stock": "50.00",
+      "stock_minimo": "10.00",
+      "tipo": "Fresco",
+      "id_categoria": 1,
+      "id_proveedor": 1
+    },
+    {
+      "id_ingrediente": 2,
+      "nombre": "Pollo",
+      "imagen": "pollo.jpg",
+      "stock": "30.00",
+      "stock_minimo": "5.00",
+      "tipo": "Carne",
+      "id_categoria": 2,
+      "id_proveedor": 2
+    },
+    {
+      "id_ingrediente": 3,
+      "nombre": "Leche",
+      "imagen": "leche.jpg",
+      "stock": "20.00",
+      "stock_minimo": "5.00",
+      "tipo": "Lácteo",
+      "id_categoria": 3,
+      "id_proveedor": 2
+    }
+  ],
+
+  "receta": [
+    {
+      "id_receta": 1,
+      "fecha_creacion": "2026-01-15T08:00:00Z",
+      "cantidad_platos": 4
+    }
+  ],
+
+  "receta_ingrediente": [
+    {
+      "id_receta": 1,
+      "id_ingrediente": 1,
+      "cantidad": "0.50",
+      "rendimiento": "95.00"
+    },
+    {
+      "id_receta": 1,
+      "id_ingrediente": 2,
+      "cantidad": "1.20",
+      "rendimiento": "90.00"
+    }
+  ],
+
+  "pedido": [
+    {
+      "id_pedido": 1,
+      "fecha_pedido": "2026-01-20T10:00:00Z",
+      "id_usuario": 3
+    }
+  ],
+
+  "pedido_ingrediente": [
+    {
+      "id_pedido": 1,
+      "id_ingrediente": 1,
+      "cantidad_solicitada": "20.00"
+    },
+    {
+      "id_pedido": 1,
+      "id_ingrediente": 3,
+      "cantidad_solicitada": "10.00"
+    }
+  ],
+
+  "movimiento": [
+    {
+      "id_movimiento": 1,
+      "id_ingrediente": 1,
+      "id_usuario": 3,
+      "tipo_movimiento": "ENTRADA",
+      "cantidad": "20.00",
+      "fecha": "2026-01-20T12:00:00Z",
+      "observaciones": "Entrada por pedido"
+    },
+    {
+      "id_movimiento": 2,
+      "id_ingrediente": 2,
+      "id_usuario": 2,
+      "tipo_movimiento": "SALIDA",
+      "cantidad": "2.00",
+      "fecha": "2026-01-21T09:00:00Z",
+      "observaciones": "Uso en receta"
+    }
+  ],
+
+  "escandallo": [
+    {
+      "id_escandallo": 1,
+      "descripcion": "Escandallo receta pollo con tomate",
+      "fecha_creacion": "2026-01-22T08:00:00Z"
+    }
+  ],
+
+  "escandallo_detalle": [
+    {
+      "id_escandallo": 1,
+      "id_usuario": 2,
+      "id_ingrediente": 1
+    },
+    {
+      "id_escandallo": 1,
+      "id_usuario": 2,
+      "id_ingrediente": 2
+    }
+  ]
 }

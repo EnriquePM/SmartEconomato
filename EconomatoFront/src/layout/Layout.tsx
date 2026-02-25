@@ -1,35 +1,43 @@
 import { FooterBar } from "../components/ui/Footer";
 import SideBar from "../components/SideBar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 export default function Layout() {
+    const location = useLocation();
+    const isHome = location.pathname === "/";
+
     return (
-        /* 1. Contenedor Principal */
         <div className="h-screen w-full bg-fondo flex overflow-hidden">
 
             {/* SIDEBAR */}
             <SideBar />
 
-            {/* 2. Main Content Wrapper */}
-            <main className="flex-1 flex flex-col sm:ml-sidebar h-full overflow-hidden">
+            {/* Main Content Wrapper */}
+            <main className="flex-1 flex flex-col sm:ml-sidebar h-full overflow-hidden transition-all duration-300">
 
-                {/* 3. Padding Wrapper */}
-                <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                {/* Padding Wrapper (EL MARCO BLANCO)
+                    CAMBIO: 
+                    - Antes: "p-4 sm:p-6" (Gordo)
+                    - Ahora: "p-2 sm:p-3" (Fino, unos 8px en móvil y 12px en PC)
+                */}
+                <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isHome ? "p-2 sm:p-3 bg-white" : "p-4"}`}>
 
-                    {/* 4. TARJETA BLANCA (EL CAMBIO ESTÁ AQUÍ)
-                        - Quitamos: overflow-y-auto (ya no hace scroll toda la tarjeta)
-                        - Ponemos: overflow-hidden (corta lo que sobre)
-                        - Ponemos: flex flex-col (para organizar el contenido verticalmente)
-                    */}
-
-                    <div className="flex-1 bg-tarjeta rounded-panel shadow-sm border border-gray-100 p-6 lg:p-10 ml-4 overflow-y-auto scrollbar-custom relative">
+                    {/* CONTENEDOR DEL CONTENIDO */}
+                    <div className={`
+                        flex-1 relative overflow-y-auto scrollbar-custom transition-all duration-300
+                        ${isHome 
+                            ? "rounded-[2rem] overflow-hidden shadow-lg border border-gray-100" // Borde curvo para el Home
+                            : "bg-tarjeta rounded-panel shadow-sm border border-gray-100 p-6 lg:p-10 ml-4" // Tarjeta normal
+                        }
+                    `}>
                         <Outlet />
                     </div>
 
-                    {/* FOOTER */}
-                    <div className="mt-4">
-                        <FooterBar />
-                    </div>
+                    {!isHome && (
+                        <div className="mt-4">
+                            <FooterBar />
+                        </div>
+                    )}
                 </div>
             </main>
         </div>
