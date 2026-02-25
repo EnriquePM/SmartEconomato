@@ -54,4 +54,4 @@ body:
 
 Dale a Send y comprueba a la derecha que te devuelve el código 200OK
 Si está correcto vete al login e introduce el usuario que te genera y la contraeña genérica Economato123, ahora te redirigirá al
-cambio de contraseña segura. Una vez establecida, repite el login pero con tu contraseña nueva.
+cambio de contraseña segura. Una vez establecida, repite el login pero con tu contraseña nueva. 

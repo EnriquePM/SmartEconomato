@@ -13,8 +13,8 @@ export const useInventario = (vista: 'ingredientes' | 'utensilios') => {
     setLoading(true);
     setError(null); // Limpiamos errores anteriores antes de intentar
     try {
-      const data = vista === 'ingredientes' 
-        ? await getIngredientes() 
+      const data = vista === 'ingredientes'
+        ? await getIngredientes()
         : await getMateriales();
       setItems(data);
     } catch (err) {

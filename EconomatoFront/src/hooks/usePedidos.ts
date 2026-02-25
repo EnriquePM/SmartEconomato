@@ -3,19 +3,19 @@
 import { useState, useEffect } from 'react';
 // "import type" para los modelos
 import type { Pedido, LineaPedido, ItemCatalogo } from '../models/Pedidos';
-import { 
-    getPedidosService, 
-    getCatalogoService, 
-    getProveedoresService, 
-    guardarPedidoService, 
-    eliminarPedidoService 
+import {
+    getPedidosService,
+    getCatalogoService,
+    getProveedoresService,
+    guardarPedidoService,
+    eliminarPedidoService
 } from '../services/pedidoService';
 
 export const usePedidos = () => {
     const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
     const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
     const [busqueda, setBusqueda] = useState('');
-    
+
     const [pedidos, setPedidos] = useState<Pedido[]>([]);
     const [catalogoProductos, setCatalogoProductos] = useState<ItemCatalogo[]>([]);
     const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
@@ -70,34 +70,26 @@ export const usePedidos = () => {
         recalcularTotal(pedidoActual.lineas.filter(l => l.id !== id));
     };
 
-    // --- AQUÍ ESTÁ LA MAGIA ---
     const guardarPedido = async (estado: 'BORRADOR' | 'PENDIENTE') => {
         if (!pedidoActual.proveedor) return alert("Selecciona proveedor");
 
-        // 1. Determinar nombres de campos según el tipo
-        const campoRelacion = tipoPedido === 'productos' ? 'pedido_ingrediente' : 'pedido_material';
-        const campoIdProducto = tipoPedido === 'productos' ? 'id_ingrediente' : 'id_material';
-
-        // 2. Preparar el objeto para enviar
         const payload = {
-            tipo_pedido: tipoPedido,
+            tipoPedido: tipoPedido,
             proveedor: pedidoActual.proveedor,
-            total_estimado: Number(pedidoActual.total),
+            total: Number(pedidoActual.total),
             observaciones: pedidoActual.observaciones,
-            estado,
-            // 3. ESTRUCTURA PRISMA: Usamos "create" para guardar los hijos
-            [campoRelacion]: {
-                create: pedidoActual.lineas.map(l => ({
-                    [campoIdProducto]: Number(l.productoId),
-                    cantidad_solicitada: Number(l.cantidad)
-                }))
-            }
+            estado: estado,
+
+            lineas: pedidoActual.lineas.map(l => ({
+                productoId: Number(l.productoId),
+                cantidad: Number(l.cantidad)
+            }))
         };
 
         try {
-            console.log("📦 Payload enviado:", payload);
+            console.log("📦 Payload enviado al backend:", payload);
             await guardarPedidoService(payload);
-            
+
             alert("¡Pedido guardado correctamente! 🎉");
             window.location.reload();
         } catch (e: any) {
@@ -105,7 +97,6 @@ export const usePedidos = () => {
             alert("Error al guardar: " + (e.message || "Desconocido"));
         }
     };
-    // ---------------------------
 
     const eliminarPedido = async (id: string | number) => {
         if (!confirm("¿Eliminar?")) return;

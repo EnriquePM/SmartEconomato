@@ -17,9 +17,14 @@ const Pedidos = () => {
     // Lógica de filtrado visual (se mantiene ligera aquí)
     const pedidosFiltrados = pedidos?.filter(p => {
         const coincideTipo = p.tipo === tipoPedido; 
+        const proveedorStr = p.proveedor ? String(p.proveedor).toLowerCase() : "";
+        const idStr = p.id ? String(p.id) : "";
+        const textoBusqueda = busqueda ? String(busqueda).toLowerCase() : "";
+
         const coincideBusqueda = 
-            p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
-            p.id.toString().includes(busqueda.toLowerCase());
+            proveedorStr.includes(textoBusqueda) ||
+            idStr.includes(textoBusqueda);
+            
         return coincideTipo && coincideBusqueda;
     });
 
@@ -66,6 +71,11 @@ const Pedidos = () => {
                             </div>
                         </div>
                     )}
+                    {pedidoActual.estado === 'PENDIENTE' && (
+                        <button className="bg-green-600 text-white px-6 py-2 rounded-pill font-bold">
+                            Recibir Mercancía
+                        </button>
+                    )}  
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

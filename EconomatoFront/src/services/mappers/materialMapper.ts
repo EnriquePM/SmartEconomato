@@ -5,7 +5,8 @@ export const mapMaterial = (data: Material[]): ItemInventario[] => {
   return data.map(m => ({
     id: m.id_material,
     nombre: m.nombre,
-    stock: m.stock, 
+    stock: m.stock,
+    stock_minimo: m.stock_minimo || 0,
     unidad: m.unidad_medida || 'u.',
     precio: Number(m.precio_unidad),
     id_categoria: m.id_categoria || 0,
