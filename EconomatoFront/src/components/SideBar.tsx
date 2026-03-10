@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users } from "lucide-react";
 import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
-// AÑADIDO: Importamos el icono 'Utensils' para el nuevo botón
-import { Users, PenTool, Utensils } from "lucide-react";
+import { useAuth } from '../context/AuthContext';
 
 
 // --- COMPONENTE PRINCIPAL: SideBar ---
 export default function SideBar() {
+  const { hasRole } = useAuth();
+  const [adminOpen, setAdminOpen] = useState(false);
+
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center px-2 py-2 rounded-base group transition-colors ${
       isActive
@@ -87,12 +89,30 @@ export default function SideBar() {
                   <span className="ms-3">Registrar producto</span>
                 </NavLink>
               </li>
-              <li>
-                <NavLink to="/admin-usuarios" className={linkClass}>
-                  <Users className="w-5 h-5" />
-                  <span className="ms-3">Administrar usuarios</span>
-                </NavLink>
-              </li>
+              {/* DESPLEGABLE DE ADMINISTRACIÓN — solo visible para Administrador y Profesor */}
+              {hasRole(["Administrador", "Profesor"]) && (
+                <li>
+                  <button
+                    onClick={() => setAdminOpen(!adminOpen)}
+                    className="flex items-center w-full px-2 py-2 rounded-base group transition-colors text-body hover:bg-neutral-tertiary hover:text-fg-brand"
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span className="ms-3 flex-grow text-left">Administración</span>
+                    {adminOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {adminOpen && (
+                    <ul className="mt-1 ms-4 space-y-1 border-l border-neutral-secondary-medium pl-3">
+                      <li>
+                        <NavLink to="/admin-usuarios" className={linkClass}>
+                          <Users className="w-4 h-4" />
+                          <span className="ms-3 text-sm">Administrar usuarios</span>
+                        </NavLink>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              )}
               
           
             </ul>
