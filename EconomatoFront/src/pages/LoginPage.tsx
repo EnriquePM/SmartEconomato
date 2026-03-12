@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
@@ -9,7 +8,6 @@ import fondo from '../assets/fondo.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { setUsuario } = useAuth();
 
   // Estados
   const [user, setUser] = useState('');
@@ -64,8 +62,11 @@ const LoginPage = () => {
       } 
       
       // CASO: LOGIN NORMAL
-      setUsuario(data.usuario); // Actualiza el contexto (y el localStorage internamente)
-      navigate("/");
+      localStorage.setItem("isAuthenticated", "true");
+      if (data.token) localStorage.setItem("token", data.token);
+      localStorage.setItem("usuario", JSON.stringify(data.usuario));
+      
+      navigate("/"); // O '/inventario'
 
     } catch (error) {
       console.error("Error de conexión:", error);
@@ -97,7 +98,9 @@ const LoginPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
             Bienvenido a SmartEconomato
           </h1>
-          
+          <p className="text-xl text-gray-500 mt-2">
+            Un economato a tu medida
+          </p>
         </div>
 
         {/* Formulario */}

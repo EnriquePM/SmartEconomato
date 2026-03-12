@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ChevronUp, User, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 // Importamos la imagen por defecto por si es la primera vez que entran
 import defaultAvatar from '../assets/Avatares/chef.png';
 
 export const UserProfile = () => {
-  const { usuario, logout } = useAuth();
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   
   // ESTADO: Iniciamos con lo que haya en memoria O con el chef por defecto
@@ -34,12 +31,6 @@ export const UserProfile = () => {
     };
   }, []);
 
-  const handleLogout = () => {
-    setIsOpen(false);
-    logout();
-    navigate("/login");
-  };
-
   return (
     <div className="relative border-t border-gray-200 pt-4 mt-2">
       
@@ -54,8 +45,8 @@ export const UserProfile = () => {
           alt="Avatar"
         />
         <div className="flex-1 ms-3 text-left overflow-hidden">
-          <p className="text-sm font-bold text-gray-700 truncate">{usuario?.nombre} {usuario?.apellido1}</p>
-          <p className="text-xs text-gray-500 truncate">{usuario?.rol ?? 'Invitado'}</p>
+          <p className="text-sm font-bold text-gray-700 truncate">Ayoze Pérez</p>
+          <p className="text-xs text-gray-500 truncate">Alumno</p>
         </div>
         <ChevronUp 
             size={16} 
@@ -88,13 +79,14 @@ export const UserProfile = () => {
               </Link>
             </li>
             <li className="border-t border-gray-100 mt-1 pt-1">
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-4 py-2 text-red-500 hover:bg-red-50 font-medium transition-colors"
+              <Link 
+                to="/login" 
+                className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 font-medium transition-colors"
+                onClick={() => setIsOpen(false)}
               >
                 <LogOut size={16} /> 
                 <span>Cerrar Sesión</span>
-              </button>
+              </Link>
             </li>
           </ul>
         </div>

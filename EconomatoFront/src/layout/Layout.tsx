@@ -1,43 +1,36 @@
+
 import { FooterBar } from "../components/ui/Footer";
 import SideBar from "../components/SideBar";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 export default function Layout() {
-    const location = useLocation();
-    const isHome = location.pathname === "/";
-
     return (
+        /* 1. bg-fondo: centralizado en el config */
         <div className="h-screen w-full bg-fondo flex overflow-hidden">
-
-            {/* SIDEBAR */}
+            
+            {/* SIDEBAR: Se mantiene fijo a la izquierda */}
             <SideBar />
 
-            {/* Main Content Wrapper */}
-            <main className="flex-1 flex flex-col sm:ml-sidebar h-full overflow-hidden transition-all duration-300">
-
-                {/* Padding Wrapper (EL MARCO BLANCO)
-                    CAMBIO: 
-                    - Antes: "p-4 sm:p-6" (Gordo)
-                    - Ahora: "p-2 sm:p-3" (Fino, unos 8px en móvil y 12px en PC)
-                */}
-                <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isHome ? "p-2 sm:p-3 bg-white" : "p-4"}`}>
-
-                    {/* CONTENEDOR DEL CONTENIDO */}
-                    <div className={`
-                        flex-1 relative overflow-y-auto scrollbar-custom transition-all duration-300
-                        ${isHome 
-                            ? "rounded-[2rem] overflow-hidden shadow-lg border border-gray-100" // Borde curvo para el Home
-                            : "bg-tarjeta rounded-panel shadow-sm border border-gray-100 p-6 lg:p-10 ml-4" // Tarjeta normal
-                        }
-                    `}>
+            {/* 2. sm:ml-sidebar: sincronizado con el ancho del sidebar en el config */}
+            <main className="flex-1 flex flex-col sm:ml-sidebar h-full overflow-hidden">
+                
+                {/* 3. Contenedor con padding para que la tarjeta no pegue a los bordes */}
+                <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                    
+                    {/* 4. Tarjeta Blanca:
+                        - bg-tarjeta y rounded-panel: desde el config.
+                        - overflow-y-auto: permite scroll SOLO aquí dentro.
+                    */}
+                    <div className="flex-1 bg-tarjeta rounded-panel shadow-sm border border-gray-100 p-6 lg:p-10 ml-4 overflow-y-auto">
+                        
                         <Outlet />
+                        
                     </div>
 
-                    {!isHome && (
-                        <div className="mt-4">
-                            <FooterBar />
-                        </div>
-                    )}
+                    {/* FOOTER: Espacio controlado con mt-4 */}
+                    <div className="mt-4">
+                        <FooterBar />
+                    </div>
                 </div>
             </main>
         </div>

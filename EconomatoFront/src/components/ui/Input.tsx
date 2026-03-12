@@ -1,30 +1,18 @@
-
 import React from 'react';
 
 interface InputProps {
-  type: 'text' | 'password' | 'email' | 'number';
+  type: 'text' | 'password' | 'email';
   placeholder: string;
-  value: string | number;
-  id: string;
-  label?: string;
-  onChange: (val: string) => void;
-  className?: string; 
+  value: string;
+  id: string; 
+  onChange: (val: string) => void; 
 }
 
-export const Input = ({ type, placeholder, value, onChange, id, label, className = "" }: InputProps) => (
-  <div className="w-full text-left">
-    {label ? (
-      <label 
-        htmlFor={id} 
-        className="block text-sm font-bold text-gray-700 mb-2"
-      >
-        {label}
-      </label>
-    ) : (
-      <label htmlFor={id} className="sr-only">
-        {placeholder}
-      </label>
-    )}
+export const Input = ({ type, placeholder, value, onChange, id }: InputProps) => (
+  <div className="w-full">
+    <label htmlFor={id} className="sr-only">
+      {placeholder}
+    </label>
     
     <input
       id={id}
@@ -32,14 +20,7 @@ export const Input = ({ type, placeholder, value, onChange, id, label, className
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className={`
-        w-full bg-input border-none rounded-pill py-3 px-6 
-        text-size-input font-semibold text-escritura 
-        placeholder:text-relleno 
-        focus:ring-2 focus:ring-gray-200 outline-none 
-        transition-all 
-        ${className}
-      `}
+      className="w-full bg-input border-none rounded-pill py-4 px-6 text-gray-700 focus:ring-2 focus:ring-slate-200 outline-none transition-all placeholder:text-secundario/50"
     />
   </div>
 );

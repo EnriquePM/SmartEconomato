@@ -2,80 +2,57 @@ import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import { estado_pedido } from '@prisma/client';
 
-// 1. CREAR O ACTUALIZAR PEDIDO (Soporta Ingredientes y Materiales)
+// 1. CREAR PEDIDO (Cualquier usuario autenticado)
 export const createPedido = async (req: any, res: Response) => {
+    const { ingredientes } = req.body; // Array de { id_ingrediente, cantidad }
+    const id_usuario = req.user.id_usuario;
 
-
-    // Verificamos el usuario
-    const id_usuario = req.user ? req.user.id_usuario : 1;
-
-    const {
-        proveedor, lineas, total, observaciones, tipoPedido, estado
-    } = req.body;
+    if (!ingredientes || !Array.isArray(ingredientes) || ingredientes.length === 0) {
+        res.status(400).json({ error: 'La lista de ingredientes es obligatoria' });
+        return;
+    }
 
     try {
-
-        // Mapeo manual para debuggear
-        const estadoFinal = estado === 'BORRADOR' ? estado_pedido.BORRADOR : estado_pedido.PENDIENTE;
-        console.log("5. Estado final calculado:", estadoFinal);
-
-        const dataPedido: any = {
-            id_usuario,
-            fecha_pedido: new Date(),
-            estado: estadoFinal,
-            proveedor,
-            observaciones,
-            total_estimado: total,
-            tipo_pedido: tipoPedido
-        };
-
-
-        if (lineas && lineas.length > 0) {
-            if (tipoPedido === 'utensilios') {
-                dataPedido.pedido_material = {
-                    create: lineas.map((l: any) => ({
-                        id_material: Number(l.productoId), // Forzamos número
-                        cantidad_solicitada: Number(l.cantidad)
-                    }))
-                };
-            } else {
-                dataPedido.pedido_ingrediente = {
-                    create: lineas.map((l: any) => ({
-                        id_ingrediente: Number(l.productoId), // Forzamos número
-                        cantidad_solicitada: Number(l.cantidad)
-                    }))
-                };
-            }
-        }
-
         const nuevoPedido = await prisma.pedido.create({
-            data: dataPedido
+            data: {
+                id_usuario,
+                // estado: 'PENDIENTE' (Por defecto en schema)
+                pedido_ingrediente: {
+                    create: ingredientes.map((ing: any) => ({
+                        id_ingrediente: ing.id_ingrediente,
+                        cantidad_solicitada: ing.cantidad
+                    }))
+                }
+            },
+            include: {
+                pedido_ingrediente: {
+                    include: { ingrediente: true }
+                }
+            }
         });
 
         res.json(nuevoPedido);
-
     } catch (error) {
-        // Esto nos dirá exactamente por qué falla la BD
-        res.status(500).json({ error: 'Error al guardar el pedido', detalle: error });
+        console.error(error);
+        res.status(500).json({ error: 'Error al crear el pedido' });
     }
 };
 
-// 2. LISTAR TODOS LOS PEDIDOS (Para la tabla del frontend)
-export const getPedidos = async (req: Request, res: Response) => {
+// 2. LISTAR PEDIDOS PENDIENTES (Solo Profesores/Admin)
+export const getPedidosPendientes = async (req: Request, res: Response) => {
     try {
         const pedidos = await prisma.pedido.findMany({
-            // Quitamos el 'where: PENDIENTE' para que se vean también los borradores y validados
+            where: {
+                estado: 'PENDIENTE'
+            },
             include: {
                 usuario: {
                     select: { nombre: true, apellido1: true, email: true }
                 },
-                // Incluimos ingredientes...
                 pedido_ingrediente: {
-                    include: { ingrediente: true }
-                },
-                // ... Y TAMBIÉN materiales
-                pedido_material: {
-                    include: { material: true }
+                    include: {
+                        ingrediente: true
+                    }
                 }
             },
             orderBy: {
@@ -84,19 +61,18 @@ export const getPedidos = async (req: Request, res: Response) => {
         });
         res.json(pedidos);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Error al obtener pedidos' });
     }
 };
 
-// 3. VALIDAR PEDIDO
+// 3. VALIDAR PEDIDO (Solo Profesores/Admin)
 export const validarPedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
         const pedidoValidado = await prisma.pedido.update({
             where: { id_pedido: Number(id) },
-            data: { estado: estado_pedido.VALIDADO }
+            data: { estado: 'VALIDADO' }
         });
         res.json(pedidoValidado);
     } catch (error) {
@@ -104,7 +80,7 @@ export const validarPedido = async (req: Request, res: Response) => {
     }
 };
 
-// 4. BORRAR PEDIDO
+// 4. BORRAR PEDIDO (Solo Profesores/Admin - "Si están mal lo quiten")
 export const deletePedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -118,107 +94,43 @@ export const deletePedido = async (req: Request, res: Response) => {
     }
 };
 
-// 5. CONFIRMAR PEDIDO (Recepción de mercancía -> Sumar Stock)
+// 5. CONFIRMAR PEDIDO (Llegada de mercancía -> Sumar Stock)
 export const confirmarPedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const { lineasRecibidas } = req.body;
-
     try {
+        // Usamos una transacción para asegurar que se actualiza el estado Y el stock, o nada.
         const resultado = await prisma.$transaction(async (tx) => {
-            // 1. Obtener el pedido
+            // 1. Obtener los ingredientes del pedido
             const pedido = await tx.pedido.findUnique({
                 where: { id_pedido: Number(id) },
-                include: {
-                    pedido_ingrediente: true,
-                    pedido_material: true
-                }
+                include: { pedido_ingrediente: true }
             });
 
-            if (!pedido) throw new Error('Pedido no encontrado');
-            if (pedido.estado === estado_pedido.CONFIRMADO) {
-                throw new Error('El pedido ya ha sido confirmado completamente');
+            if (!pedido) {
+                throw new Error('Pedido no encontrado');
             }
 
-            let pedidoCompletado = true; // Asumimos que se completará hasta que veamos que falta algo
-
-            // 2A. Procesar Ingredientes
-            if (pedido.pedido_ingrediente.length > 0) {
-                for (const item of pedido.pedido_ingrediente) {
-                    // Ver cuánto dicen que ha llegado ahora (si no mandan nada, asume que llega lo que faltaba)
-                    let cantidadQueLlegaAhora = 0;
-
-                    if (lineasRecibidas) {
-                        const linea = lineasRecibidas.find((l: any) => Number(l.productoId) === item.id_ingrediente);
-                        cantidadQueLlegaAhora = linea ? Number(linea.cantidad) : 0;
-                    } else {
-                        // Comportamiento clásico: Confirma todo lo que queda pendiente
-                        cantidadQueLlegaAhora = Number(item.cantidad_solicitada) - Number(item.cantidad_recibida);
-                    }
-
-                    if (cantidadQueLlegaAhora > 0) {
-                        // Sumar al stock real del economato
-                        await tx.ingrediente.update({
-                            where: { id_ingrediente: item.id_ingrediente },
-                            data: { stock: { increment: cantidadQueLlegaAhora } }
-                        });
-
-                        // Registrar en la línea del pedido lo que acaba de entrar
-                        await tx.pedido_ingrediente.update({
-                            where: {
-                                id_pedido_id_ingrediente: { id_pedido: pedido.id_pedido, id_ingrediente: item.id_ingrediente }
-                            },
-                            data: { cantidad_recibida: { increment: cantidadQueLlegaAhora } }
-                        });
-                    }
-
-                    // Comprobar si ya se recibió todo lo que se pidió
-                    const totalRecibido = Number(item.cantidad_recibida) + cantidadQueLlegaAhora;
-                    if (totalRecibido < Number(item.cantidad_solicitada)) {
-                        pedidoCompletado = false; // Falta mercancía por llegar
-                    }
-                }
+            if (pedido.estado === (estado_pedido as any).CONFIRMADO) {
+                throw new Error('El pedido ya ha sido confirmado anteriormente');
             }
 
-            // 2B. Procesar Materiales
-            if (pedido.pedido_material.length > 0) {
-                for (const item of pedido.pedido_material) {
-                    let cantidadQueLlegaAhora = 0;
-
-                    if (lineasRecibidas) {
-                        const linea = lineasRecibidas.find((l: any) => Number(l.productoId) === item.id_material);
-                        cantidadQueLlegaAhora = linea ? Number(linea.cantidad) : 0;
-                    } else {
-                        cantidadQueLlegaAhora = Number(item.cantidad_solicitada) - Number(item.cantidad_recibida);
+            // 2. Sumar stock de cada ingrediente
+            for (const item of pedido.pedido_ingrediente) {
+                await tx.ingrediente.update({
+                    where: { id_ingrediente: item.id_ingrediente },
+                    data: {
+                        stock: {
+                            increment: item.cantidad_solicitada
+                        }
                     }
-
-                    if (cantidadQueLlegaAhora > 0) {
-                        await tx.material.update({
-                            where: { id_material: item.id_material },
-                            data: { stock: { increment: cantidadQueLlegaAhora } }
-                        });
-
-                        await tx.pedido_material.update({
-                            where: {
-                                id_pedido_id_material: { id_pedido: pedido.id_pedido, id_material: item.id_material }
-                            },
-                            data: { cantidad_recibida: { increment: cantidadQueLlegaAhora } }
-                        });
-                    }
-
-                    const totalRecibido = Number(item.cantidad_recibida) + cantidadQueLlegaAhora;
-                    if (totalRecibido < Number(item.cantidad_solicitada)) {
-                        pedidoCompletado = false;
-                    }
-                }
+                });
             }
 
-            // 3. Cambiar el estado según lo evaluado
-            const nuevoEstado = pedidoCompletado ? estado_pedido.CONFIRMADO : estado_pedido.INCOMPLETO;
-
+            // 3. Actualizar estado del pedido
             return await tx.pedido.update({
                 where: { id_pedido: Number(id) },
-                data: { estado: nuevoEstado }
+                data: { estado: (estado_pedido as any).CONFIRMADO }
             });
         });
 
