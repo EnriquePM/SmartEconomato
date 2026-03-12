@@ -1,19 +1,19 @@
 import { Router } from 'express';
 import { getMateriales, createMaterial, updateMaterial, deleteMaterial } from '../controllers/material.controller';
-import { authenticateToken } from '../middlewares/auth.middleware';
+//import { authenticateToken, requireRole } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 // 1. Obtener todos (Cualquier usuario autenticado)
-router.get('/', authenticateToken, getMateriales);
+router.get('/', getMateriales);
 
-// 2. Crear (Cualquier usuario autenticado)
-router.post('/', authenticateToken, createMaterial);
+// 2. Crear (Solo Profesores/Admin)
+router.post('/', createMaterial);
 
-// 3. Modificar (Cualquier usuario autenticado)
-router.put('/:id', authenticateToken, updateMaterial);
+// 3. Modificar (Solo Profesores/Admin)
+router.put('/:id', updateMaterial);
 
-// 4. Eliminar (Cualquier usuario autenticado)
-router.delete('/:id', authenticateToken, deleteMaterial);
+// 4. Eliminar (Solo Profesores/Admin)
+router.delete('/:id', deleteMaterial);
 
 export default router;
