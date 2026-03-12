@@ -7,6 +7,11 @@ import userRoutes from './routes/user.routes';
 import recursosRoutes from './routes/recursos.routes';
 import pedidoRoutes from './routes/pedido.routes';
 import materialRoutes from './routes/material.routes';
+import categoriaRoutes from './routes/categoria.routes';
+import proveedorRoutes from './routes/proveedor.routes';
+import movimientoRoutes from './routes/movimiento.routes';
+import recetaRoutes from './routes/receta.routes';
+import escandalloRoutes from './routes/escandallo.routes';
 
 dotenv.config();
 
@@ -23,7 +28,11 @@ app.use('/api/usuarios', userRoutes);
 app.use('/api', recursosRoutes);
 app.use('/api/pedidos', pedidoRoutes);
 app.use('/api/materiales', materialRoutes);
-
+app.use('/api/categorias', categoriaRoutes);
+app.use('/api/proveedores', proveedorRoutes);
+app.use('/api/movimientos', movimientoRoutes);
+app.use('/api/recetas', recetaRoutes);
+app.use('/api/escandallos', escandalloRoutes);
 
 app.listen(port, () => {
     console.log(`Servidor listo en http://localhost:${port}`);

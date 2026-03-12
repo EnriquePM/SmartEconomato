@@ -132,9 +132,52 @@ export const registerProfesor = async (req: Request, res: Response) => {
 
       res.json(nuevoUsuario);
     });
-  } catch (error) {
+    } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error registrando profesor" });
+  }
+};
+
+export const registerJefeEconomato = async (req: Request, res: Response) => {
+  try {
+    const { nombre, apellido1, apellido2, email, permisos } = req.body;
+    const usernameGenerado = await generarUsernameDisponible(
+      nombre,
+      apellido1,
+      apellido2,
+    );
+    const hashedPassword = await bcrypt.hash(PASSWORD_POR_DEFECTO, 10);
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Crear Usuario
+      const nuevoUsuario = await tx.usuario.create({
+        data: {
+          nombre,
+          apellido1,
+          apellido2: apellido2 || null,
+          email: email && email.trim() !== "" ? email : null,
+          username: usernameGenerado,
+          contrasenya: hashedPassword,
+          primer_login: true,
+          id_rol: 3, // Asumo 3 es Jefe Economato. Se podría buscar por nombre si se prefiere.
+        },
+      });
+
+      // 2. Crear Ficha Jefe Economato
+      await tx.jefe_economato.create({
+        data: {
+          permisos: permisos || "Totales",
+          rol: {
+            connect: { id_rol: nuevoUsuario.id_rol }
+          }
+        },
+      });
+
+      res.json(nuevoUsuario);
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error registrando jefe de economato" });
   }
 };
 
