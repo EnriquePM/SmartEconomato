@@ -1,123 +1,200 @@
-// src/hooks/usePedidos.ts
-
 import { useState, useEffect } from 'react';
-// "import type" para los modelos
-import type { Pedido, LineaPedido, ItemCatalogo } from '../models/Pedidos';
-import { 
-    getPedidosService, 
-    getCatalogoService, 
-    getProveedoresService, 
-    guardarPedidoService, 
-    eliminarPedidoService 
-} from '../services/pedidoService';
+import type { Pedido, EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
+import type { ItemInventario } from '../models/ItemInventario';
+
+import { getPedidosService, guardarPedidoService, eliminarPedidoService } from '../services/pedidoService';
+import { getIngredientes } from '../services/inventarioService';
+import { getMateriales } from '../services/materialesService';
+import { getProveedores } from '../services/proveedorService';
 
 export const usePedidos = () => {
-    const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
-    const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
-    const [busqueda, setBusqueda] = useState('');
-    
-    const [pedidos, setPedidos] = useState<Pedido[]>([]);
-    const [catalogoProductos, setCatalogoProductos] = useState<ItemCatalogo[]>([]);
-    const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
+  const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
+  const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
+  const [busqueda, setBusqueda] = useState('');
 
-    const [pedidoActual, setPedidoActual] = useState<Pedido>({
-        id: '', tipo: 'productos', proveedor: '', fecha: new Date().toISOString().split('T')[0],
-        estado: 'BORRADOR', total: 0, observaciones: '', lineas: []
-    });
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [catalogoProductos, setCatalogoProductos] = useState<ItemInventario[]>([]);
+  const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
 
-    useEffect(() => {
-        getPedidosService().then(setPedidos).catch(console.error);
-    }, []);
+  const [pedidoActual, setPedidoActual] = useState<Pedido>({
+    id_usuario: 1,
+    proveedor: '',
+    fecha_pedido: new Date().toISOString().split('T')[0],
+    estado: 'BORRADOR',
+    observaciones: '',
+    total_estimado: 0,
+    tipo_pedido: 'productos',
+    pedido_ingrediente: [],
+    pedido_material: []
+  });
 
-    useEffect(() => {
-        getCatalogoService(tipoPedido).then(setCatalogoProductos).catch(console.error);
-        getProveedoresService().then(setCatalogoProveedores).catch(console.error);
-    }, [tipoPedido]);
+  // Cargar pedidos y proveedores
+  useEffect(() => {
+  getPedidosService()
+  .then(data => {
+    //esto lo tengo que pasar a mapper??
+    const normalizados: Pedido[] = data.map(p => ({
+      ...p,
+      tipo_pedido: p.tipo_pedido || 'productos', 
+      total_estimado: p.total_estimado ?? 0,    
+      proveedor: p.proveedor || '',              
+      observaciones: p.observaciones || '',     
+      pedido_ingrediente: p.pedido_ingrediente || [],
+      pedido_material: p.pedido_material || []
+    }));
+    setPedidos(normalizados);
+  })
+  .catch(console.error);
 
-    const agregarLinea = () => {
-        const nueva: LineaPedido = { id: Date.now(), productoId: 0, nombre: '', categoria: '', unidad: '', cantidad: 1, precio: 0, subtotal: 0 };
-        setPedidoActual(prev => ({ ...prev, lineas: [...prev.lineas, nueva] }));
+  getProveedores()
+    .then(data => { console.log("Proveedores:", data); setCatalogoProveedores(data || []); })
+    .catch(console.error);
+}, []);
+
+
+  // Cargar inventario según tipoPedido
+  useEffect(() => {
+    const cargarInventario = async () => {
+      try {
+        const data = tipoPedido === 'productos' ? await getIngredientes() : await getMateriales();
+        setCatalogoProductos(data);
+        console.log("Inventario cargado:", data);
+      } catch (error) {
+        console.error("Error cargando inventario:", error);
+      }
+    };
+    cargarInventario();
+  }, [tipoPedido]);
+
+  // Agregar línea
+  const agregarLinea = () => {
+    if (tipoPedido === 'productos') {
+      setPedidoActual(prev => ({
+        ...prev,
+        pedido_ingrediente: [
+          ...(prev.pedido_ingrediente || []),
+          { id_ingrediente: 0, cantidad_solicitada: 1 }
+        ]
+      }));
+    } else {
+      setPedidoActual(prev => ({
+        ...prev,
+        pedido_material: [
+          ...(prev.pedido_material || []),
+          { id_material: 0, cantidad_solicitada: 1 }
+        ]
+      }));
+    }
+  };
+
+  // Seleccionar producto/material
+  const seleccionarProducto = (index: number, idStr: number) => {
+    const id = Number(idStr);
+    const item = catalogoProductos.find(p => p.id === id);
+    if (!item) return;
+
+    if (tipoPedido === 'productos') {
+      const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
+      nuevas[index] = { id_ingrediente: item.id, cantidad_solicitada: 1 };
+      setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
+    } else {
+      const nuevas = [...(pedidoActual.pedido_material || [])];
+      nuevas[index] = { id_material: item.id, cantidad_solicitada: 1 };
+      setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
+    }
+    recalcularTotal();
+  };
+
+  // Actualizar cantidad
+  const actualizarLinea = (index: number, cantidad: number) => {
+    if (tipoPedido === 'productos') {
+      const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
+      nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidad };
+      setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
+    } else {
+      const nuevas = [...(pedidoActual.pedido_material || [])];
+      nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidad };
+      setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
+    }
+    recalcularTotal();
+  };
+
+  // Borrar línea
+  const borrarLinea = (index: number) => {
+    if (tipoPedido === 'productos') {
+      const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
+      nuevas.splice(index, 1);
+      setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
+    } else {
+      const nuevas = [...(pedidoActual.pedido_material || [])];
+      nuevas.splice(index, 1);
+      setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
+    }
+    recalcularTotal();
+  };
+
+  // Calcular total estimado (basado en precio si lo tenemos)
+  const recalcularTotal = () => {
+    let total = 0;
+    if (tipoPedido === 'productos') {
+      total = (pedidoActual.pedido_ingrediente || []).reduce((acc, l) => {
+        const prod = catalogoProductos.find(p => p.id === l.id_ingrediente);
+        return acc + (prod?.precio || 0) * l.cantidad_solicitada;
+      }, 0);
+    } else {
+      total = (pedidoActual.pedido_material || []).reduce((acc, l) => {
+        const prod = catalogoProductos.find(p => p.id === l.id_material);
+        return acc + (prod?.precio || 0) * l.cantidad_solicitada;
+      }, 0);
+    }
+    setPedidoActual(prev => ({ ...prev, total_estimado: total }));
+  };
+
+  const guardarPedido = async (nuevoEstado: EstadoPedido) => {
+  try {
+    const payload: Pedido = {
+      ...pedidoActual,
+      pedido_ingrediente: pedidoActual.pedido_ingrediente || [],
+      pedido_material: pedidoActual.pedido_material || [],
+      tipo_pedido: tipoPedido,
+      id_usuario: pedidoActual.id_usuario,
+      estado: nuevoEstado
     };
 
-    const recalcularTotal = (lineas: LineaPedido[]) => {
-        const total = lineas.reduce((acc, curr) => acc + curr.subtotal, 0);
-        setPedidoActual(prev => ({ ...prev, lineas, total }));
-    };
 
-    const seleccionarProducto = (lineaId: number, prodIdStr: string) => {
-        const prodId = Number(prodIdStr);
-        const prod = catalogoProductos.find(p => p.id === prodId);
-        if (!prod) return;
-        const nuevasLineas = pedidoActual.lineas.map(l => l.id === lineaId ? {
-            ...l, productoId: prod.id, nombre: prod.nombre, categoria: prod.categoria,
-            unidad: prod.unidad, precio: prod.precioUltimo, subtotal: l.cantidad * prod.precioUltimo
-        } : l);
-        recalcularTotal(nuevasLineas);
-    };
 
-    const actualizarLinea = (lineaId: number, campo: 'cantidad' | 'precio', val: string) => {
-        const num = parseFloat(val) || 0;
-        const nuevasLineas = pedidoActual.lineas.map(l => {
-            if (l.id !== lineaId) return l;
-            const updated = { ...l, [campo]: num };
-            updated.subtotal = updated.cantidad * updated.precio;
-            return updated;
-        });
-        recalcularTotal(nuevasLineas);
-    };
+    await guardarPedidoService(payload);
+    alert("Pedido guardado con éxito");
+    setVista('lista');
 
-    const borrarLinea = (id: number) => {
-        recalcularTotal(pedidoActual.lineas.filter(l => l.id !== id));
-    };
+    const pedidosActualizados = await getPedidosService();
 
-    // --- AQUÍ ESTÁ LA MAGIA ---
-    const guardarPedido = async (estado: 'BORRADOR' | 'PENDIENTE') => {
-        if (!pedidoActual.proveedor) return alert("Selecciona proveedor");
+    setPedidos(pedidosActualizados);
+  } catch (e: any) {
+    alert("Error al guardar: " + e.message);
+  }
+};
 
-        // 1. Determinar nombres de campos según el tipo
-        const campoRelacion = tipoPedido === 'productos' ? 'pedido_ingrediente' : 'pedido_material';
-        const campoIdProducto = tipoPedido === 'productos' ? 'id_ingrediente' : 'id_material';
 
-        // 2. Preparar el objeto para enviar
-        const payload = {
-            tipo_pedido: tipoPedido,
-            proveedor: pedidoActual.proveedor,
-            total_estimado: Number(pedidoActual.total),
-            observaciones: pedidoActual.observaciones,
-            estado,
-            // 3. ESTRUCTURA PRISMA: Usamos "create" para guardar los hijos
-            [campoRelacion]: {
-                create: pedidoActual.lineas.map(l => ({
-                    [campoIdProducto]: Number(l.productoId),
-                    cantidad_solicitada: Number(l.cantidad)
-                }))
-            }
-        };
 
-        try {
-            console.log("📦 Payload enviado:", payload);
-            await guardarPedidoService(payload);
-            
-            alert("¡Pedido guardado correctamente! 🎉");
-            window.location.reload();
-        } catch (e: any) {
-            console.error(e);
-            alert("Error al guardar: " + (e.message || "Desconocido"));
-        }
-    };
-    // ---------------------------
+  // Eliminar pedido
+  const eliminarPedido = async (id: number) => {
+    if (!confirm("¿Eliminar este pedido?")) return;
+    try {
+      await eliminarPedidoService(id);
+      setPedidos(prev => prev.filter(p => p.id_pedido !== id));
+    } catch (e) {
+      alert("Error al eliminar");
+    }
+  };
 
-    const eliminarPedido = async (id: string | number) => {
-        if (!confirm("¿Eliminar?")) return;
-        try {
-            await eliminarPedidoService(id);
-            setPedidos(prev => prev.filter(p => p.id !== id));
-        } catch (e) { alert("Error al eliminar"); }
-    };
-
-    return {
-        vista, setVista, tipoPedido, setTipoPedido, busqueda, setBusqueda,
-        pedidos, catalogoProductos, catalogoProveedores, pedidoActual, setPedidoActual,
-        agregarLinea, seleccionarProducto, actualizarLinea, borrarLinea, guardarPedido, eliminarPedido
-    };
+  return {
+    vista, setVista,
+    tipoPedido, setTipoPedido,
+    busqueda, setBusqueda,
+    pedidos, catalogoProductos, catalogoProveedores,
+    pedidoActual, setPedidoActual,
+    agregarLinea, seleccionarProducto, actualizarLinea, borrarLinea,
+    guardarPedido, eliminarPedido
+  };
 };

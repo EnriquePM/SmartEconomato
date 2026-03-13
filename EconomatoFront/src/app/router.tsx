@@ -12,10 +12,10 @@ import AdminUsuarios from "../pages/AdminUsuarios";
 import Perfil from "../pages/Perfil";
 import Pedidos from "../pages/Pedidos";
 import IngresoGeneral from "../pages/IngresoGeneral";
-import Home from "../pages/Home"; // <-- 1. IMPORTAMOS HOME
+import Home from "../pages/Home"; 
+import PedidosPage from "../pages/recepcionPedidos"; 
 
-// Componentes temporales para las rutas que aún no tienen archivo propio
-const Recepcion = () => <div><h1>Módulo de Recepción de Pedidos</h1></div>;
+
 
 export const routes: RouteObject[] = [
   {
@@ -46,7 +46,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: "recepcion",
-            element: <Recepcion />,
+            element: <PedidosPage />,
           },
          {
             path: "pedidos",

@@ -1,60 +1,64 @@
-// src/services/pedidoService.ts
-
-import type { Pedido, ItemCatalogo } from "../models/Pedidos";
-import { mapPedidoBackendToFrontend, mapCatalogoToFrontend } from "./mappers/pedidoMapper";
+import type { Pedido } from "../models/Pedidos";
 
 const API_URL = 'http://localhost:3000/api'; 
 
+// 1. Obtener todos los pedidos (para la lista principal)
 export const getPedidosService = async (): Promise<Pedido[]> => {
     const res = await fetch(`${API_URL}/pedidos`);
     if (!res.ok) throw new Error("Error al obtener pedidos");
-    const data = await res.json();
-    return Array.isArray(data) ? data.map(mapPedidoBackendToFrontend) : [];
-};
-
-export const getCatalogoService = async (tipo: 'productos' | 'utensilios'): Promise<ItemCatalogo[]> => {
-    const endpoint = tipo === 'productos' ? 'ingredientes' : 'utensilios';
-    const res = await fetch(`${API_URL}/${endpoint}`);
-    const data = await res.json();
-    return Array.isArray(data) ? data.map((d: any) => mapCatalogoToFrontend(d, tipo)) : [];
-};
-
-export const getProveedoresService = async (): Promise<any[]> => {
-    const res = await fetch(`${API_URL}/proveedores`);
     return await res.json();
 };
 
-export const guardarPedidoService = async (payload: any) => {
-    // ---------------------------------------------------------
-    // TODO: INTEGRACIÓN CON LOGIN
-    // Cambiar este ID fijo por el ID del usuario real logueado.
-    // Ejemplo: const { user } = useAuth(); const id = user.id;
-    // ---------------------------------------------------------
-    const ID_USUARIO_TEMPORAL = 1; 
+// 2. Obtener UN pedido con todo su detalle (productos incluidos)
+export const getPedidoByIdService = async (id: number): Promise<Pedido> => {
+    const res = await fetch(`${API_URL}/pedidos/${id}`);
+    if (!res.ok) throw new Error("Error al obtener el detalle del pedido");
+    return await res.json();
+};
 
-    const payloadConUsuario = {
-        ...payload,
-        id_usuario: ID_USUARIO_TEMPORAL, 
-        fecha_pedido: new Date(),
-    };
+export const guardarPedidoService = async (pedidoData: Pedido) => {
+  let url = `${API_URL}/pedidos`;
+  let metodo: 'POST' | 'PUT' = 'POST';
 
-    console.log("Enviando al backend:", payloadConUsuario);
-
-    const res = await fetch(`${API_URL}/pedidos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadConUsuario)
-    });
-
-    if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Error devuelto por el servidor:", errorData);
-        throw new Error(errorData.error || errorData.message || "Error desconocido al guardar");
+  if (pedidoData.id_pedido) {
+    if (pedidoData.estado === 'CONFIRMADO') {
+      url = `${API_URL}/pedidos/${pedidoData.id_pedido}/confirmar`;
+      metodo = 'PUT';
+    } else {
+      url = `${API_URL}/pedidos/${pedidoData.id_pedido}`;
+      metodo = 'PUT';  
     }
+  }
 
-    return await res.json();
+  const payload = {
+    ...pedidoData,
+    pedido_ingrediente: pedidoData.pedido_ingrediente || [],
+    pedido_material: pedidoData.pedido_material || [],
+    id_usuario: 1
+  };
+
+  console.log("El array de ingredientes que se va a enviar al backend:", payload);
+
+  const res = await fetch(url, {
+    method: metodo,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
 };
 
-export const eliminarPedidoService = async (id: string | number) => {
-    await fetch(`${API_URL}/pedidos/${id}`, { method: 'DELETE' });
+
+
+// 4. Eliminar Pedido 
+export const eliminarPedidoService = async (id: number): Promise<void> => {
+    const res = await fetch(`${API_URL}/pedidos/${id}`, {
+        method: 'DELETE'
+    });
+    if (!res.ok) throw new Error("No se pudo eliminar el pedido");
 };
