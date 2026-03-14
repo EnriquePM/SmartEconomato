@@ -4,17 +4,26 @@ import { Button } from "../components/ui/Button";
 import { getPedidosService } from "../services/pedidoService";
 import { useEffect } from "react";
 import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/select";
 
 const PedidosPage = () => {
   const [pedidos, setPedidos] = useState<any[]>([]); 
   const [cargando, setCargando] = useState(true);    
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
   const [busqueda, setBusqueda] = useState("");
+const [filtroEstado, setFiltroEstado] = useState("todos");
 
-  const pedidosFiltrados = pedidos.filter(p =>
-  p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
-  p.id?.toString().includes(busqueda)
-);
+  const pedidosFiltrados = pedidos.filter(p => {
+  const coincideBusqueda =
+    p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    p.id_pedido?.toString().includes(busqueda);
+
+  const coincideEstado =
+    filtroEstado === "todos" || p.estado === filtroEstado;
+
+  return coincideBusqueda && coincideEstado;
+});
+
 
 
 
@@ -50,9 +59,37 @@ const PedidosPage = () => {
                     </div>
                 </div>
     
-                <div className="mb-6 w-full max-w-md mt-6">
-                    <Input id="search-orders" type="text" placeholder="Buscar por proveedor o ID..." value={busqueda} onChange={setBusqueda}/>
-                </div>
+                {/* BARRA DE HERRAMIENTAS */}
+<div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
+
+  {/* Buscador */}
+  <div className="flex-1 relative">
+  
+    <Input
+      id="search-orders"
+      type="text"
+      placeholder="Buscar por proveedor o ID..."
+      value={busqueda}
+      onChange={(val) => setBusqueda(val)}
+      className="pl-12"
+    />
+  </div>
+
+  {/* Select de estado */}
+  <div className="min-w-[200px]">
+    <Select
+      id="estado-filter"
+      value={filtroEstado}
+      options={[
+        { value: "todos", label: "Todos los pedidos" },
+        { value: "PENDIENTE", label: "Pendientes" },
+        { value: "CONFIRMADO", label: "Confirmados" }
+      ]}
+      onChange={(val) => setFiltroEstado(val)}
+    />
+  </div>
+
+</div>
 
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
   <div className="overflow-auto scrollbar-global">
@@ -85,14 +122,13 @@ const PedidosPage = () => {
                 : "-"}
             </td>
 
-            <td className="p-5 text-right">
-              <Button
-                variant="primario"
-                className="py-2 px-4 h-auto inline-flex w-auto"
+              <td className="p-5 text-right">
+              <button
                 onClick={() => setPedidoSeleccionado(pedido)}
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
               >
-                Recibir
-              </Button>
+                Recepcionar
+              </button>
             </td>
 
           </tr>

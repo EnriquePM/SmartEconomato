@@ -1,25 +1,35 @@
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
+import { useState } from "react";
+import { Select } from '../components/ui/select';
+
 
 const Pedidos = () => {
     const {
         vista, setVista,
         tipoPedido, setTipoPedido,
-        busqueda, setBusqueda,
+       
         pedidos, catalogoProductos, catalogoProveedores,
         pedidoActual, setPedidoActual,
         agregarLinea, seleccionarProducto, actualizarLinea, borrarLinea,
         guardarPedido, eliminarPedido
     } = usePedidos();
 
-const pedidosFiltrados = (pedidos || []).filter(p => {
-  const coincideTipo = p.tipo_pedido === tipoPedido;
+    const [busqueda, setBusqueda] = useState("");
+const [filtroProveedor, setFiltroProveedor] = useState("todos");
+
+const pedidosFiltrados = pedidos.filter(p => {
   const coincideBusqueda =
-      p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      p.id_pedido?.toString().includes(busqueda.toLowerCase());
-  return coincideTipo && coincideBusqueda;
+    p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    p.id_pedido?.toString().includes(busqueda);
+
+  const coincideProveedor =
+    filtroProveedor === "todos" || p.proveedor === filtroProveedor;
+
+  return coincideBusqueda && coincideProveedor;
 });
+
 
 
     const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.id_pedido !== undefined;
@@ -206,9 +216,34 @@ const pedidosFiltrados = (pedidos || []).filter(p => {
                 </div>
             </div>
 
-            <div className="mb-6 w-full max-w-md mt-6">
-                <Input id="search-orders" type="text" placeholder="Buscar por proveedor o ID..." value={busqueda} onChange={setBusqueda} />
-            </div>
+            {/* BARRA DE HERRAMIENTAS - BUSCAR Y FILTRAR POR PROVEEDOR */}
+<div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
+  {/* Input de búsqueda */}
+    <div className="flex-1 relative">
+  
+    <Input
+      id="search-orders"
+      type="text"
+      placeholder="Buscar por proveedor o ID..."
+      value={busqueda}
+      onChange={(val) => setBusqueda(val)}
+      className="pl-12"
+    />
+  </div>
+
+  {/* Select de proveedor */}
+  <div className="min-w-[200px]">
+    <Select
+      id="proveedor-filter"
+      value={filtroProveedor}
+      options={[
+        { value: "todos", label: "Todos los proveedores" },
+        ...catalogoProveedores.map(p => ({ value: p.id, label: p.nombre }))
+      ]}
+      onChange={(val) => setFiltroProveedor(val)}
+    />
+  </div>
+</div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
                 <div className="overflow-auto scrollbar-global">
