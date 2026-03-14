@@ -13,7 +13,7 @@ const Pedidos = () => {
         guardarPedido, eliminarPedido
     } = usePedidos();
 
-    const pedidosFiltrados = (pedidos || []).filter(p => {
+const pedidosFiltrados = (pedidos || []).filter(p => {
   const coincideTipo = p.tipo_pedido === tipoPedido;
   const coincideBusqueda =
       p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||

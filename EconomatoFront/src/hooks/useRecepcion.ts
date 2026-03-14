@@ -17,6 +17,7 @@ export const useConfirmarPedido = (idPedido: number, lineasIniciales: any[]) => 
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
   // 3. Función para actualizar una línea específica (cuando el usuario teclea)
   const actualizarCantidad = (productoId: number, valor: string) => {
     const num = parseFloat(valor) || 0;
