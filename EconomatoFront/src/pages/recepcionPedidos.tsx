@@ -109,7 +109,7 @@ const [filtroEstado, setFiltroEstado] = useState("todos");
           <tr key={pedido.id_pedido} className="hover:bg-gray-50 transition group">
             
             <td className="p-5 font-mono text-xs text-gray-500">
-              #{pedido.id_pedido}
+              {pedido.id_pedido}
             </td>
 
             <td className="p-5 font-medium text-gray-900">
