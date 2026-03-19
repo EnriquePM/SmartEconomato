@@ -3,7 +3,7 @@ import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
 import { Select } from '../components/ui/select';
-
+import type { Pedido, EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
 
 const Pedidos = () => {
     const {
@@ -17,20 +17,18 @@ const Pedidos = () => {
     } = usePedidos();
 
     const [busqueda, setBusqueda] = useState("");
-const [filtroProveedor, setFiltroProveedor] = useState("todos");
+    const [filtroProveedor, setFiltroProveedor] = useState("todos");
 
-const pedidosFiltrados = pedidos.filter(p => {
-  const coincideBusqueda =
-    p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    p.id_pedido?.toString().includes(busqueda);
+    const pedidosFiltrados = pedidos.filter(p => {
+    const coincideBusqueda =
+        p.proveedor?.toLowerCase().includes(busqueda.toLowerCase()) ||
+        p.id_pedido?.toString().includes(busqueda);
 
-  const coincideProveedor =
-    filtroProveedor === "todos" || p.proveedor === filtroProveedor;
+    const coincideProveedor =
+        filtroProveedor === "todos" || p.proveedor === filtroProveedor;
 
-  return coincideBusqueda && coincideProveedor;
-});
-
-
+    return coincideBusqueda && coincideProveedor;
+    });
 
     const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.id_pedido !== undefined;
     const titulo = tipoPedido === 'productos' ? 'Productos' : 'Utensilios';
@@ -44,8 +42,22 @@ const pedidosFiltrados = pedidos.filter(p => {
         }
     };
 
+    const estadoClass = (estado: EstadoPedido) => {
+        switch (estado) {
+            case 'BORRADOR': return 'bg-gray-100 text-gray-600';
+            case 'PENDIENTE': return 'bg-blue-100 text-blue-700';
+            case 'VALIDADO': return 'bg-indigo-100 text-indigo-700';
+            case 'CONFIRMADO': return 'bg-green-100 text-green-700';
+            case 'INCOMPLETO': return 'bg-yellow-100 text-yellow-700';
+            case 'RECHAZADO': return 'bg-red-100 text-red-700';
+            default: return 'bg-gray-100 text-gray-600';
+        }
+    };
+
     if (vista === 'formulario') {
-        const lineas = tipoPedido === 'productos' ? pedidoActual.pedido_ingrediente || [] : pedidoActual.pedido_material || [];
+        const lineas: (PedidoIngrediente | PedidoMaterial)[] = tipoPedido === 'productos'
+            ? pedidoActual.pedido_ingrediente || []
+            : pedidoActual.pedido_material || [];
 
         return (
             <div className="flex flex-col animate-fade-in-up space-y-6 pb-6">
@@ -76,6 +88,11 @@ const pedidosFiltrados = pedidos.filter(p => {
                             </div>
                         </div>
                     )}
+                    {pedidoActual.estado === 'PENDIENTE' && (
+                        <button className="bg-green-600 text-white px-6 py-2 rounded-pill font-bold">
+                            Recibir Mercancía
+                        </button>
+                    )}  
                 </div>
 
                 {/* Formulario principal */}
@@ -139,8 +156,8 @@ const pedidosFiltrados = pedidos.filter(p => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {lineas.map((linea, index) => {
-                                    const itemId = tipoPedido === 'productos' ? (linea as any).id_ingrediente : (linea as any).id_material;
-                                    const cantidad = (linea as any).cantidad_solicitada;
+                                    const itemId = tipoPedido === 'productos' ? (linea as PedidoIngrediente).id_ingrediente : (linea as PedidoMaterial).id_material;
+                                    const cantidad = (linea as PedidoIngrediente | PedidoMaterial).cantidad_solicitada;
                                     const prod = catalogoProductos.find(p => p.id === itemId);
                                     const subtotal = (prod?.precio || 0) * cantidad;
 
@@ -217,33 +234,30 @@ const pedidosFiltrados = pedidos.filter(p => {
             </div>
 
             {/* BARRA DE HERRAMIENTAS - BUSCAR Y FILTRAR POR PROVEEDOR */}
-<div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
-  {/* Input de búsqueda */}
-    <div className="flex-1 relative">
-  
-    <Input
-      id="search-orders"
-      type="text"
-      placeholder="Buscar por proveedor o ID..."
-      value={busqueda}
-      onChange={(val) => setBusqueda(val)}
-      className="pl-12"
-    />
-  </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex-1 relative">
+                    <Input
+                        id="search-orders"
+                        type="text"
+                        placeholder="Buscar por proveedor o ID..."
+                        value={busqueda}
+                        onChange={(val) => setBusqueda(val)}
+                        className="pl-12"
+                    />
+                </div>
 
-  {/* Select de proveedor */}
-  <div className="min-w-[200px]">
-    <Select
-      id="proveedor-filter"
-      value={filtroProveedor}
-      options={[
-        { value: "todos", label: "Todos los proveedores" },
-        ...catalogoProveedores.map(p => ({ value: p.id, label: p.nombre }))
-      ]}
-      onChange={(val) => setFiltroProveedor(val)}
-    />
-  </div>
-</div>
+                <div className="min-w-[200px]">
+                    <Select
+                        id="proveedor-filter"
+                        value={filtroProveedor}
+                        options={[
+                            { value: "todos", label: "Todos los proveedores" },
+                            ...catalogoProveedores.map(p => ({ value: p.nombre, label: p.nombre }))
+                        ]}
+                        onChange={(val) => setFiltroProveedor(val)}
+                    />
+                </div>
+            </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
                 <div className="overflow-auto scrollbar-global">
@@ -266,11 +280,7 @@ const pedidosFiltrados = pedidos.filter(p => {
                                         <td className="p-5 font-medium text-gray-900">{p.proveedor}</td>
                                         <td className="p-5 text-gray-600">{p.fecha_pedido ? new Date(p.fecha_pedido).toLocaleDateString() : '-'}</td>
                                         <td className="p-5 text-center">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
-                                                p.estado === 'PENDIENTE' ? 'bg-blue-100 text-blue-700' :
-                                                p.estado === 'BORRADOR' ? 'bg-gray-100 text-gray-600' :
-                                                'bg-green-100 text-green-700'
-                                            }`}>{p.estado}</span>
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${estadoClass(p.estado)}`}>{p.estado}</span>
                                         </td>
                                         <td className="p-5 text-right font-bold text-gray-800">{Number(p.total_estimado || 0).toFixed(2)} €</td>
                                         <td className="p-5 text-right flex justify-end items-center gap-4">

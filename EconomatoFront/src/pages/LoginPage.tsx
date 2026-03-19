@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
@@ -8,6 +9,7 @@ import fondo from '../assets/fondo.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setUsuario } = useAuth();
 
   // Estados
   const [user, setUser] = useState('');
@@ -62,10 +64,8 @@ const LoginPage = () => {
       } 
       
       // CASO: LOGIN NORMAL
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("usuario", JSON.stringify(data.usuario));
-      
-      navigate("/"); // O '/inventario'
+      setUsuario(data.usuario); // Actualiza el contexto (y el localStorage internamente)
+      navigate("/");
 
     } catch (error) {
       console.error("Error de conexión:", error);
@@ -101,7 +101,7 @@ const LoginPage = () => {
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
+        <form  onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
           <Input 
             type="text" 
             placeholder="Usuario" 
@@ -118,9 +118,10 @@ const LoginPage = () => {
           />
           
           <Button 
-            text={loading ? "Entrando..." : "Entrar"} 
-            onClick={() => handleLogin()} 
-          />
+            loading={loading}
+            type="submit"
+            className="w-full"
+            >Entrar</Button>
         </form>
       </main>
       <FooterBar />

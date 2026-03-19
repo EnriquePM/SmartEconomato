@@ -8,6 +8,7 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   className?: string; 
+  type?: "button" | "submit" | "reset";
 }
 
 export const Button = ({ 
@@ -16,7 +17,8 @@ export const Button = ({
   variant = 'primario', 
   disabled, 
   loading, 
-  className = "" 
+  className = "",
+  type = "button"
 }: ButtonProps) => {
   
   // Mapeo de estilos según la variante
@@ -29,6 +31,7 @@ export const Button = ({
 
   return (
     <button 
+      type={type}
       onClick={onClick}
       // Para evitar que el usuario mande muchas veces el form: El botón se bloquea si tú lo decides (disabled={true})
       // El botón se deshabilita si está en estado de carga o si se pasa la prop disabled

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User, Mail, CheckCircle2, Save, UtensilsCrossed } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 // --- IMPORTAMOS TUS 8 IMÁGENES LOCALES ---
 // Asegúrate de que los nombres coinciden con tus archivos en la carpeta assets/Avatares
@@ -25,14 +26,15 @@ const AVATARES_COCINA = [
 ];
 
 const Perfil = () => {
-  // ESTADO INICIAL
-  // Intentamos leer del localStorage primero para recordar la foto si recargas la página
+  const { usuario: usuarioAuth } = useAuth();
+
+  // ESTADO INICIAL: Usamos los datos reales del contexto
   const [usuario, setUsuario] = useState({
-    nombre: "Ayoze",
-    apellidos: "Pérez",
-    email: "ayoze.perez@escuela.com",
-    rol: "Alumno",
-    avatar: localStorage.getItem("avatarUsuario") || chef1 
+    nombre: usuarioAuth?.nombre ?? "",
+    apellidos: usuarioAuth?.apellido1 ?? "",
+    email: usuarioAuth?.email ?? "Sin email",
+    rol: usuarioAuth?.rol ?? "Invitado",
+    avatar: localStorage.getItem("avatarUsuario") || chef1
   });
 
   const [avatarSeleccionado, setAvatarSeleccionado] = useState(usuario.avatar);

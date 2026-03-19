@@ -67,6 +67,7 @@ const Inventario = () => {
     setOrden(prev => ({ campo, asc: prev.campo === campo ? !prev.asc : true }));
   };
 
+  console.log("PRIMER ITEM:", productosFiltrados[0]);
   if (error) {
     return (
       <div className="p-10 text-center bg-red-50 rounded-xl border border-red-100">
@@ -185,7 +186,7 @@ return (
                     </td>
                     <td className="p-4 text-center">
                       <div className={`inline-block px-3 py-1 rounded-lg text-xs font-black ${
-                        item.stock < 10 
+                        item.stock < Number(item.stock_minimo || 0) 
                           ? 'bg-red-50 text-red-600 border border-red-100' 
                           : 'bg-green-50 text-green-700 border border-green-100'
                       }`}>

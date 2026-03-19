@@ -84,6 +84,7 @@ model material {
   unidad_medida  String?     @db.VarChar(50)
   precio_unidad  Decimal     @default(0.00) @db.Decimal(10, 2)
   stock          Int         @default(0)  
+  stock_minimo  Int        @default(0)
   id_categoria   Int?
   categoria      categoria?  @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_material_categoria")
   pedido_material pedido_material[]
@@ -128,6 +129,7 @@ enum estado_pedido {
   BORRADOR    
   PENDIENTE
   VALIDADO
+  INCOMPLETO
   CONFIRMADO
   RECHAZADO
 }
@@ -151,6 +153,7 @@ model pedido_ingrediente {
   id_pedido           Int
   id_ingrediente      Int
   cantidad_solicitada Decimal     @db.Decimal(10, 2)
+  cantidad_recibida   Decimal     @default(0) @db.Decimal(10, 2)
   ingrediente         ingrediente @relation(fields: [id_ingrediente], references: [id_ingrediente], onDelete: NoAction, onUpdate: NoAction, map: "fk_pi_ingrediente")
   pedido              pedido      @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction, map: "fk_pi_pedido")
 
@@ -161,6 +164,7 @@ model pedido_material {
   id_pedido           Int
   id_material         Int
   cantidad_solicitada Int         
+  cantidad_recibida   Int         @default(0)
   material            material    @relation(fields: [id_material], references: [id_material], onDelete: NoAction, onUpdate: NoAction)
   pedido              pedido      @relation(fields: [id_pedido], references: [id_pedido], onDelete: Cascade, onUpdate: NoAction)
   @@id([id_pedido, id_material])

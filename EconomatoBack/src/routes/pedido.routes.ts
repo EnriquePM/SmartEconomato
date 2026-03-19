@@ -3,7 +3,6 @@ import { createPedido, getPedidos, validarPedido, deletePedido, confirmarPedido 
 
 const router = Router();
 
-// Fíjate que es solo '/' porque en index.ts ya pusiste '/api/pedidos'
 router.post('/', createPedido);
 router.get('/', getPedidos);
 router.put('/:id/validar', validarPedido);

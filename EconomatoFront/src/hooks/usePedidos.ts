@@ -28,37 +28,42 @@ export const usePedidos = () => {
     pedido_material: []
   });
 
+ 
   // Cargar pedidos y proveedores
   useEffect(() => {
-  getPedidosService()
-  .then(data => {
-    //esto lo tengo que pasar a mapper??
-    const normalizados: Pedido[] = data.map(p => ({
-      ...p,
-      tipo_pedido: p.tipo_pedido || 'productos', 
-      total_estimado: p.total_estimado ?? 0,    
-      proveedor: p.proveedor || '',              
-      observaciones: p.observaciones || '',     
-      pedido_ingrediente: p.pedido_ingrediente || [],
-      pedido_material: p.pedido_material || []
-    }));
-    setPedidos(normalizados);
-  })
-  .catch(console.error);
+    getPedidosService()
+      .then(data => {
+        const normalizados: Pedido[] = data.map(p => ({
+          ...p,
+          tipo_pedido: p.tipo_pedido || 'productos',
+          total_estimado: p.total_estimado ?? 0,
+          proveedor: p.proveedor || '',
+          observaciones: p.observaciones || '',
+          pedido_ingrediente: p.pedido_ingrediente?.map(pi => ({
+            ...pi,
+            cantidad_recibida: pi.cantidad_recibida ?? 0
+          })) || [],
+          pedido_material: p.pedido_material?.map(pm => ({
+            ...pm,
+            cantidad_recibida: pm.cantidad_recibida ?? 0
+          })) || []
+        }));
+        setPedidos(normalizados);
+      })
+      .catch(console.error);
 
-  getProveedores()
-    .then(data => { console.log("Proveedores:", data); setCatalogoProveedores(data || []); })
-    .catch(console.error);
-}, []);
+    getProveedores()
+      .then(data => setCatalogoProveedores(data || []))
+      .catch(console.error);
+  }, []);
 
-
+ 
   // Cargar inventario según tipoPedido
   useEffect(() => {
     const cargarInventario = async () => {
       try {
         const data = tipoPedido === 'productos' ? await getIngredientes() : await getMateriales();
         setCatalogoProductos(data);
-        console.log("Inventario cargado:", data);
       } catch (error) {
         console.error("Error cargando inventario:", error);
       }
@@ -66,6 +71,7 @@ export const usePedidos = () => {
     cargarInventario();
   }, [tipoPedido]);
 
+ 
   // Agregar línea
   const agregarLinea = () => {
     if (tipoPedido === 'productos') {
@@ -73,7 +79,7 @@ export const usePedidos = () => {
         ...prev,
         pedido_ingrediente: [
           ...(prev.pedido_ingrediente || []),
-          { id_ingrediente: 0, cantidad_solicitada: 1 }
+          { id_ingrediente: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
         ]
       }));
     } else {
@@ -81,12 +87,13 @@ export const usePedidos = () => {
         ...prev,
         pedido_material: [
           ...(prev.pedido_material || []),
-          { id_material: 0, cantidad_solicitada: 1 }
+          { id_material: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
         ]
       }));
     }
   };
 
+ 
   // Seleccionar producto/material
   const seleccionarProducto = (index: number, idStr: number) => {
     const id = Number(idStr);
@@ -95,16 +102,17 @@ export const usePedidos = () => {
 
     if (tipoPedido === 'productos') {
       const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
-      nuevas[index] = { id_ingrediente: item.id, cantidad_solicitada: 1 };
+      nuevas[index] = { id_ingrediente: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
       setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
     } else {
       const nuevas = [...(pedidoActual.pedido_material || [])];
-      nuevas[index] = { id_material: item.id, cantidad_solicitada: 1 };
+      nuevas[index] = { id_material: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
       setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
     }
     recalcularTotal();
   };
 
+  
   // Actualizar cantidad
   const actualizarLinea = (index: number, cantidad: number) => {
     if (tipoPedido === 'productos') {
@@ -133,7 +141,7 @@ export const usePedidos = () => {
     recalcularTotal();
   };
 
-  // Calcular total estimado (basado en precio si lo tenemos)
+  // Calcular total estimado
   const recalcularTotal = () => {
     let total = 0;
     if (tipoPedido === 'productos') {
@@ -150,31 +158,29 @@ export const usePedidos = () => {
     setPedidoActual(prev => ({ ...prev, total_estimado: total }));
   };
 
+
+  // Guardar pedido
   const guardarPedido = async (nuevoEstado: EstadoPedido) => {
-  try {
-    const payload: Pedido = {
-      ...pedidoActual,
-      pedido_ingrediente: pedidoActual.pedido_ingrediente || [],
-      pedido_material: pedidoActual.pedido_material || [],
-      tipo_pedido: tipoPedido,
-      id_usuario: pedidoActual.id_usuario,
-      estado: nuevoEstado
-    };
+    try {
+      const payload: Pedido = {
+        ...pedidoActual,
+        pedido_ingrediente: pedidoActual.pedido_ingrediente || [],
+        pedido_material: pedidoActual.pedido_material || [],
+        tipo_pedido: tipoPedido,
+        id_usuario: pedidoActual.id_usuario,
+        estado: nuevoEstado
+      };
 
+      await guardarPedidoService(payload);
+      alert("Pedido guardado con éxito");
+      setVista('lista');
 
-
-    await guardarPedidoService(payload);
-    alert("Pedido guardado con éxito");
-    setVista('lista');
-
-    const pedidosActualizados = await getPedidosService();
-
-    setPedidos(pedidosActualizados);
-  } catch (e: any) {
-    alert("Error al guardar: " + e.message);
-  }
-};
-
+      const pedidosActualizados = await getPedidosService();
+      setPedidos(pedidosActualizados);
+    } catch (e: any) {
+      alert("Error al guardar: " + e.message);
+    }
+  };
 
 
   // Eliminar pedido
