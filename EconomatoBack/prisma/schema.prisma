@@ -74,12 +74,9 @@ model categoria {
 }
 
 model proveedor {
-  id_proveedor     Int           @id @default(autoincrement())
-  nombre           String        @db.VarChar(150)
-  email            String?       @db.VarChar(100)
-  telefono         String?       @db.VarChar(20)
-  persona_contacto String?       @db.VarChar(100)
-  ingrediente      ingrediente[]
+  id_proveedor Int           @id @default(autoincrement())
+  nombre       String        @db.VarChar(150)
+  ingrediente  ingrediente[]
 }
 
 model material {
