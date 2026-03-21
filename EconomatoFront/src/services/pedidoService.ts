@@ -1,19 +1,32 @@
 import type { Pedido } from "../models/Pedidos";
 
-const API_URL = 'http://localhost:3000/api'; 
+const API_URL = 'http://localhost:3000/api';
+
+const normalizarPedidoPayload = (pedidoData: Pedido) => ({
+  ...pedidoData,
+  pedido_ingrediente: (pedidoData.pedido_ingrediente || []).filter(
+    (linea) => Number(linea.id_ingrediente) > 0 && Number(linea.cantidad_solicitada) > 0
+  ),
+  pedido_material: (pedidoData.pedido_material || []).filter(
+    (linea) => Number(linea.id_material) > 0 && Number(linea.cantidad_solicitada) > 0
+  ),
+  total_estimado: pedidoData.total_estimado ?? 0,
+  tipo_pedido: pedidoData.tipo_pedido,
+  id_usuario: pedidoData.id_usuario || 1
+});
 
 // 1. Obtener todos los pedidos (para la lista principal)
 export const getPedidosService = async (): Promise<Pedido[]> => {
-    const res = await fetch(`${API_URL}/pedidos`);
-    if (!res.ok) throw new Error("Error al obtener pedidos");
-    return await res.json();
+  const res = await fetch(`${API_URL}/pedidos`);
+  if (!res.ok) throw new Error("Error al obtener pedidos");
+  return await res.json();
 };
 
 // 2. Obtener UN pedido con todo su detalle (productos incluidos)
 export const getPedidoByIdService = async (id: number): Promise<Pedido> => {
-    const res = await fetch(`${API_URL}/pedidos/${id}`);
-    if (!res.ok) throw new Error("Error al obtener el detalle del pedido");
-    return await res.json();
+  const res = await fetch(`${API_URL}/pedidos/${id}`);
+  if (!res.ok) throw new Error("Error al obtener el detalle del pedido");
+  return await res.json();
 };
 
 export const guardarPedidoService = async (pedidoData: Pedido) => {
@@ -26,18 +39,11 @@ export const guardarPedidoService = async (pedidoData: Pedido) => {
       metodo = 'PUT';
     } else {
       url = `${API_URL}/pedidos/${pedidoData.id_pedido}`;
-      metodo = 'PUT';  
+      metodo = 'PUT';
     }
   }
 
-  const payload = {
-    ...pedidoData,
-    pedido_ingrediente: pedidoData.pedido_ingrediente || [],
-    pedido_material: pedidoData.pedido_material || [],
-    id_usuario: 1
-  };
-
-  console.log("El array de ingredientes que se va a enviar al backend:", payload);
+  const payload = normalizarPedidoPayload(pedidoData);
 
   const res = await fetch(url, {
     method: metodo,
@@ -57,8 +63,8 @@ export const guardarPedidoService = async (pedidoData: Pedido) => {
 
 // 4. Eliminar Pedido 
 export const eliminarPedidoService = async (id: number): Promise<void> => {
-    const res = await fetch(`${API_URL}/pedidos/${id}`, {
-        method: 'DELETE'
-    });
-    if (!res.ok) throw new Error("No se pudo eliminar el pedido");
+  const res = await fetch(`${API_URL}/pedidos/${id}`, {
+    method: 'DELETE'
+  });
+  if (!res.ok) throw new Error("No se pudo eliminar el pedido");
 };

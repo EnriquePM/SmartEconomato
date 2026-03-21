@@ -11,6 +11,7 @@ interface InputProps {
   onChange: (val: any) => void; 
   className?: string; 
   disabled?: boolean;
+  min?: number;
 }
 
 export const Input = ({ 
@@ -21,7 +22,8 @@ export const Input = ({
   id, 
   label, 
   className = "", 
-  disabled = false  
+  disabled = false,
+  min
 }: InputProps) => (
   <div className="w-full text-left">
     {label && (
@@ -41,6 +43,7 @@ export const Input = ({
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled} 
+      min={type === 'number' ? min : undefined}
       className={`
         w-full bg-gray-100 border-none rounded-full py-3 px-6 
         text-sm font-semibold text-gray-800 

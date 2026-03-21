@@ -50,6 +50,7 @@ export const ModalRecepcion = ({ pedido, onClose }: { pedido: any, onClose: () =
                     id="peso"
                     label="Peso / Cantidad"
                     type="number"
+                    min={0}
                     value={lineaEnFoco.pesoRecibido} // Carga el peso de la API por defecto
                     onChange={(val) => actualizarValor(lineaEnFoco.id, 'pesoRecibido', val)}
                     placeholder="0.00"

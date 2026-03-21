@@ -15,18 +15,22 @@ export const useRecepcionModal = (pedido: any) => {
   // Función para buscar por nombre o código de barras
   const buscarProducto = (termino: string) => {
     setBusqueda(termino);
-    const encontrado = lineas.find(l => 
-      l.codigoBarras === termino || 
+    const encontrado = lineas.find(l =>
+      l.codigoBarras === termino ||
       l.nombre.toLowerCase().includes(termino.toLowerCase())
     );
     if (encontrado) setLineaEnFoco(encontrado);
   };
 
   const actualizarValor = (id: number, campo: string, valor: any) => {
-    setLineas(prev => prev.map(l => l.id === id ? { ...l, [campo]: valor } : l));
+    const valorNormalizado = campo === 'pesoRecibido'
+      ? Math.max(0, Number(valor) || 0)
+      : valor;
+
+    setLineas(prev => prev.map(l => l.id === id ? { ...l, [campo]: valorNormalizado } : l));
     // También actualizamos la línea en foco para que se vea el cambio en el input
     if (lineaEnFoco?.id === id) {
-      setLineaEnFoco((prev: any) => ({ ...prev, [campo]: valor }));
+      setLineaEnFoco((prev: any) => ({ ...prev, [campo]: valorNormalizado }));
     }
   };
 

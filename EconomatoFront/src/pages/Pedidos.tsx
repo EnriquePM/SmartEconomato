@@ -1,9 +1,8 @@
-import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
 import { Select } from '../components/ui/select';
-import type { Pedido, EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
+import type { EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
 
 const Pedidos = () => {
     const {
@@ -33,10 +32,24 @@ const Pedidos = () => {
     const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.id_pedido !== undefined;
     const titulo = tipoPedido === 'productos' ? 'Productos' : 'Utensilios';
 
-    const guardarBorrador = () => guardarPedido('BORRADOR');
+    const proveedorSeleccionado = !!pedidoActual.proveedor?.trim();
+    const lineasValidas = (tipoPedido === 'productos' ? pedidoActual.pedido_ingrediente || [] : pedidoActual.pedido_material || []).filter((linea) => {
+        const itemId = tipoPedido === 'productos'
+            ? (linea as PedidoIngrediente).id_ingrediente
+            : (linea as PedidoMaterial).id_material;
+
+        return Number(itemId) > 0 && Number(linea.cantidad_solicitada) > 0;
+    });
+
+    const guardarBorrador = () => {
+        if (!proveedorSeleccionado) return alert("Selecciona un proveedor antes de guardar el pedido");
+        if (lineasValidas.length === 0) return alert("Añade al menos una línea válida antes de guardar el pedido");
+        guardarPedido('BORRADOR');
+    };
+
     const enviarPedido = () => {
-        const lineas = tipoPedido === 'productos' ? pedidoActual.pedido_ingrediente || [] : pedidoActual.pedido_material || [];
-        if (lineas.length === 0) return alert("Añade al menos un producto");
+        if (!proveedorSeleccionado) return alert("Selecciona un proveedor antes de enviar el pedido");
+        if (lineasValidas.length === 0) return alert("Añade al menos un producto");
         if (confirm("¿Enviar pedido al proveedor? Pasará a estado PENDIENTE.")) {
             guardarPedido('PENDIENTE');
         }
@@ -126,7 +139,7 @@ const Pedidos = () => {
                         </div>
                         <div className="w-full md:w-1/3 text-right pb-4">
                             <label className="block text-sm font-medium text-gray-500 mb-1">Total Estimado</label>
-                            <div className="text-4xl font-black text-gray-900">{pedidoActual.total_estimado?.toFixed(2)} €</div>
+                            <div className="text-4xl font-black text-gray-900">{Number(pedidoActual.total_estimado ?? 0).toFixed(2)} €</div>
                         </div>
                     </div>
                     <div className="w-full">
@@ -177,6 +190,7 @@ const Pedidos = () => {
                                             <td className="p-3 w-32 text-center">
                                                 <Input
                                                     type="number"
+                                                    min={0}
                                                     placeholder="0"
                                                     value={cantidad}
                                                     onChange={(val) => actualizarLinea(index, Number(val))}
@@ -285,7 +299,24 @@ const Pedidos = () => {
                                         <td className="p-5 text-right font-bold text-gray-800">{Number(p.total_estimado || 0).toFixed(2)} €</td>
                                         <td className="p-5 text-right flex justify-end items-center gap-4">
                                             <button 
-                                                onClick={() => { setPedidoActual({ ...p, pedido_ingrediente: p.pedido_ingrediente || [], pedido_material: p.pedido_material || [] }); setVista('formulario'); }} 
+                                                onClick={() => {
+                                                    setPedidoActual({
+                                                        ...p,
+                                                        total_estimado: Number(p.total_estimado ?? 0),
+                                                        pedido_ingrediente: (p.pedido_ingrediente || []).map((linea) => ({
+                                                            ...linea,
+                                                            cantidad_solicitada: Number(linea.cantidad_solicitada ?? 0),
+                                                            cantidad_recibida: Number(linea.cantidad_recibida ?? 0)
+                                                        })),
+                                                        pedido_material: (p.pedido_material || []).map((linea) => ({
+                                                            ...linea,
+                                                            cantidad_solicitada: Number(linea.cantidad_solicitada ?? 0),
+                                                            cantidad_recibida: Number(linea.cantidad_recibida ?? 0)
+                                                        }))
+                                                    });
+                                                    setTipoPedido(p.tipo_pedido === 'utensilios' ? 'utensilios' : 'productos');
+                                                    setVista('formulario');
+                                                }} 
                                                 className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                                             >
                                                 {p.estado === 'BORRADOR' ? 'Editar' : 'Ver'}

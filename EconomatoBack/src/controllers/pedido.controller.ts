@@ -2,54 +2,124 @@ import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import { estado_pedido } from '@prisma/client';
 
+const pedidoInclude = {
+    usuario: {
+        select: { nombre: true, apellido1: true, email: true }
+    },
+    pedido_ingrediente: {
+        include: { ingrediente: true }
+    },
+    pedido_material: {
+        include: { material: true }
+    }
+};
+
+const parseEstadoPedido = (estado: unknown): estado_pedido => {
+    switch (estado) {
+        case 'BORRADOR':
+            return estado_pedido.BORRADOR;
+        case 'VALIDADO':
+            return estado_pedido.VALIDADO;
+        case 'INCOMPLETO':
+            return estado_pedido.INCOMPLETO;
+        case 'CONFIRMADO':
+            return estado_pedido.CONFIRMADO;
+        case 'RECHAZADO':
+            return estado_pedido.RECHAZADO;
+        case 'PENDIENTE':
+        default:
+            return estado_pedido.PENDIENTE;
+    }
+};
+
+const mapIngredienteLineas = (lineas: any[] = []) => {
+    return lineas
+        .map((linea) => ({
+            id_ingrediente: Number(linea.id_ingrediente ?? linea.productoId ?? linea.id_producto),
+            cantidad_solicitada: Number(linea.cantidad_solicitada ?? linea.cantidad ?? 0)
+        }))
+        .filter((linea) => linea.id_ingrediente > 0 && linea.cantidad_solicitada > 0);
+};
+
+const mapMaterialLineas = (lineas: any[] = []) => {
+    return lineas
+        .map((linea) => ({
+            id_material: Number(linea.id_material ?? linea.productoId ?? linea.id_producto),
+            cantidad_solicitada: Number(linea.cantidad_solicitada ?? linea.cantidad ?? 0)
+        }))
+        .filter((linea) => linea.id_material > 0 && linea.cantidad_solicitada > 0);
+};
+
+const normalizePedidoPayload = (body: any) => {
+    const tipoPedido = body.tipo_pedido ?? body.tipoPedido ?? 'productos';
+    const pedidoIngredientes = Array.isArray(body.pedido_ingrediente) ? mapIngredienteLineas(body.pedido_ingrediente) : [];
+    const pedidoMateriales = Array.isArray(body.pedido_material) ? mapMaterialLineas(body.pedido_material) : [];
+
+    if (pedidoIngredientes.length > 0 || pedidoMateriales.length > 0) {
+        return {
+            proveedor: body.proveedor ?? null,
+            observaciones: body.observaciones ?? null,
+            fecha_pedido: body.fecha_pedido ? new Date(body.fecha_pedido) : new Date(),
+            total_estimado: body.total_estimado ?? body.total ?? 0,
+            tipo_pedido: tipoPedido,
+            estado: parseEstadoPedido(body.estado),
+            pedido_ingrediente: pedidoIngredientes,
+            pedido_material: pedidoMateriales
+        };
+    }
+
+    const lineas = Array.isArray(body.lineas) ? body.lineas : [];
+
+    return {
+        proveedor: body.proveedor ?? null,
+        observaciones: body.observaciones ?? null,
+        fecha_pedido: body.fecha_pedido ? new Date(body.fecha_pedido) : new Date(),
+        total_estimado: body.total_estimado ?? body.total ?? 0,
+        tipo_pedido: tipoPedido,
+        estado: parseEstadoPedido(body.estado),
+        pedido_ingrediente: tipoPedido === 'productos' ? mapIngredienteLineas(lineas) : [],
+        pedido_material: tipoPedido === 'utensilios' ? mapMaterialLineas(lineas) : []
+    };
+};
+
+const buildPedidoData = (payload: ReturnType<typeof normalizePedidoPayload>, id_usuario: number) => {
+    const dataPedido: any = {
+        id_usuario,
+        fecha_pedido: payload.fecha_pedido,
+        estado: payload.estado,
+        proveedor: payload.proveedor,
+        observaciones: payload.observaciones,
+        total_estimado: payload.total_estimado,
+        tipo_pedido: payload.tipo_pedido
+    };
+
+    if (payload.pedido_ingrediente.length > 0) {
+        dataPedido.pedido_ingrediente = {
+            create: payload.pedido_ingrediente
+        };
+    }
+
+    if (payload.pedido_material.length > 0) {
+        dataPedido.pedido_material = {
+            create: payload.pedido_material
+        };
+    }
+
+    return dataPedido;
+};
+
 // 1. CREAR O ACTUALIZAR PEDIDO (Soporta Ingredientes y Materiales)
 export const createPedido = async (req: any, res: Response) => {
-
-
     // Verificamos el usuario
     const id_usuario = req.user ? req.user.id_usuario : 1;
 
-    const {
-        proveedor, lineas, total, observaciones, tipoPedido, estado
-    } = req.body;
-
     try {
-
-        // Mapeo manual para debuggear
-        const estadoFinal = estado === 'BORRADOR' ? estado_pedido.BORRADOR : estado_pedido.PENDIENTE;
-        console.log("5. Estado final calculado:", estadoFinal);
-
-        const dataPedido: any = {
-            id_usuario,
-            fecha_pedido: new Date(),
-            estado: estadoFinal,
-            proveedor,
-            observaciones,
-            total_estimado: total,
-            tipo_pedido: tipoPedido
-        };
-
-
-        if (lineas && lineas.length > 0) {
-            if (tipoPedido === 'utensilios') {
-                dataPedido.pedido_material = {
-                    create: lineas.map((l: any) => ({
-                        id_material: Number(l.productoId), // Forzamos número
-                        cantidad_solicitada: Number(l.cantidad)
-                    }))
-                };
-            } else {
-                dataPedido.pedido_ingrediente = {
-                    create: lineas.map((l: any) => ({
-                        id_ingrediente: Number(l.productoId), // Forzamos número
-                        cantidad_solicitada: Number(l.cantidad)
-                    }))
-                };
-            }
-        }
+        const payload = normalizePedidoPayload(req.body);
+        const dataPedido = buildPedidoData(payload, id_usuario);
 
         const nuevoPedido = await prisma.pedido.create({
-            data: dataPedido
+            data: dataPedido,
+            include: pedidoInclude
         });
 
         res.json(nuevoPedido);
@@ -60,24 +130,59 @@ export const createPedido = async (req: any, res: Response) => {
     }
 };
 
+export const updatePedido = async (req: any, res: Response) => {
+    const { id } = req.params;
+    const idPedido = Number(id);
+
+    if (Number.isNaN(idPedido)) {
+        return res.status(400).json({ error: 'ID de pedido no valido' });
+    }
+
+    const id_usuario = req.user ? req.user.id_usuario : 1;
+
+    try {
+        const pedidoExistente = await prisma.pedido.findUnique({
+            where: { id_pedido: idPedido }
+        });
+
+        if (!pedidoExistente) {
+            return res.status(404).json({ error: 'Pedido no encontrado' });
+        }
+
+        if (pedidoExistente.estado === estado_pedido.CONFIRMADO) {
+            return res.status(400).json({ error: 'No se puede editar un pedido confirmado' });
+        }
+
+        const payload = normalizePedidoPayload(req.body);
+
+        const pedidoActualizado = await prisma.pedido.update({
+            where: { id_pedido: idPedido },
+            data: {
+                ...buildPedidoData(payload, id_usuario),
+                pedido_ingrediente: {
+                    deleteMany: {},
+                    ...(payload.pedido_ingrediente.length > 0 ? { create: payload.pedido_ingrediente } : {})
+                },
+                pedido_material: {
+                    deleteMany: {},
+                    ...(payload.pedido_material.length > 0 ? { create: payload.pedido_material } : {})
+                }
+            },
+            include: pedidoInclude
+        });
+
+        return res.json(pedidoActualizado);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al actualizar el pedido', detalle: error });
+    }
+};
+
 // 2. LISTAR TODOS LOS PEDIDOS (Para la tabla del frontend)
 export const getPedidos = async (req: Request, res: Response) => {
     try {
         const pedidos = await prisma.pedido.findMany({
             // Quitamos el 'where: PENDIENTE' para que se vean también los borradores y validados
-            include: {
-                usuario: {
-                    select: { nombre: true, apellido1: true, email: true }
-                },
-                // Incluimos ingredientes...
-                pedido_ingrediente: {
-                    include: { ingrediente: true }
-                },
-                // ... Y TAMBIÉN materiales
-                pedido_material: {
-                    include: { material: true }
-                }
-            },
+            include: pedidoInclude,
             orderBy: {
                 fecha_pedido: 'desc'
             }

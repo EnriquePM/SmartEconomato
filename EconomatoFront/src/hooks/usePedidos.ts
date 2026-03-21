@@ -1,11 +1,47 @@
 import { useState, useEffect } from 'react';
-import type { Pedido, EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
+import type { Pedido, EstadoPedido } from '../models/Pedidos';
 import type { ItemInventario } from '../models/ItemInventario';
 
 import { getPedidosService, guardarPedidoService, eliminarPedidoService } from '../services/pedidoService';
 import { getIngredientes } from '../services/inventarioService';
 import { getMateriales } from '../services/materialesService';
 import { getProveedores } from '../services/proveedorService';
+
+const normalizarPedido = (p: Pedido): Pedido => ({
+  ...p,
+  tipo_pedido: p.tipo_pedido || 'productos',
+  total_estimado: Number(p.total_estimado ?? 0),
+  proveedor: p.proveedor || '',
+  observaciones: p.observaciones || '',
+  pedido_ingrediente: p.pedido_ingrediente?.map(pi => ({
+    ...pi,
+    cantidad_solicitada: Number(pi.cantidad_solicitada ?? 0),
+    cantidad_recibida: Number(pi.cantidad_recibida ?? 0)
+  })) || [],
+  pedido_material: p.pedido_material?.map(pm => ({
+    ...pm,
+    cantidad_solicitada: Number(pm.cantidad_solicitada ?? 0),
+    cantidad_recibida: Number(pm.cantidad_recibida ?? 0)
+  })) || []
+});
+
+const calcularTotalEstimado = (
+  pedido: Pedido,
+  tipoPedido: 'productos' | 'utensilios',
+  catalogoProductos: ItemInventario[]
+): number => {
+  if (tipoPedido === 'productos') {
+    return (pedido.pedido_ingrediente || []).reduce((acc, linea) => {
+      const producto = catalogoProductos.find((p) => p.id === linea.id_ingrediente);
+      return acc + (producto?.precio || 0) * Number(linea.cantidad_solicitada || 0);
+    }, 0);
+  }
+
+  return (pedido.pedido_material || []).reduce((acc, linea) => {
+    const producto = catalogoProductos.find((p) => p.id === linea.id_material);
+    return acc + (producto?.precio || 0) * Number(linea.cantidad_solicitada || 0);
+  }, 0);
+};
 
 export const usePedidos = () => {
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
@@ -28,26 +64,12 @@ export const usePedidos = () => {
     pedido_material: []
   });
 
- 
+
   // Cargar pedidos y proveedores
   useEffect(() => {
     getPedidosService()
       .then(data => {
-        const normalizados: Pedido[] = data.map(p => ({
-          ...p,
-          tipo_pedido: p.tipo_pedido || 'productos',
-          total_estimado: p.total_estimado ?? 0,
-          proveedor: p.proveedor || '',
-          observaciones: p.observaciones || '',
-          pedido_ingrediente: p.pedido_ingrediente?.map(pi => ({
-            ...pi,
-            cantidad_recibida: pi.cantidad_recibida ?? 0
-          })) || [],
-          pedido_material: p.pedido_material?.map(pm => ({
-            ...pm,
-            cantidad_recibida: pm.cantidad_recibida ?? 0
-          })) || []
-        }));
+        const normalizados: Pedido[] = data.map(normalizarPedido);
         setPedidos(normalizados);
       })
       .catch(console.error);
@@ -57,7 +79,7 @@ export const usePedidos = () => {
       .catch(console.error);
   }, []);
 
- 
+
   // Cargar inventario según tipoPedido
   useEffect(() => {
     const cargarInventario = async () => {
@@ -71,29 +93,43 @@ export const usePedidos = () => {
     cargarInventario();
   }, [tipoPedido]);
 
- 
+
   // Agregar línea
   const agregarLinea = () => {
     if (tipoPedido === 'productos') {
-      setPedidoActual(prev => ({
-        ...prev,
-        pedido_ingrediente: [
-          ...(prev.pedido_ingrediente || []),
-          { id_ingrediente: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
-        ]
-      }));
+      setPedidoActual((prev) => {
+        const siguiente: Pedido = {
+          ...prev,
+          pedido_ingrediente: [
+            ...(prev.pedido_ingrediente || []),
+            { id_ingrediente: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
+          ]
+        };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     } else {
-      setPedidoActual(prev => ({
-        ...prev,
-        pedido_material: [
-          ...(prev.pedido_material || []),
-          { id_material: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
-        ]
-      }));
+      setPedidoActual((prev) => {
+        const siguiente: Pedido = {
+          ...prev,
+          pedido_material: [
+            ...(prev.pedido_material || []),
+            { id_material: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
+          ]
+        };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     }
   };
 
- 
+
   // Seleccionar producto/material
   const seleccionarProducto = (index: number, idStr: number) => {
     const id = Number(idStr);
@@ -101,61 +137,85 @@ export const usePedidos = () => {
     if (!item) return;
 
     if (tipoPedido === 'productos') {
-      const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
-      nuevas[index] = { id_ingrediente: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
-      setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_ingrediente || [])];
+        nuevas[index] = { id_ingrediente: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
+        const siguiente: Pedido = { ...prev, pedido_ingrediente: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     } else {
-      const nuevas = [...(pedidoActual.pedido_material || [])];
-      nuevas[index] = { id_material: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
-      setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_material || [])];
+        nuevas[index] = { id_material: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
+        const siguiente: Pedido = { ...prev, pedido_material: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     }
-    recalcularTotal();
   };
 
-  
+
   // Actualizar cantidad
   const actualizarLinea = (index: number, cantidad: number) => {
+    const cantidadSegura = Math.max(0, Number.isFinite(cantidad) ? cantidad : 0);
+
     if (tipoPedido === 'productos') {
-      const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
-      nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidad };
-      setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_ingrediente || [])];
+        nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidadSegura };
+        const siguiente: Pedido = { ...prev, pedido_ingrediente: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     } else {
-      const nuevas = [...(pedidoActual.pedido_material || [])];
-      nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidad };
-      setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_material || [])];
+        nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidadSegura };
+        const siguiente: Pedido = { ...prev, pedido_material: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     }
-    recalcularTotal();
   };
 
   // Borrar línea
   const borrarLinea = (index: number) => {
     if (tipoPedido === 'productos') {
-      const nuevas = [...(pedidoActual.pedido_ingrediente || [])];
-      nuevas.splice(index, 1);
-      setPedidoActual(prev => ({ ...prev, pedido_ingrediente: nuevas }));
-    } else {
-      const nuevas = [...(pedidoActual.pedido_material || [])];
-      nuevas.splice(index, 1);
-      setPedidoActual(prev => ({ ...prev, pedido_material: nuevas }));
-    }
-    recalcularTotal();
-  };
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_ingrediente || [])];
+        nuevas.splice(index, 1);
+        const siguiente: Pedido = { ...prev, pedido_ingrediente: nuevas };
 
-  // Calcular total estimado
-  const recalcularTotal = () => {
-    let total = 0;
-    if (tipoPedido === 'productos') {
-      total = (pedidoActual.pedido_ingrediente || []).reduce((acc, l) => {
-        const prod = catalogoProductos.find(p => p.id === l.id_ingrediente);
-        return acc + (prod?.precio || 0) * l.cantidad_solicitada;
-      }, 0);
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     } else {
-      total = (pedidoActual.pedido_material || []).reduce((acc, l) => {
-        const prod = catalogoProductos.find(p => p.id === l.id_material);
-        return acc + (prod?.precio || 0) * l.cantidad_solicitada;
-      }, 0);
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_material || [])];
+        nuevas.splice(index, 1);
+        const siguiente: Pedido = { ...prev, pedido_material: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
     }
-    setPedidoActual(prev => ({ ...prev, total_estimado: total }));
   };
 
 
@@ -176,7 +236,7 @@ export const usePedidos = () => {
       setVista('lista');
 
       const pedidosActualizados = await getPedidosService();
-      setPedidos(pedidosActualizados);
+      setPedidos(pedidosActualizados.map(normalizarPedido));
     } catch (e: any) {
       alert("Error al guardar: " + e.message);
     }
