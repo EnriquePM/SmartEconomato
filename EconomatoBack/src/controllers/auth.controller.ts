@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 
 // --- CONFIGURACIÓN ---
 const PASSWORD_POR_DEFECTO = "Economato123";
+const ROL_TIPO_ALUMNO = 'ALUMNO';
+const ROL_TIPO_PROFESOR = 'PROFESOR';
 
 // ==========================================
 // 1. FUNCIONES AUXILIARES
@@ -45,6 +47,18 @@ const generarUsernameDisponible = async (nombre: string, ape1: string, ape2: str
   }
 };
 
+const getRoleIdByTipo = async (tipo: string) => {
+  const rol = await prisma.rol.findFirst({
+    where: { tipo }
+  });
+
+  if (!rol) {
+    throw new Error(`Rol no encontrado para tipo ${tipo}`);
+  }
+
+  return rol.id_rol;
+};
+
 // 2. REGISTRO (ALUMNOS Y PROFESORES)
 
 export const registerAlumno = async (req: Request, res: Response) => {
@@ -52,6 +66,7 @@ export const registerAlumno = async (req: Request, res: Response) => {
     const { nombre, apellido1, apellido2, email, curso } = req.body;
     const usernameGenerado = await generarUsernameDisponible(nombre, apellido1, apellido2);
     const hashedPassword = await bcrypt.hash(PASSWORD_POR_DEFECTO, 10);
+    const rolAlumnoId = await getRoleIdByTipo(ROL_TIPO_ALUMNO);
 
     await prisma.$transaction(async (tx) => {
       // 1. Crear Usuario
@@ -62,7 +77,7 @@ export const registerAlumno = async (req: Request, res: Response) => {
           username: usernameGenerado,
           contrasenya: hashedPassword,
           primer_login: true,
-          id_rol: 2 // Rol Alumno
+          id_rol: rolAlumnoId
         }
       });
 
@@ -90,6 +105,7 @@ export const registerProfesor = async (req: Request, res: Response) => {
     const { nombre, apellido1, apellido2, email, asignaturas } = req.body;
     const usernameGenerado = await generarUsernameDisponible(nombre, apellido1, apellido2);
     const hashedPassword = await bcrypt.hash(PASSWORD_POR_DEFECTO, 10);
+    const rolProfesorId = await getRoleIdByTipo(ROL_TIPO_PROFESOR);
 
     await prisma.$transaction(async (tx) => {
       // 1. Crear Usuario
@@ -100,7 +116,7 @@ export const registerProfesor = async (req: Request, res: Response) => {
           username: usernameGenerado,
           contrasenya: hashedPassword,
           primer_login: true,
-          id_rol: 1 // Rol Profesor
+          id_rol: rolProfesorId
         }
       });
 
