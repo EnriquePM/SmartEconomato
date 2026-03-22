@@ -135,10 +135,11 @@ const CambiarPassword = () => {
              </div>
           </div>
           
-          <Button 
-            text={loading ? "Actualizando..." : "Guardar y Salir"} 
-            onClick={() => handleSubmit()} 
-          />
+           <Button 
+            loading={loading}
+            type="submit"
+            className="w-full"
+            >Cambiar</Button>
         </form>
       </main>
       

@@ -1,41 +1,53 @@
 
-import React from 'react';
-
 interface InputProps {
-  type: 'text' | 'password' | 'email' | 'number';
+  // 1. Añadimos 'date' por si lo necesitas para caducidad
+  type: 'text' | 'password' | 'email' | 'number' | 'date'; 
   placeholder: string;
-  value: string | number;
-  id: string;
+  // 2. Permitimos que value sea string o number, pero aseguramos que no sea null
+  value: string | number; 
+  id?: string;
   label?: string;
-  onChange: (val: string) => void;
+  // 3. El cambio: aceptamos que devuelva string o number según necesites
+  onChange: (val: any) => void; 
   className?: string; 
+  disabled?: boolean;
+  min?: number;
 }
 
-export const Input = ({ type, placeholder, value, onChange, id, label, className = "" }: InputProps) => (
+export const Input = ({ 
+  type, 
+  placeholder, 
+  value, 
+  onChange, 
+  id, 
+  label, 
+  className = "", 
+  disabled = false,
+  min
+}: InputProps) => (
   <div className="w-full text-left">
-    {label ? (
+    {label && (
       <label 
         htmlFor={id} 
-        className="block text-sm font-bold text-gray-700 mb-2"
+        className="block text-sm font-medium text-gray-500 mb-1 ml-1"
       >
         {label}
-      </label>
-    ) : (
-      <label htmlFor={id} className="sr-only">
-        {placeholder}
       </label>
     )}
     
     <input
       id={id}
       type={type}
-      value={value}
+      // 4. IMPORTANTE: Si el value llega vacío, ponemos "" para que no sea 'undefined'
+      value={value ?? ""} 
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
+      disabled={disabled} 
+      min={type === 'number' ? min : undefined}
       className={`
-        w-full bg-input border-none rounded-pill py-3 px-6 
-        text-size-input font-semibold text-escritura 
-        placeholder:text-relleno 
+        w-full bg-gray-100 border-none rounded-full py-3 px-6 
+        text-sm font-semibold text-gray-800 
+        placeholder:text-gray-400 
         focus:ring-2 focus:ring-gray-200 outline-none 
         transition-all 
         ${className}

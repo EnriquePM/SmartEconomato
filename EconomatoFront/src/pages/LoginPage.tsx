@@ -101,7 +101,7 @@ const LoginPage = () => {
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
+        <form  onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
           <Input 
             type="text" 
             placeholder="Usuario" 
@@ -118,9 +118,10 @@ const LoginPage = () => {
           />
           
           <Button 
-            text={loading ? "Entrando..." : "Entrar"} 
-            onClick={() => handleLogin()} 
-          />
+            loading={loading}
+            type="submit"
+            className="w-full"
+            >Entrar</Button>
         </form>
       </main>
       <FooterBar />

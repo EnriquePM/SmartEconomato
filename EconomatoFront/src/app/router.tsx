@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+
 import type { RouteObject } from "react-router-dom";
 import { ProtectedRoute, RoleProtectedRoute } from "../components/ProtectedRoute";
 
@@ -11,8 +11,7 @@ import Perfil from "../pages/Perfil";
 import Pedidos from "../pages/Pedidos";
 import IngresoGeneral from "../pages/IngresoGeneral";
 import Home from "../pages/Home";
-
-const Recepcion = () => <div><h1>Modulo de Recepcion de Pedidos</h1></div>;
+import PedidosPage from "../pages/RecepcionPedidos";
 
 export const routes: RouteObject[] = [
   {
@@ -40,7 +39,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: "recepcion",
-            element: <Recepcion />,
+            element: <PedidosPage />, 
           },
           {
             path: "pedidos",
@@ -51,7 +50,6 @@ export const routes: RouteObject[] = [
             element: <IngresoGeneral />,
           },
           {
-            // Ruta protegida por rol: solo Administrador y Profesor
             element: <RoleProtectedRoute allowedRoles={["Administrador", "Profesor"]} />,
             children: [
               {

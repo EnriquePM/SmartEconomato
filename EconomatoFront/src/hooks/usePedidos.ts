@@ -1,114 +1,266 @@
-// src/hooks/usePedidos.ts
-
 import { useState, useEffect } from 'react';
-// "import type" para los modelos
-import type { Pedido, LineaPedido, ItemCatalogo } from '../models/Pedidos';
-import {
-    getPedidosService,
-    getCatalogoService,
-    getProveedoresService,
-    guardarPedidoService,
-    eliminarPedidoService
-} from '../services/pedidoService';
+import type { Pedido, EstadoPedido } from '../models/Pedidos';
+import type { ItemInventario } from '../models/ItemInventario';
+
+import { getPedidosService, guardarPedidoService, eliminarPedidoService } from '../services/pedidoService';
+import { getIngredientes } from '../services/inventarioService';
+import { getMateriales } from '../services/materialesService';
+import { getProveedores } from '../services/proveedorService';
+
+const normalizarPedido = (p: Pedido): Pedido => ({
+  ...p,
+  tipo_pedido: p.tipo_pedido || 'productos',
+  total_estimado: Number(p.total_estimado ?? 0),
+  proveedor: p.proveedor || '',
+  observaciones: p.observaciones || '',
+  pedido_ingrediente: p.pedido_ingrediente?.map(pi => ({
+    ...pi,
+    cantidad_solicitada: Number(pi.cantidad_solicitada ?? 0),
+    cantidad_recibida: Number(pi.cantidad_recibida ?? 0)
+  })) || [],
+  pedido_material: p.pedido_material?.map(pm => ({
+    ...pm,
+    cantidad_solicitada: Number(pm.cantidad_solicitada ?? 0),
+    cantidad_recibida: Number(pm.cantidad_recibida ?? 0)
+  })) || []
+});
+
+const calcularTotalEstimado = (
+  pedido: Pedido,
+  tipoPedido: 'productos' | 'utensilios',
+  catalogoProductos: ItemInventario[]
+): number => {
+  if (tipoPedido === 'productos') {
+    return (pedido.pedido_ingrediente || []).reduce((acc, linea) => {
+      const producto = catalogoProductos.find((p) => p.id === linea.id_ingrediente);
+      return acc + (producto?.precio || 0) * Number(linea.cantidad_solicitada || 0);
+    }, 0);
+  }
+
+  return (pedido.pedido_material || []).reduce((acc, linea) => {
+    const producto = catalogoProductos.find((p) => p.id === linea.id_material);
+    return acc + (producto?.precio || 0) * Number(linea.cantidad_solicitada || 0);
+  }, 0);
+};
 
 export const usePedidos = () => {
-    const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
-    const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
-    const [busqueda, setBusqueda] = useState('');
+  const [vista, setVista] = useState<'lista' | 'formulario'>('lista');
+  const [tipoPedido, setTipoPedido] = useState<'productos' | 'utensilios'>('productos');
+  const [busqueda, setBusqueda] = useState('');
 
-    const [pedidos, setPedidos] = useState<Pedido[]>([]);
-    const [catalogoProductos, setCatalogoProductos] = useState<ItemCatalogo[]>([]);
-    const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [catalogoProductos, setCatalogoProductos] = useState<ItemInventario[]>([]);
+  const [catalogoProveedores, setCatalogoProveedores] = useState<any[]>([]);
 
-    const [pedidoActual, setPedidoActual] = useState<Pedido>({
-        id: '', tipo: 'productos', proveedor: '', fecha: new Date().toISOString().split('T')[0],
-        estado: 'BORRADOR', total: 0, observaciones: '', lineas: []
-    });
+  const [pedidoActual, setPedidoActual] = useState<Pedido>({
+    id_usuario: 1,
+    proveedor: '',
+    fecha_pedido: new Date().toISOString().split('T')[0],
+    estado: 'BORRADOR',
+    observaciones: '',
+    total_estimado: 0,
+    tipo_pedido: 'productos',
+    pedido_ingrediente: [],
+    pedido_material: []
+  });
 
-    useEffect(() => {
-        getPedidosService().then(setPedidos).catch(console.error);
-    }, []);
 
-    useEffect(() => {
-        getCatalogoService(tipoPedido).then(setCatalogoProductos).catch(console.error);
-        getProveedoresService().then(setCatalogoProveedores).catch(console.error);
-    }, [tipoPedido]);
+  // Cargar pedidos y proveedores
+  useEffect(() => {
+    getPedidosService()
+      .then(data => {
+        const normalizados: Pedido[] = data.map(normalizarPedido);
+        setPedidos(normalizados);
+      })
+      .catch(console.error);
 
-    const agregarLinea = () => {
-        const nueva: LineaPedido = { id: Date.now(), productoId: 0, nombre: '', categoria: '', unidad: '', cantidad: 1, precio: 0, subtotal: 0 };
-        setPedidoActual(prev => ({ ...prev, lineas: [...prev.lineas, nueva] }));
+    getProveedores()
+      .then(data => setCatalogoProveedores(data || []))
+      .catch(console.error);
+  }, []);
+
+
+  // Cargar inventario según tipoPedido
+  useEffect(() => {
+    const cargarInventario = async () => {
+      try {
+        const data = tipoPedido === 'productos' ? await getIngredientes() : await getMateriales();
+        setCatalogoProductos(data);
+      } catch (error) {
+        console.error("Error cargando inventario:", error);
+      }
     };
+    cargarInventario();
+  }, [tipoPedido]);
 
-    const recalcularTotal = (lineas: LineaPedido[]) => {
-        const total = lineas.reduce((acc, curr) => acc + curr.subtotal, 0);
-        setPedidoActual(prev => ({ ...prev, lineas, total }));
-    };
 
-    const seleccionarProducto = (lineaId: number, prodIdStr: string) => {
-        const prodId = Number(prodIdStr);
-        const prod = catalogoProductos.find(p => p.id === prodId);
-        if (!prod) return;
-        const nuevasLineas = pedidoActual.lineas.map(l => l.id === lineaId ? {
-            ...l, productoId: prod.id, nombre: prod.nombre, categoria: prod.categoria,
-            unidad: prod.unidad, precio: prod.precioUltimo, subtotal: l.cantidad * prod.precioUltimo
-        } : l);
-        recalcularTotal(nuevasLineas);
-    };
-
-    const actualizarLinea = (lineaId: number, campo: 'cantidad' | 'precio', val: string) => {
-        const num = parseFloat(val) || 0;
-        const nuevasLineas = pedidoActual.lineas.map(l => {
-            if (l.id !== lineaId) return l;
-            const updated = { ...l, [campo]: num };
-            updated.subtotal = updated.cantidad * updated.precio;
-            return updated;
-        });
-        recalcularTotal(nuevasLineas);
-    };
-
-    const borrarLinea = (id: number) => {
-        recalcularTotal(pedidoActual.lineas.filter(l => l.id !== id));
-    };
-
-    const guardarPedido = async (estado: 'BORRADOR' | 'PENDIENTE') => {
-        if (!pedidoActual.proveedor) return alert("Selecciona proveedor");
-
-        const payload = {
-            tipoPedido: tipoPedido,
-            proveedor: pedidoActual.proveedor,
-            total: Number(pedidoActual.total),
-            observaciones: pedidoActual.observaciones,
-            estado: estado,
-
-            lineas: pedidoActual.lineas.map(l => ({
-                productoId: Number(l.productoId),
-                cantidad: Number(l.cantidad)
-            }))
+  // Agregar línea
+  const agregarLinea = () => {
+    if (tipoPedido === 'productos') {
+      setPedidoActual((prev) => {
+        const siguiente: Pedido = {
+          ...prev,
+          pedido_ingrediente: [
+            ...(prev.pedido_ingrediente || []),
+            { id_ingrediente: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
+          ]
         };
 
-        try {
-            console.log("📦 Payload enviado al backend:", payload);
-            await guardarPedidoService(payload);
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    } else {
+      setPedidoActual((prev) => {
+        const siguiente: Pedido = {
+          ...prev,
+          pedido_material: [
+            ...(prev.pedido_material || []),
+            { id_material: 0, cantidad_solicitada: 1, cantidad_recibida: 0 }
+          ]
+        };
 
-            alert("¡Pedido guardado correctamente! 🎉");
-            window.location.reload();
-        } catch (e: any) {
-            console.error(e);
-            alert("Error al guardar: " + (e.message || "Desconocido"));
-        }
-    };
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    }
+  };
 
-    const eliminarPedido = async (id: string | number) => {
-        if (!confirm("¿Eliminar?")) return;
-        try {
-            await eliminarPedidoService(id);
-            setPedidos(prev => prev.filter(p => p.id !== id));
-        } catch (e) { alert("Error al eliminar"); }
-    };
 
-    return {
-        vista, setVista, tipoPedido, setTipoPedido, busqueda, setBusqueda,
-        pedidos, catalogoProductos, catalogoProveedores, pedidoActual, setPedidoActual,
-        agregarLinea, seleccionarProducto, actualizarLinea, borrarLinea, guardarPedido, eliminarPedido
-    };
+  // Seleccionar producto/material
+  const seleccionarProducto = (index: number, idStr: number) => {
+    const id = Number(idStr);
+    const item = catalogoProductos.find(p => p.id === id);
+    if (!item) return;
+
+    if (tipoPedido === 'productos') {
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_ingrediente || [])];
+        nuevas[index] = { id_ingrediente: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
+        const siguiente: Pedido = { ...prev, pedido_ingrediente: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    } else {
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_material || [])];
+        nuevas[index] = { id_material: item.id, cantidad_solicitada: 1, cantidad_recibida: 0 };
+        const siguiente: Pedido = { ...prev, pedido_material: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    }
+  };
+
+
+  // Actualizar cantidad
+  const actualizarLinea = (index: number, cantidad: number) => {
+    const cantidadSegura = Math.max(0, Number.isFinite(cantidad) ? cantidad : 0);
+
+    if (tipoPedido === 'productos') {
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_ingrediente || [])];
+        nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidadSegura };
+        const siguiente: Pedido = { ...prev, pedido_ingrediente: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    } else {
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_material || [])];
+        nuevas[index] = { ...nuevas[index], cantidad_solicitada: cantidadSegura };
+        const siguiente: Pedido = { ...prev, pedido_material: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    }
+  };
+
+  // Borrar línea
+  const borrarLinea = (index: number) => {
+    if (tipoPedido === 'productos') {
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_ingrediente || [])];
+        nuevas.splice(index, 1);
+        const siguiente: Pedido = { ...prev, pedido_ingrediente: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    } else {
+      setPedidoActual((prev) => {
+        const nuevas = [...(prev.pedido_material || [])];
+        nuevas.splice(index, 1);
+        const siguiente: Pedido = { ...prev, pedido_material: nuevas };
+
+        return {
+          ...siguiente,
+          total_estimado: calcularTotalEstimado(siguiente, tipoPedido, catalogoProductos)
+        };
+      });
+    }
+  };
+
+
+  // Guardar pedido
+  const guardarPedido = async (nuevoEstado: EstadoPedido) => {
+    try {
+      const payload: Pedido = {
+        ...pedidoActual,
+        pedido_ingrediente: pedidoActual.pedido_ingrediente || [],
+        pedido_material: pedidoActual.pedido_material || [],
+        tipo_pedido: tipoPedido,
+        id_usuario: pedidoActual.id_usuario,
+        estado: nuevoEstado
+      };
+
+      await guardarPedidoService(payload);
+      alert("Pedido guardado con éxito");
+      setVista('lista');
+
+      const pedidosActualizados = await getPedidosService();
+      setPedidos(pedidosActualizados.map(normalizarPedido));
+    } catch (e: any) {
+      alert("Error al guardar: " + e.message);
+    }
+  };
+
+
+  // Eliminar pedido
+  const eliminarPedido = async (id: number) => {
+    if (!confirm("¿Eliminar este pedido?")) return;
+    try {
+      await eliminarPedidoService(id);
+      setPedidos(prev => prev.filter(p => p.id_pedido !== id));
+    } catch (e) {
+      alert("Error al eliminar");
+    }
+  };
+
+  return {
+    vista, setVista,
+    tipoPedido, setTipoPedido,
+    busqueda, setBusqueda,
+    pedidos, catalogoProductos, catalogoProveedores,
+    pedidoActual, setPedidoActual,
+    agregarLinea, seleccionarProducto, actualizarLinea, borrarLinea,
+    guardarPedido, eliminarPedido
+  };
 };

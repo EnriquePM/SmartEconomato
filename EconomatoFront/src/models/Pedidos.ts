@@ -1,29 +1,38 @@
-export type LineaPedido = {
-    id: number;
-    productoId: number;
-    nombre: string;
-    categoria: string;
-    unidad: string;
-    cantidad: number;
-    precio: number;
-    subtotal: number;
-};
 
-export type Pedido = {
-    id: string | number;
-    tipo: 'productos' | 'utensilios';
-    proveedor: string;
-    fecha: string;
-    estado: string;
-    total: number;
-    observaciones: string;
-    lineas: LineaPedido[];
-};
+export type EstadoPedido = 'BORRADOR' | 'PENDIENTE' | 'VALIDADO' | 'INCOMPLETO' | 'CONFIRMADO' | 'RECHAZADO';
 
-export type ItemCatalogo = {
-    id: number;
-    nombre: string;
-    categoria: string;
-    unidad: string;
-    precioUltimo: number;
-};
+export interface PedidoIngrediente {
+  id_pedido?: number;
+  id_ingrediente: number;
+  cantidad_solicitada: number;
+  cantidad_recibida?: number; 
+}
+
+export interface PedidoMaterial {
+  id_pedido?: number;
+  id_material: number;
+  cantidad_solicitada: number;
+  cantidad_recibida?: number; 
+}
+
+export interface Pedido {
+  id_pedido?: number;
+  fecha_pedido?: string | Date;
+  id_usuario: number;
+  estado: EstadoPedido;
+  proveedor: string | null;
+  observaciones: string | null;
+  total_estimado: number | null;
+  tipo_pedido: string | null;
+
+  pedido_ingrediente?: PedidoIngrediente[];
+  pedido_material?: PedidoMaterial[];
+}
+
+export interface Linea {
+  id_producto: number;
+  cantidad: number;
+  nombre?: string;
+  unidad?: string;
+  precio?: number;
+}
