@@ -1,14 +1,6 @@
-// src/pages/Home.tsx
 import { Link } from "react-router-dom";
-import {
-  Users,
-  ShoppingCart,
-  Package,
-  Archive,
-  ArrowRight,
-  Clock,
-  AlertTriangle
-} from "lucide-react";
+import { ShoppingCart, Package, Users, AlertTriangle, Clock, ArrowRight } from "lucide-react";
+import { useHome } from "../hooks/useHome";
 
 // --- CSS DE LA ANIMACIÓN ---
 const backgroundStyle = `
@@ -18,42 +10,22 @@ const backgroundStyle = `
     66% { transform: translate(-40px, 40px) scale(0.8); }
     100% { transform: translate(0px, 0px) scale(1); }
   }
-  .animate-blob {
-    animation: blob 8s infinite;
-  }
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-  .animation-delay-4000 {
-    animation-delay: 4s;
-  }
+  .animate-blob { animation: blob 8s infinite; }
+  .animation-delay-2000 { animation-delay: 2s; }
+  .animation-delay-4000 { animation-delay: 4s; }
 `;
 
 const Home = () => {
-  // DATOS
-  const accesos = [
-    { titulo: "Gestión Usuarios", icono: Users, color: "bg-blue-600", ruta: "/admin-usuarios" },
-    { titulo: "Nuevo Pedido", icono: ShoppingCart, color: "bg-orange-500", ruta: "/pedidos" },
-    { titulo: "Inventario", icono: Package, color: "bg-emerald-500", ruta: "/inventario" },
-    { titulo: "Entrada Stock", icono: Archive, color: "bg-purple-500", ruta: "/registrar-general" },
-  ];
+  const { accesos, actividadReciente, cargando } = useHome();
 
-  const actividadReciente = [
-    { id: 1, titulo: "Pedido #104 - 1º Cocina", sub: "Pendiente de validación", tipo: "pedido", estado: "warning", hora: "Hace 10 min" },
-    { id: 2, titulo: "Entrada: Harina de Fuerza", sub: "+50 Kg (Makro)", tipo: "stock", estado: "success", hora: "Hace 2h" },
-    { id: 3, titulo: "Alerta: Aceite Oliva", sub: "Stock crítico (2L restantes)", tipo: "alerta", estado: "danger", hora: "Hace 4h" },
-    { id: 4, titulo: "Usuario Nuevo", sub: "Juan Pérez (Alumno)", tipo: "user", estado: "info", hora: "Ayer" },
-  ];
+  if (cargando) {
+    return <div className="w-full h-full bg-[#450a0a] flex items-center justify-center text-white">Cargando SmartEconomato...</div>;
+  }
 
   return (
-    // CAMBIO CLAVE: 
-    // 1. Quitamos 'min-h-screen' y ponemos 'h-full'.
-    // 2. Quitamos 'overflow-hidden' del padre para que lo maneje el hijo si hace falta.
     <div className="relative w-full h-full bg-[#450a0a] animate-fade-in-up overflow-hidden">
-      
       <style>{backgroundStyle}</style>
 
-        {/* --- CAPA DE MOVIMIENTO --- */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-600 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-blob"></div>
             <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-500 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
@@ -61,13 +33,8 @@ const Home = () => {
              <div className="absolute top-[30%] left-[40%] w-[400px] h-[400px] bg-red-900 rounded-full mix-blend-overlay filter blur-[60px] opacity-80 animate-blob"></div>
         </div>
 
-        {/* --- CONTENIDO --- */}
-        {/* CAMBIO: Ajustamos padding (p-5) y spacing (space-y-5) para que ocupe menos altura vertical
-            y así evitar que salga scroll si no es necesario.
-        */}
         <div className="relative z-10 w-full h-full overflow-y-auto p-5 space-y-5 scrollbar-hide">
             
-            {/* HEADER */}
             <div className="pl-1 pt-1">
             <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
                 Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-white">Admin</span> 👋
@@ -75,8 +42,6 @@ const Home = () => {
             <p className="text-red-200/80 font-medium mt-1">Resumen del día.</p>
             </div>
 
-            {/* TARJETAS DE ACCESO */}
-            {/* Reduje un pelín la altura (h-36 en vez de h-40) para ganar espacio */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {accesos.map((item, idx) => (
                 <Link
@@ -94,8 +59,6 @@ const Home = () => {
             ))}
             </section>
 
-            {/* LISTA DE ACTIVIDAD */}
-            {/* mb-0 para que no empuje hacia abajo innecesariamente */}
             <section className="bg-black/20 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/10 p-6 flex-1 mb-0">
             <div className="flex justify-between items-center mb-5 px-1">
                 <h2 className="text-lg font-extrabold text-white flex items-center gap-3 drop-shadow-sm">
@@ -135,7 +98,6 @@ const Home = () => {
                 ))}
             </div>
             </section>
-
         </div>
     </div>
   );
