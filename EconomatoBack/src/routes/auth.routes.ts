@@ -8,4 +8,5 @@ router.post('/register/alumno', registerAlumno);
 router.post('/login', login);
 router.post('/change-password', changePassword)
 router.post('/register/profesor', registerProfesor);
+router.post('/register/jefe_economato', registerProfesor);
 export default router;

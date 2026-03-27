@@ -1,11 +1,18 @@
-import { PrismaClient, estado_pedido, tipo_movimiento_enum } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
+const PASSWORD_POR_DEFECTO = 'Economato123';
+
+async function hashPassword() {
+  return bcrypt.hash(PASSWORD_POR_DEFECTO, 10);
+}
 
 async function main() {
   console.log('🗑️  Limpiando base de datos (Borrando rastro anterior)...');
 
-  // EL ORDEN ES CRÍTICO: Primero borramos las tablas que dependen de otras (hijas)
   await prisma.pedido_ingrediente.deleteMany();
   await prisma.pedido_material.deleteMany();
   await prisma.receta_ingrediente.deleteMany();
@@ -26,74 +33,167 @@ async function main() {
 
   console.log('🌱 Sembrando datos nuevos...');
 
-  // 1. ROLES
+  const hashedPassword = await hashPassword();
+
   const rolAdmin = await prisma.rol.create({ data: { nombre: 'Administrador', tipo: 'ADMIN' } });
   const rolProfe = await prisma.rol.create({ data: { nombre: 'Profesor', tipo: 'PROFESOR' } });
   const rolAlumno = await prisma.rol.create({ data: { nombre: 'Alumno', tipo: 'ALUMNO' } });
 
-  // 2. USUARIOS (Login: admin / 1234)
+  await prisma.jefe_economato.create({
+    data: {
+      id_rol: rolAdmin.id_rol,
+      permisos: 'GESTION_USUARIOS,GESTION_INVENTARIO,GESTION_PEDIDOS'
+    }
+  });
+
   const userAdmin = await prisma.usuario.create({
     data: {
       username: 'admin',
       nombre: 'Jefe',
       apellido1: 'Economato',
-      contrasenya: '1234', // Texto plano para prueba rápida
+      apellido2: 'Centro',
+      contrasenya: hashedPassword,
+      primer_login: false,
       email: 'admin@escuela.com',
       id_rol: rolAdmin.id_rol
     }
   });
 
-  // 3. CATEGORÍAS
-  const catFrescos = await prisma.categoria.create({ data: { nombre: 'Frescos' } });
-  const catSecos = await prisma.categoria.create({ data: { nombre: 'Secos' } });
-  const catHerramientas = await prisma.categoria.create({ data: { nombre: 'Herramientas' } });
+  const userProfesor = await prisma.usuario.create({
+    data: {
+      username: 'prof.cocina',
+      nombre: 'Marta',
+      apellido1: 'Ruiz',
+      apellido2: 'Santos',
+      contrasenya: hashedPassword,
+      primer_login: true,
+      email: 'marta.ruiz@escuela.com',
+      id_rol: rolProfe.id_rol
+    }
+  });
 
-  // 4. PROVEEDORES
+  const userAlumno = await prisma.usuario.create({
+    data: {
+      username: 'alu.cocina',
+      nombre: 'Diego',
+      apellido1: 'Navarro',
+      apellido2: 'Gil',
+      contrasenya: hashedPassword,
+      primer_login: true,
+      email: 'diego.navarro@escuela.com',
+      id_rol: rolAlumno.id_rol
+    }
+  });
+
+  await prisma.profesorado.create({
+    data: {
+      id_usuario: userProfesor.id_usuario,
+      asignaturas: 'Procesos Básicos de Pastelería, Cocina'
+    }
+  });
+
+  await prisma.alumnado.create({
+    data: {
+      id_usuario: userAlumno.id_usuario,
+      curso: '2º Cocina'
+    }
+  });
+
   const provMakro = await prisma.proveedor.create({ data: { nombre: 'Makro S.A.' } });
   const provLocal = await prisma.proveedor.create({ data: { nombre: 'Frutería del Barrio' } });
+  const provDistribucion = await prisma.proveedor.create({ data: { nombre: 'Distribuciones Hosteleras Sur' } });
 
-  // 5. INGREDIENTES (Para tu Inventario)
-  await prisma.ingrediente.createMany({
-    data: [
-      { 
-        nombre: 'Tomate Pera', 
-        stock: 50.5, 
-        unidad_medida: 'kg', 
-        precio_unidad: 1.20, 
-        id_categoria: catFrescos.id_categoria, 
-        id_proveedor: provLocal.id_proveedor 
-      },
-      { 
-        nombre: 'Aceite de Oliva', 
-        stock: 20, 
-        unidad_medida: 'l', 
-        precio_unidad: 8.50, 
-        id_categoria: catSecos.id_categoria, 
-        id_proveedor: provMakro.id_proveedor 
-      },
-      { 
-        nombre: 'Harina de Trigo', 
-        stock: 100, 
-        unidad_medida: 'kg', 
-        precio_unidad: 0.90, 
-        id_categoria: catSecos.id_categoria, 
-        id_proveedor: provMakro.id_proveedor 
+  const categoriasMap = new Map<string, number>();
+  const categoriasUnicas = new Set<string>();
+  const productosAImportar: any[] = [];
+  const materialesAImportar: any[] = [];
+
+  const csvIngredientesPath = path.join(__dirname, 'ingredientes.csv');
+  const csvMaterialesPath = path.join(__dirname, 'materiales.csv');
+
+  if (fs.existsSync(csvIngredientesPath)) {
+    const lineas = fs.readFileSync(csvIngredientesPath, 'utf-8').split('\n').filter(line => line.trim() !== '');
+    for (let i = 1; i < lineas.length; i++) {
+      const cols = lineas[i].split(',');
+      if (cols.length < 3) continue; // Si la línea está medio vacía, la saltamos
+
+      const nombre = cols[0]?.trim();
+      const unidad = cols[1]?.trim() || 'kg';
+      const precioRaw = cols[2]?.replace('€', '').trim() || '0';
+      const precio = parseFloat(precioRaw.replace(',', '.')); // Por si viene con coma decimal
+      const categoria = cols[4]?.trim() || 'Sin Categoría';
+
+      categoriasUnicas.add(categoria);
+      productosAImportar.push({
+        nombre: nombre,
+        categoria: categoria,
+        unidad: unidad,
+        precio: precio
+      });
+    }
+  }
+
+  if (fs.existsSync(csvMaterialesPath)) {
+    const lineas = fs.readFileSync(csvMaterialesPath, 'utf-8').split('\n').filter(line => line.trim() !== '');
+    for (let i = 1; i < lineas.length; i++) {
+      const cols = lineas[i].split(',');
+      if (cols.length < 3) continue;
+
+      const nombre = cols[0]?.trim();
+      const unidad = cols[1]?.trim() || 'u';
+      const precioRaw = cols[2]?.replace('€', '').trim() || '0';
+      const precio = parseFloat(precioRaw.replace(',', '.'));
+      // Si materiales no tiene 5 columnas, usamos una categoría por defecto
+      const categoria = cols[4]?.trim() || 'Herramientas';
+
+      categoriasUnicas.add(categoria);
+      materialesAImportar.push({
+        nombre: nombre,
+        categoria: categoria,
+        unidad: unidad,
+        precio: precio
+      });
+    }
+  }
+
+  for (const catNombre of categoriasUnicas) {
+    const nuevaCat = await prisma.categoria.create({ data: { nombre: catNombre } });
+    categoriasMap.set(catNombre, nuevaCat.id_categoria);
+  }
+
+  for (const prod of productosAImportar) {
+    await prisma.ingrediente.create({
+      data: {
+        nombre: prod.nombre,
+        tipo: prod.categoria,
+        unidad_medida: prod.unidad,
+        precio_unidad: prod.precio,
+        stock: 0,
+        stock_minimo: 5,
+        id_categoria: categoriasMap.get(prod.categoria)!,
+        id_proveedor: provMakro.id_proveedor
       }
-    ]
-  });
+    });
+  }
 
-  // 6. MATERIALES
-  await prisma.material.createMany({
-    data: [
-      { nombre: 'Cuchillo Cebollero', stock: 10, unidad_medida: 'u', precio_unidad: 15.00, id_categoria: catHerramientas.id_categoria },
-      { nombre: 'Sartén Antiadherente', stock: 5, unidad_medida: 'u', precio_unidad: 25.00, id_categoria: catHerramientas.id_categoria }
-    ]
-  });
+  for (const mat of materialesAImportar) {
+    await prisma.material.create({
+      data: {
+        nombre: mat.nombre,
+        unidad_medida: mat.unidad,
+        precio_unidad: mat.precio,
+        stock: 0,
+        stock_minimo: 2,
+        id_categoria: categoriasMap.get(mat.categoria)!
+      }
+    });
+  }
 
+  console.log(`👤 Usuarios creados: ${userAdmin.username}, ${userProfesor.username}, ${userAlumno.username}`);
+  console.log(`📦 Importados ${productosAImportar.length} ingredientes y ${materialesAImportar.length} materiales.`);
   console.log('✅ Base de Datos reseteada y cargada con éxito.');
 }
 
 main()
   .catch((e) => { console.error(e); process.exit(1); })
   .finally(async () => { await prisma.$disconnect(); });
-  

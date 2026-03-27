@@ -41,6 +41,7 @@ model usuario {
   pedido             pedido[]
   movimiento         movimiento[]
   escandallo_detalle escandallo_detalle[]
+  escandallo         escandallo[]
 }
 
 model alumnado {
@@ -172,9 +173,12 @@ model pedido_material {
 
 model receta {
   id_receta          Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(150)
+  descripcion        String?              @db.VarChar(255)
   fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
   cantidad_platos    Int?
   receta_ingrediente receta_ingrediente[]
+  escandallo         escandallo[]
 }
 
 model receta_ingrediente {
@@ -191,8 +195,13 @@ model receta_ingrediente {
 
 model escandallo {
   id_escandallo      Int                  @id @default(autoincrement())
+  id_receta          Int?
+  id_usuario         Int?
   descripcion        String?              @db.VarChar(255)
   fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
+
+  receta             receta?              @relation(fields: [id_receta], references: [id_receta], onDelete: SetNull, onUpdate: NoAction, map: "fk_escandallo_receta")
+  usuario            usuario?             @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_escandallo_usuario")
   escandallo_detalle escandallo_detalle[]
 }
 

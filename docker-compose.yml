@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: smarteconomato_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin           # El usuario que usará tu backend
+      POSTGRES_PASSWORD: admin       # La contraseña para desarrollo
+      POSTGRES_DB: smart_economato   # El nombre de la base de datos
+    ports:
+      - "5432:5432"
+    volumes:
+      # 1. Persistencia: Guarda los datos para que no se borren al apagar el PC
+      - pg_data:/var/lib/postgresql/data
+      
+      # 2. AUTO-INICIALIZACIÓN: Mapea tu carpeta local al contenedor.
+      # Postgres ejecutará automáticamente todo lo que haya aquí al crearse.
+      - ./db-init:/docker-entrypoint-initdb.d/
+
+volumes:
+  pg_data:
