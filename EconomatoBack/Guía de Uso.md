@@ -1,15 +1,28 @@
-# Paso 1: Instalar las librerías Como la carpeta node_modules no se sube, tenéis que descargarla. En la terminal del proyecto:
+# 🚀 Configuración Rápida del Backend
+
+⚠️ **Importante:** Asegúrate de tener **Docker Desktop** abierto y ejecutándose en tu ordenador antes de empezar.
+
+Para levantar todo el entorno de desarrollo de una sola vez, primero crea un archivo `.env` dentro de la carpeta `EconomatoBack` (puedes copiar el contenido de `.env.example`) y asegúrate de incluir esta línea exacta para conectar con Docker:
+
+`DATABASE_URL="postgresql://admin:admin@localhost:5432/smart_economato?schema=public"`
+
+Una vez guardado el `.env`, abre tu terminal en la **raíz del proyecto** (`SMARTECONOMATO`) y ejecuta esta secuencia de comandos para levantarlo todo:
+
+# 1. Levanta el contenedor de la base de datos
+docker-compose up -d
+
+# 2. Entra a la carpeta del servidor e instala las librerías
+cd EconomatoBack
 npm install
-# Paso 2: Configurar el entorno (.env) El proyecto necesita saber dónde está la base de datos.
-- Cread un archivo nuevo llamado .env en la raíz.
-- Copiad el contenido de .env.example.
-IMPORTANTE: Poned la URL de conexión a la base de datos correcta (si usáis una compartida en la nube, pedidme el link. Si usáis una local, poned vuestra contraseña de PostgreSQL).
-# Paso 3: Generar el Cliente de Prisma Para que TypeScript entienda la base de datos, ejecutad este comando:
+
+# 3. Genera el cliente de Prisma para TypeScript
 npx prisma generate
-# Paso 4: Arrancar el servidor:
+
+# 4. Monta las tablas e inyecta los datos de prueba automáticamente
+npm run db:setup
+
+# 5. Arranca el servicio desde la raíz
 npm run dev
-# Paso 5: Montar Base de Datos:
-Crear la base de datos vacía solo el nombre, smartEconomato, y hacer este comando ---> npx prisma db push
 
 
 

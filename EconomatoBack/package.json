@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts",
-    "db:setup":"npx prisma db push && npx prisma db seed"
+    "db:setup":"npx prisma db push --force-reset && npx prisma db seed"
   },
   "keywords": [],
   "author": "",
