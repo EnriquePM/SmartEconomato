@@ -85,8 +85,13 @@ const Home = () => {
                         {item.tipo === 'user' && <Users size={18} />}
                     </div>
                     <div>
-                        <h4 className="font-bold text-gray-900 text-sm">{item.titulo}</h4>
-                        <p className="text-xs text-gray-700 font-medium">{item.sub}</p>
+                        {/* Cambia esto: */}
+<h4 className="font-bold text-gray-900 text-sm">
+  {item.titulo.replace('Stock:', 'Ingrediente:')}
+</h4>
+
+{/* Esto se queda igual (subtítulo): */}
+<p className="text-xs text-gray-700 font-medium">{item.sub}</p>
                     </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">

@@ -93,7 +93,7 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
       }];
     }
 
-    // 🎲 Una última barajada
+    // pilla los productos al azar 
     return actividadMixta.sort(() => 0.5 - Math.random());
 
   } catch (error) {
