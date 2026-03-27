@@ -1,109 +1,134 @@
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { useRecepcionModal } from "../hooks/useModalRececion";
+import { useRecepcionModal } from "../hooks/useModalRecepcion";
+import type { Pedido } from "../models/Pedidos";
 
-
-export const ModalRecepcion = ({ pedido, onClose }: { pedido: any, onClose: () => void }) => {
-  const { lineas, lineaEnFoco, busqueda, buscarProducto, actualizarValor } = useRecepcionModal(pedido);
+export const ModalRecepcion = ({ pedido, onClose }: { pedido: Pedido, onClose: () => void }) => {
+  const { 
+    lineasMostradas, 
+    lineaEnFoco, 
+    setLineaEnFoco, 
+    busqueda, 
+    manejarBusqueda, 
+    actualizarValor,
+    limpiarFoco 
+  } = useRecepcionModal(pedido);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white w-full max-w-4xl rounded-[2rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-100 font-sans">
         
-        {/* 1. BUSCADOR (Código de barras o Nombre) */}
-        <div className="p-6 bg-gray-50 border-b">
-          <h2 className="text-xl font-black mb-4 text-gray-800">Recepción de Pedido #{pedido.id}</h2>
-          <div className="relative">
-            <Input 
-              id="buscador"
-              type="text"
-              placeholder="Escanea código de barras o busca producto..."
-              value={busqueda}
-              onChange={(val) => buscarProducto(val)}
-              className="bg-white shadow-sm ring-2 ring-gray-100 focus:ring-blue-400"
-            />
+        {/*CABECERA*/}
+        <div className="px-8 py-5 bg-gray-50/50 border-b flex justify-between items-center shrink-0">
+          <div>
+            <h2 className="text-xl font-black text-gray-900 tracking-tight">
+              {lineaEnFoco ? "Editando Recepción" : `Pedido #${pedido.id_pedido}`}
+            </h2>
+            <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
+              {lineaEnFoco ? `Item: ${lineaEnFoco.nombre}` : pedido.proveedor}
+            </p>
           </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-900 text-3xl font-light">×</button>
         </div>
 
-        {/* 2. FORMULARIO DE EDICIÓN ACTIVA */}
-        <div className="p-8 border-b bg-white">
+        {/*BUSCADOR*/}
+        {!lineaEnFoco && (
+          <div className="px-8 py-3 bg-white border-b border-gray-50 shrink-0 animate-fade-in">
+            <Input 
+              id="search-recepcion"
+              type="text"
+              placeholder="Buscar ingrediente o material..."
+              value={busqueda}
+              onChange={(val) => manejarBusqueda(val)}
+              className="!bg-gray-50 shadow-inner"
+            />
+          </div>
+        )}
+
+        {/*FORM*/}
+        <div className="px-8 py-4 bg-white shrink-0">
           {lineaEnFoco ? (
-            <div className="animate-in fade-in slide-in-from-top-4">
-              <div className="flex justify-between items-center mb-6">
-                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                  Editando Producto
-                </span>
-                <span className="text-gray-400 font-bold text-sm">{lineaEnFoco.unidadMedida}</span>
+            <div className="bg-blue-50/40 border border-blue-100 p-6 rounded-[1.8rem] animate-fade-in-up">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-base font-black text-blue-900 uppercase tracking-tight">
+                  {lineaEnFoco.nombre}
+                </h3>
+                <div className="flex items-center gap-2">
+                   <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">
+                     Pedido: {lineaEnFoco.cantidadSolicitada} {lineaEnFoco.unidad_medida}
+                   </span>
+                   <span className="bg-blue-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase">Foco Activo</span>
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input 
-                  id="nombre"
-                  label="Producto"
-                  type="text"
-                  value={lineaEnFoco.nombre} // Se carga el nombre
-                  onChange={() => {}} // Bloqueado o editable según prefieras
-                  placeholder=""
+                  id="c-rec" type="number" label="Cant. Recibida" placeholder="0"
+                  value={lineaEnFoco.cantidadRecibida} 
+                  onChange={(v) => actualizarValor(lineaEnFoco.id_referencia, 'cantidadRecibida', v)}
                 />
-                <div className="relative">
-                  <Input 
-                    id="peso"
-                    label="Peso / Cantidad"
-                    type="number"
-                    min={0}
-                    value={lineaEnFoco.pesoRecibido} // Carga el peso de la API por defecto
-                    onChange={(val) => actualizarValor(lineaEnFoco.id, 'pesoRecibido', val)}
-                    placeholder="0.00"
-                  />
-                  <span className="absolute right-4 bottom-3 text-xs font-bold text-gray-300">
-                    {lineaEnFoco.unidadMedida}
-                  </span>
-                </div>
                 <Input 
-                  id="caducidad"
-                  label="Fecha Caducidad"
-                  type="date"
-                  value={lineaEnFoco.fechaCaducidad}
-                  onChange={(val) => actualizarValor(lineaEnFoco.id, 'fechaCaducidad', val)}
-                  placeholder=""
+                  id="f-cad" type="date" label="Vencimiento" placeholder=""
+                  value={lineaEnFoco.fechaCaducidad} 
+                  onChange={(v) => actualizarValor(lineaEnFoco.id_referencia, 'fechaCaducidad', v)}
+                />
+                <Input 
+                  id="o-rec" type="text" label="Notas" placeholder="Opcional..."
+                  value={lineaEnFoco.observaciones} 
+                  onChange={(v) => actualizarValor(lineaEnFoco.id_referencia, 'observaciones', v)}
                 />
               </div>
-              <div className="mt-6">
-                <Input 
-                  id="obs"
-                  label="Observaciones"
-                  type="text"
-                  value={lineaEnFoco.observaciones}
-                  onChange={(val) => actualizarValor(lineaEnFoco.id, 'observaciones', val)}
-                  placeholder="Ej: Embalaje dañado..."
-                />
+
+              <div className="flex gap-3 mt-8">
+                <Button variant="gris" className="flex-1 !rounded-full" onClick={() => setLineaEnFoco(null)}>
+                  Volver atrás
+                </Button>
+                <Button variant="secundario" className="flex-[2] !rounded-full shadow-lg shadow-blue-200" onClick={limpiarFoco}>
+                  Guardar y continuar
+                </Button>
               </div>
             </div>
           ) : (
-            <div className="py-10 text-center text-gray-400 font-medium italic">
-              Busca un producto arriba para empezar la recepción
+            /* ESPACIO PRODUCTO */
+            <div className="py-8 text-center bg-gray-50 rounded-[1.8rem] border-2 border-dashed border-gray-200 text-xs text-gray-400 font-bold uppercase tracking-widest">
+              Selecciona un producto de la lista inferior
             </div>
           )}
         </div>
 
-        {/* 3. RESUMEN DE LÍNEAS (Mini tabla inferior) */}
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50/30">
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Resumen de carga</p>
-          <div className="space-y-2">
-            {lineas.map(l => (
-              <div key={l.id} className={`flex justify-between p-3 rounded-xl border ${lineaEnFoco?.id === l.id ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100'}`}>
-                <span className="text-sm font-bold text-gray-700">{l.nombre}</span>
-                <span className="text-sm font-mono font-bold text-blue-600">{l.pesoRecibido} {l.unidadMedida}</span>
+        {/* LISTA PRODCUTO Y BOTONES  */}
+        {!lineaEnFoco && (
+          <>
+            <div className="flex-1 overflow-y-auto px-8 py-2 bg-gray-50/20 border-t border-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-4">
+                {lineasMostradas.map((l: any) => (
+                  <div 
+                    key={l.id_referencia}
+                    onClick={() => setLineaEnFoco(l)}
+                    className="p-4 bg-white rounded-[1.2rem] border border-gray-100 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer flex justify-between items-center group shadow-sm"
+                  >
+                    <div className="text-left">
+                      <p className="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition-colors leading-tight">
+                        {l.nombre}
+                      </p>
+                      <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Ref: {l.id_referencia}</p>
+                    </div>
+                    <span className="text-xs font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+                      {l.cantidadRecibida} <small className="text-[10px] uppercase">{l.unidad_medida}</small>
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* PIE DE PÁGINA */}
-        <div className="p-6 border-t flex gap-4 bg-white">
-          <Button variant="gris" className="flex-1" onClick={onClose}>Cerrar</Button>
-          <Button variant="secundario" className="flex-[2]">Confirmar Recepción</Button>
-        </div>
+            <div className="px-8 py-6 border-t bg-white flex gap-4 shrink-0">
+              <Button variant="gris" className="flex-1 !rounded-full font-bold" onClick={onClose}>Cerrar</Button>
+              <Button variant="secundario" className="flex-[2] !rounded-full font-bold" onClick={() => console.log("Fin", lineasMostradas)}>
+                Finalizar Recepción
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
