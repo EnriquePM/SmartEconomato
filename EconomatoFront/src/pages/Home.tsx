@@ -1,5 +1,6 @@
+// src/pages/Home.tsx
 import { Link } from "react-router-dom";
-import { ShoppingCart, Package, Users, AlertTriangle, Clock, ArrowRight } from "lucide-react";
+import { ShoppingCart, Package, Users, AlertTriangle, Clock } from "lucide-react"; // ArrowRight quitado de aquí
 import { useHome } from "../hooks/useHome";
 
 // --- CSS DE LA ANIMACIÓN ---
@@ -26,6 +27,7 @@ const Home = () => {
     <div className="relative w-full h-full bg-[#450a0a] animate-fade-in-up overflow-hidden">
       <style>{backgroundStyle}</style>
 
+        {/* --- CAPA DE MOVIMIENTO --- */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
             <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-600 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-blob"></div>
             <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-500 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
@@ -33,15 +35,18 @@ const Home = () => {
              <div className="absolute top-[30%] left-[40%] w-[400px] h-[400px] bg-red-900 rounded-full mix-blend-overlay filter blur-[60px] opacity-80 animate-blob"></div>
         </div>
 
+        {/* --- CONTENIDO --- */}
         <div className="relative z-10 w-full h-full overflow-y-auto p-5 space-y-5 scrollbar-hide">
             
+            {/* HEADER - Texto actualizado según tu captura */}
             <div className="pl-1 pt-1">
             <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
-                Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-white">Admin</span> 👋
+                Bienvenido
             </h1>
             <p className="text-red-200/80 font-medium mt-1">Resumen del día.</p>
             </div>
 
+            {/* TARJETAS DE ACCESO */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {accesos.map((item, idx) => (
                 <Link
@@ -59,15 +64,9 @@ const Home = () => {
             ))}
             </section>
 
+            {/* LISTA DE ACTIVIDAD */}
             <section className="bg-black/20 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/10 p-6 flex-1 mb-0">
-            <div className="flex justify-between items-center mb-5 px-1">
-                <h2 className="text-lg font-extrabold text-white flex items-center gap-3 drop-shadow-sm">
-                <Clock className="text-red-200" size={20} /> Actividad Reciente
-                </h2>
-                <button className="text-xs font-bold text-white bg-white/20 px-3 py-1.5 rounded-full hover:bg-white/30 transition-colors flex items-center gap-1 border border-white/20">
-                Ver historial <ArrowRight size={14} />
-                </button>
-            </div>
+           
 
             <div className="space-y-3">
                 {actividadReciente.map((item) => (
