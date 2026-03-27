@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, Package, Users, AlertTriangle, Clock } from "lucide-react"; // ArrowRight quitado de aquí
 import { useHome } from "../hooks/useHome";
 
+
 // --- CSS DE LA ANIMACIÓN ---
 const backgroundStyle = `
   @keyframes blob {

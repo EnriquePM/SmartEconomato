@@ -1,25 +1,33 @@
+// src/hooks/useHome.ts
 import { useState, useEffect } from "react";
-import type { Acceso, ActividadReciente } from "../models/home.model";
-import { getAccesos, getActividadReciente } from "../services/home.services";
+// 👉 Importamos tus dos funciones reales que ya tienes en tus servicios
+import { getAccesos, getActividadReciente } from "../services/home.services"; 
 
 export const useHome = () => {
-  const [accesos, setAccesos] = useState<Acceso[]>([]);
-  const [actividadReciente, setActividadReciente] = useState<ActividadReciente[]>([]);
-  const [cargando, setCargando] = useState<boolean>(true);
+  const [accesos, setAccesos] = useState<any[]>([]);
+  const [actividadReciente, setActividadReciente] = useState<any[]>([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        setCargando(true);
-        const [dataAccesos, dataActividad] = await Promise.all([
-          getAccesos(),
-          getActividadReciente()
-        ]);
+        // 1. Traemos los botones de arriba
+        const accesosData = await getAccesos();
+        setAccesos(accesosData);
+
+        // 2. Traemos LA ACTIVIDAD REAL (Esto llama a tu fetch real de home.services.ts)
+        const actividadReal = await getActividadReciente();
         
-        setAccesos(dataAccesos);
-        setActividadReciente(dataActividad);
+        // 3. Opcional: Como ya me dijiste que querías 5 en vez de 4, si por algún 
+        // motivo de tu servicio vienen más de 5, aquí los cortamos para que quede bonito.
+        // (Tu servicio ya los baraja por dentro, así que aquí solo cortamos).
+        const soloCinco = actividadReal.slice(0, 5);
+
+        // 4. Se lo damos al diseño
+        setActividadReciente(soloCinco);
+
       } catch (error) {
-        console.error("Error al cargar los datos del Home:", error);
+        console.error("Error cargando el Home:", error);
       } finally {
         setCargando(false);
       }
@@ -28,9 +36,5 @@ export const useHome = () => {
     cargarDatos();
   }, []);
 
-  return {
-    accesos,
-    actividadReciente,
-    cargando
-  };
+  return { accesos, actividadReciente, cargando };
 };

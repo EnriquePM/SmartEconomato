@@ -1,15 +1,23 @@
+// src/services/home.services.ts
 import type { Acceso, ActividadReciente } from "../models/home.model";
-import { Users, ShoppingCart, Package, Archive } from "lucide-react";
+import { ConciergeBell, ShoppingCart, Package, Archive } from "lucide-react";
 
+// --- ACCESOS ---
 export const getAccesos = async (): Promise<Acceso[]> => {
   return [
-    { titulo: "Gestión Usuarios", icono: Users, color: "bg-blue-600", ruta: "/admin-usuarios" },
+    { 
+      titulo: "Recepción",            
+      icono: ConciergeBell,           
+      color: "bg-sky-500",            
+      ruta: "/recepcion"              
+    },
     { titulo: "Nuevo Pedido", icono: ShoppingCart, color: "bg-orange-500", ruta: "/pedidos" },
     { titulo: "Inventario", icono: Package, color: "bg-emerald-500", ruta: "/inventario" },
     { titulo: "Entrada Stock", icono: Archive, color: "bg-purple-500", ruta: "/registrar-general" },
   ];
 };
 
+// --- ACTIVIDAD RECIENTE (Solo Stock y Utensilios) ---
 export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
   try {
     const token = localStorage.getItem("token"); 
@@ -18,73 +26,59 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
       "Authorization": `Bearer ${token}`
     };
 
-    const [resPedidos, resIngredientes, resMateriales] = await Promise.all([
-      fetch("http://localhost:3000/api/pedidos", { headers }).catch(() => null),
+    // 1. Ya no hacemos fetch a pedidos, solo a ingredientes y materiales
+    const [resIngredientes, resMateriales] = await Promise.all([
       fetch("http://localhost:3000/api/ingredientes", { headers }).catch(() => null),
       fetch("http://localhost:3000/api/materiales", { headers }).catch(() => null)
     ]);
 
-    const pedidos = resPedidos?.ok ? await resPedidos.json() : [];
     const ingredientes = resIngredientes?.ok ? await resIngredientes.json() : [];
     const materiales = resMateriales?.ok ? await resMateriales.json() : [];
 
     const actividadMixta: ActividadReciente[] = [];
 
-    // --- A. Un pedido pendiente ---
-    const pedidoPendiente = pedidos.find((p: any) => p.estado === "PENDIENTE") || pedidos[0];
-    if (pedidoPendiente) {
-      actividadMixta.push({
-        id: 1,
-        titulo: `Pedido #${pedidoPendiente.id_pedido || pedidoPendiente.id || 'Nuevo'}`,
-        sub: `Estado: ${pedidoPendiente.estado}`,
-        tipo: "pedido",
-        estado: pedidoPendiente.estado === "PENDIENTE" ? "warning" : "info",
-        hora: "Reciente"
-      });
-    }
-
-    // --- B. Varios ingredientes normales AL AZAR (Cogemos hasta 3) ---
+    // --- A. Varios ingredientes normales AL AZAR (Subimos a 4 para compensar) ---
     const ingredientesSanos = ingredientes
       .filter((i: any) => (i.stock || i.cantidad) >= 5)
-      .sort(() => 0.5 - Math.random()) // 🎲 Aquí barajamos la lista
-      .slice(0, 3);
+      .sort(() => 0.5 - Math.random()) 
+      .slice(0, 4);
       
     ingredientesSanos.forEach((alimento: any, index: number) => {
       actividadMixta.push({
-        id: 20 + index,
+        id: `ing-sano-${alimento.id_ingrediente || index}`, 
         titulo: `Stock: ${alimento.nombre}`,
-        sub: `Quedan ${alimento.stock || alimento.cantidad || 0} uds/kg`,
+        sub: `Quedan ${alimento.stock || alimento.cantidad || 0} ${alimento.unidad_medida || 'uds'}`,
         tipo: "stock",
         estado: "success",
         hora: "Al día"
       });
     });
 
-    // --- C. Alertas de Stock crítico AL AZAR (Cogemos hasta 2) ---
+    // --- B. Alertas de Stock crítico AL AZAR (Max 2) ---
     const ingredientesCriticos = ingredientes
       .filter((i: any) => (i.stock || i.cantidad) < 5)
-      .sort(() => 0.5 - Math.random()) // 🎲 Barajamos también las alertas
+      .sort(() => 0.5 - Math.random()) 
       .slice(0, 2);
       
     ingredientesCriticos.forEach((critico: any, index: number) => {
       actividadMixta.push({
-        id: 30 + index,
+        id: `ing-critico-${critico.id_ingrediente || index}`, 
         titulo: `¡Alerta! ${critico.nombre}`,
-        sub: `Solo quedan ${critico.stock || critico.cantidad} uds.`,
-        tipo: "alerta",
+        sub: `Solo quedan ${critico.stock || critico.cantidad} ${critico.unidad_medida || 'uds'}`,
+        tipo: "alerta", 
         estado: "danger",
         hora: "¡Revisar!"
       });
     });
 
-    // --- D. Varios Utensilios / Materiales AL AZAR (Cogemos hasta 2) ---
+    // --- C. Varios Utensilios / Materiales AL AZAR (Max 2) ---
     const materialesRecientes = materiales
-      .sort(() => 0.5 - Math.random()) // 🎲 Barajamos los utensilios
+      .sort(() => 0.5 - Math.random()) 
       .slice(0, 2);
       
     materialesRecientes.forEach((material: any, index: number) => {
       actividadMixta.push({
-        id: 40 + index,
+        id: `mat-${material.id || index}`,
         titulo: `Utensilio: ${material.nombre}`,
         sub: `Disponibles: ${material.stock || material.cantidad || 0}`,
         tipo: "stock",
@@ -95,16 +89,17 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
 
     if (actividadMixta.length === 0) {
       return [{
-        id: 999, titulo: "Sistema iniciado", sub: "Aún no hay actividad", tipo: "info", estado: "success", hora: "Ahora"
+        id: "empty-1", titulo: "Sistema iniciado", sub: "Aún no hay actividad", tipo: "info", estado: "success", hora: "Ahora"
       }];
     }
 
-    return actividadMixta;
+    // 🎲 Una última barajada
+    return actividadMixta.sort(() => 0.5 - Math.random());
 
   } catch (error) {
     console.error("Fallo al traer datos reales:", error);
     return [{
-      id: 999, titulo: "Error de conexión", sub: "No se pudieron cargar los datos", tipo: "alerta", estado: "danger", hora: "Ahora"
+      id: "error-1", titulo: "Error de conexión", sub: "No se pudieron cargar los datos", tipo: "alerta", estado: "danger", hora: "Ahora"
     }];
   }
 };
