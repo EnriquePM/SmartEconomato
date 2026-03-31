@@ -1,38 +1,37 @@
+
 import type { RouteObject } from "react-router-dom";
-import { ProtectedRoute } from "../components/ProtectedRoute";
+import { ProtectedRoute, RoleProtectedRoute } from "../components/ProtectedRoute";
+
 import LoginPage from "../pages/LoginPage";
+import CambiarPassword from "../pages/CambiarPassword";
 import Layout from "../layout/Layout";
-import Inicio from "../pages/inicioPrueba";
-import IngresarProducto from "../pages/IngresarProducto";
 import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
 import Perfil from "../pages/Perfil";
-import RegistrarUtensilio from "../pages/RegistrarUtensilio";
-import CambiarPassword from "../pages/CambiarPassword";
 import Pedidos from "../pages/Pedidos";
-
-// Componentes temporales para las rutas que aún no tienen archivo propio
-const Recepcion = () => <div><h1>Módulo de Recepción de Pedidos</h1></div>;
-
+import IngresoGeneral from "../pages/IngresoGeneral";
+import Home from "../pages/Home";
+import PedidosPage from "../pages/recepcionPedidos";
 
 export const routes: RouteObject[] = [
   {
-    // 1. RUTA PÚBLICA: El Login siempre debe ser accesible
     path: "/login",
-    element: <LoginPage/>,
-    
+    element: <LoginPage />,
   },
   {
-    // 2. RUTAS PROTEGIDAS: Todo lo que esté aquí dentro requiere localStorage
-    element: <ProtectedRoute />, 
+    path: "/cambiar-password",
+    element: <CambiarPassword />,
+  },
+  {
+    element: <ProtectedRoute />,
     children: [
       {
         path: "/",
-        element: <Layout />, 
+        element: <Layout />,
         children: [
           {
-            index: true, // Esta es la página "/"
-            element: <Inicio />,
+            index: true,
+            element: <Home />,
           },
           {
             path: "inventario",
@@ -40,28 +39,28 @@ export const routes: RouteObject[] = [
           },
           {
             path: "recepcion",
-            element: <Recepcion />,
+            element: <PedidosPage />, 
           },
-         {
+          {
             path: "pedidos",
-            element: <Pedidos />, 
+            element: <Pedidos />,
           },
           {
-            path: "registrar",
-            element: <IngresarProducto />,
+            path: "registrar-general",
+            element: <IngresoGeneral />,
           },
           {
-            path: "admin-usuarios",
-            element: <AdminUsuarios />,
+            element: <RoleProtectedRoute allowedRoles={["Administrador", "Profesor"]} />,
+            children: [
+              {
+                path: "admin-usuarios",
+                element: <AdminUsuarios />,
+              },
+            ],
           },
-          // 2. AÑADIMOS LA RUTA DE PERFIL AQUÍ
           {
             path: "perfil",
             element: <Perfil />,
-          },
-          {
-            path: "registrar-utensilio",
-            element: <RegistrarUtensilio />
           },
         ],
       },

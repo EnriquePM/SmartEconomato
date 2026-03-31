@@ -1,122 +1,100 @@
-import { useState, useEffect } from "react";
-import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Filter, Loader2 } from "lucide-react";
+import { useInventario } from "../hooks/useInventario";
+import { useCategorias } from "../hooks/useCategoria";
+import { useProveedores } from "../hooks/useProveedor";
+import Input from "../components/ui/Input"; 
+import Select from "../components/ui/select";
 
-interface Producto {
-  id: string | number;
-  codigo?: string;
-  nombre: string;
-  stock: number;
-  id_categoria: number | string; 
-  id_proveedor?: number;
-  categoria?: string; 
-  ubicacion?: string; 
-  estado?: string;
-}
 
 const Inventario = () => {
-  const [productos, setProductos] = useState<Producto[]>([]);
-  const [categorias, setCategorias] = useState<string[]>([]); 
+  // --- ESTADOS DE UI ---
+  const [vista, setVista] = useState<'ingredientes' | 'utensilios'>('ingredientes');
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("todos");
-  
-  const [vista, setVista] = useState<'ingredientes' | 'utensilios'>('ingredientes');
-  const [orden, setOrden] = useState<{ campo: string, asc: boolean } | null>(null);
+  const [orden, setOrden] = useState<{ campo: string; asc: boolean }>({ campo: 'nombre', asc: true });
 
-  const obtenerNombreCategoria = (valor: string | number) => {
-    if (vista === 'utensilios') return valor;
-    switch (Number(valor)) {
-        case 1: return "Aceites y Grasas";
-        case 2: return "Granos y Harinas";
-        case 3: return "Conservas";
-        case 4: return "Lácteos y Huevos";
-        case 5: return "Condimentos";
-        default: return valor;
-    }
-  };
+  // --- HOOKS DE DATOS (Arquitectura Limpia) ---
+  const { items, loading, error, refetch } = useInventario(vista);
+  const { categorias, options: categoriaOptions } = useCategorias();
+  const { proveedores } = useProveedores();
 
-  useEffect(() => {
-    const endpoint = `http://localhost:3000/${vista}`;
-
-    fetch(endpoint)
-      .then((res) => res.json())
-      .then((data) => {
-          setProductos(data);
-          const catsUnicas = Array.from(new Set(data.map((item: any) => 
-            vista === 'ingredientes' ? item.id_categoria.toString() : item.categoria
-          ))) as string[];
-          
-          setCategorias(catsUnicas);
-      })
-      .catch((err) => {
-        console.error(`Error cargando ${vista}:`, err);
-        setProductos([]); 
-      });
-    
-    setBusqueda("");
-    setFiltroCategoria("todos");
-    setOrden(null);
-  }, [vista]);
-
-  const productosFiltrados = productos.filter((producto) => {
+  // --- LÓGICA DE FILTRADO Y ORDENACIÓN ---
+  const productosFiltrados = useMemo(() => {
+    // 1. Filtrar
+  const filtrados = items.filter((item) => {
     const texto = busqueda.toLowerCase();
-    const coincideTexto = 
-        producto.nombre.toLowerCase().includes(texto) || 
-        (producto.codigo && producto.codigo.toLowerCase().includes(texto));
-
-    const coincideCategoria = 
-        filtroCategoria === "todos" || 
-        (vista === 'ingredientes' 
-            ? producto.id_categoria.toString() === filtroCategoria 
-            : producto.categoria === filtroCategoria);
-
-    return coincideTexto && coincideCategoria;
+    
+    // Buscamos por nombre (String) e id. 
+    const nombreMatch = item.nombre.toLowerCase().includes(texto);
+    const idMatch = item.id.toString().includes(texto);
+    const categoriaMatch = filtroCategoria === "todos" || String(item.id_categoria) === filtroCategoria;
+    /*Buscamos por código de barra, funcionalidad futura
+    const codigoMatch = item.codigo 
+      ? item.codigo.toString().toLowerCase().includes(texto) 
+      : false;
+    */
+  
+    return (nombreMatch || idMatch) && categoriaMatch;
   });
 
-  const productosFinales = [...productosFiltrados].sort((a, b) => {
-      if (!orden) return 0;
-      let valorA, valorB;
-      if (orden.campo === 'nombre') { valorA = a.nombre.toLowerCase(); valorB = b.nombre.toLowerCase(); }
-      else if (orden.campo === 'stock') { valorA = a.stock; valorB = b.stock; }
-      else { valorA = a.id_categoria; valorB = b.id_categoria; }
+    // 2. Ordenar
+    return [...filtrados].sort((a, b) => {
+      let valorA = a[orden.campo as keyof typeof a] ?? '';
+      let valorB = b[orden.campo as keyof typeof b] ?? '';
+
+      if (typeof valorA === 'string') {
+        valorA = valorA.toLowerCase();
+        valorB = (valorB as string).toLowerCase();
+      }
+
       if (valorA < valorB) return orden.asc ? -1 : 1;
       if (valorA > valorB) return orden.asc ? 1 : -1;
       return 0;
-  });
+    });
+  }, [items, busqueda, filtroCategoria, orden]);
+
+  // --- HELPERS ---
+  const getNombreCategoria = (idCat: number) => {
+    return categorias.find(c => c.id === idCat)?.nombre || "Sin categoría";
+  };
+  const getNombreProveedor = (idPro: number | undefined) => {
+  if (!idPro) return "Sin proveedor"; 
+  return proveedores.find(p => p.id_proveedor === idPro)?.nombre || "Sin proveedor";
+};
 
   const cambiarOrden = (campo: string) => {
-      setOrden(orden?.campo === campo ? { campo, asc: !orden.asc } : { campo, asc: true });
+    setOrden(prev => ({ campo, asc: prev.campo === campo ? !prev.asc : true }));
   };
 
-  const IconoOrden = ({ campo }: { campo: string }) => {
-      if (orden?.campo !== campo) return <ArrowUpDown size={14} className="text-gray-300" />;
-      return orden.asc ? <ArrowUp size={14} className="text-red-600" /> : <ArrowDown size={14} className="text-red-600" />;
-  };
-
-  return (
+  console.log("PRIMER ITEM:", productosFiltrados[0]);
+  if (error) {
+    return (
+      <div className="p-10 text-center bg-red-50 rounded-xl border border-red-100">
+        <p className="text-red-600 font-bold mb-4">Error al conectar con el servidor</p>
+        <button onClick={refetch} className="bg-red-600 text-white px-6 py-2 rounded-full">Reintentar</button>
+      </div>
+    );
+  }
+return (
     <div className="space-y-6 animate-fade-in">
       {/* CABECERA */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
-          <p className="text-gray-500">Gestión de stock en tiempo real.</p>
+          <p className="text-gray-500">Gestión de stock</p>
         </div>
-        <div className="flex gap-2">
-            <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center border ${
-                vista === 'utensilios' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
-            }`}>
-                Total: {productos.length} {vista === 'ingredientes' ? 'productos' : 'utensilios'}
-            </span>
+        <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold border border-blue-100">
+          Total: {productosFiltrados.length} registros
         </div>
       </div>
 
-      {/* --- ZONA DE PESTAÑAS (ESTILO ACTUALIZADO) --- */}
+      {/* --- ZONA DE PESTAÑAS (DISEÑO SOLAPAS) --- */}
       <div className="flex gap-2 mt-8 pl-2 relative items-end">
-        {/* Línea base gris de fondo */}
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
 
-        {/* PESTAÑA PRODUCTOS */}
         <button
-          onClick={() => setVista('ingredientes')}
+          onClick={() => { setVista('ingredientes'); setFiltroCategoria('todos'); }}
           className={`px-8 py-4 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${
             vista === 'ingredientes'
               ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-4 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]'
@@ -126,9 +104,8 @@ const Inventario = () => {
           PRODUCTOS
         </button>
 
-        {/* PESTAÑA UTENSILIOS */}
         <button
-          onClick={() => setVista('utensilios')}
+          onClick={() => { setVista('utensilios'); setFiltroCategoria('todos'); }}
           className={`px-8 py-4 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${
             vista === 'utensilios'
               ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-4 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]'
@@ -139,56 +116,95 @@ const Inventario = () => {
         </button>
       </div>
 
-      {/* BARRA DE HERRAMIENTAS */}
-      <div className="bg-white p-4 rounded-b-xl rounded-tr-[2rem] shadow-sm border border-gray-100 border-t-0 flex flex-col md:flex-row gap-4">
+      {/* BARRA DE HERRAMIENTAS - USANDO TUS COMPONENTES UI */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-            <span className="absolute left-3 top-3 text-gray-400"><Search size={18} /></span>
-            <input type="text" placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'}...`} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <Input
+            id="search-inventory"
+            type="text"
+            placeholder="Buscar por nombre o código..."
+            value={busqueda}
+            onChange={(val) => setBusqueda(val)}
+            className="pl-12"
+          />
         </div>
 
-        <div className="relative">
-             <span className="absolute left-3 top-3 text-gray-500"><Filter size={16} /></span>
-            <select 
-                className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer outline-none focus:ring-2 focus:ring-red-500 appearance-none"
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-            >
-                <option value="todos">Todas las categorías</option>
-                {categorias.map((cat) => (
-                    <option key={cat} value={cat}>
-                        {obtenerNombreCategoria(cat)}
-                    </option>
-                ))}
-            </select>
+        <div className="min-w-[200px]">
+          <Select
+            id="categoria-filter"
+            value={filtroCategoria}
+            options={[
+              { value: "todos", label: "Todas las categorías" },
+              ...categoriaOptions
+            ]}
+            onChange={(val) => setFiltroCategoria(val)}
+          />
         </div>
       </div>
 
-      {/* TABLA */}
+      {/* TABLA DE RESULTADOS */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
-                <tr>
-                    <th className="p-4">Código</th>
-                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('nombre')}><div className="flex items-center gap-2">{vista === 'ingredientes' ? 'Producto' : 'Utensilio'} <IconoOrden campo="nombre" /></div></th>
-                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('categoria')}><div className="flex items-center gap-2">Categoría <IconoOrden campo="categoria" /></div></th>
-                    <th className="p-4 text-center cursor-pointer" onClick={() => cambiarOrden('stock')}><div className="flex items-center justify-center gap-2">Stock <IconoOrden campo="stock" /></div></th>
-                </tr>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 text-gray-400 uppercase text-xs font-bold">
+              <tr>
+                <th className="p-4">ID</th>
+                <th className="p-4">Nombre</th>
+                <th className="p-4">Categoría</th>
+                <th className="p-4">Proveedor</th>
+                <th className="p-4 text-center">Stock</th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-                {productosFinales.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="p-4">{item.codigo ? <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">{item.codigo}</span> : <span className="text-xs text-gray-300 italic">Sin código</span>}</td>
-                        <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
-                        <td className="p-4 text-sm text-gray-500">
-                            {obtenerNombreCategoria(vista === 'ingredientes' ? item.id_categoria : item.categoria || '')}
-                        </td>
-                        <td className="p-4 text-center">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.stock < 10 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>{item.stock} u.</span>
-                        </td>
-                    </tr>
-                ))}
+              {loading ? (
+                 <tr>
+                  <td colSpan={5} className="p-12 text-center">
+                    <div className="flex justify-center items-center gap-3 text-gray-400">
+                      <Loader2 className="animate-spin" />
+                      <span>Cargando almacén...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : productosFiltrados.length > 0 ? (
+                productosFiltrados.map((item) => (
+                  <tr key={`${item.id}`} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-4">
+                      <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">
+                        {item.id}
+                      </span>
+                    </td>
+                    <td className="p-4 font-bold text-gray-900 tracking-tight">
+                      {item.nombre}
+                    </td>
+                    <td className="p-4">
+                      <span className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                        {getNombreCategoria(item.id_categoria)}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-gray-500">
+                      {getNombreProveedor(item.id_proveedor)}
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className={`inline-block px-3 py-1 rounded-lg text-xs font-black ${
+                        item.stock < Number(item.stock_minimo || 0) 
+                          ? 'bg-red-50 text-red-600 border border-red-100' 
+                          : 'bg-green-50 text-green-700 border border-green-100'
+                      }`}>
+                        {item.stock} <span className="opacity-60 text-[10px]">{item.unidad}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="p-12 text-center text-gray-400 font-medium">
+                    No se encontraron resultados en {vista}.
+                  </td>
+                </tr>
+              )}
             </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   );

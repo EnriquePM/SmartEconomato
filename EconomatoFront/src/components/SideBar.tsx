@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
+import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users } from "lucide-react";
 import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
-// AÑADIDO: Importamos el icono 'Utensils' para el nuevo botón
-import { Users, PenTool, Utensils } from "lucide-react";
+import { useAuth } from '../context/AuthContext';
 
 
 // --- COMPONENTE PRINCIPAL: SideBar ---
 export default function SideBar() {
+  const { hasRole } = useAuth();
+  const [adminOpen, setAdminOpen] = useState(false);
+
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center px-2 py-2 rounded-base group transition-colors ${
       isActive
@@ -39,6 +42,16 @@ export default function SideBar() {
 
             <ul className="space-y-1.5 font-medium">
               
+
+              <li>
+                <NavLink to="/" className={linkClass} end>
+                   {/* 'end' es importante para que no se quede siempre marcado */}
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span className="ms-3">Panel Principal</span>
+                </NavLink>
+              </li>
+
+
               <li>
                 <NavLink to="/inventario" className={linkClass}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -69,31 +82,37 @@ export default function SideBar() {
               
 
               <li>
-                <NavLink to="/registrar" className={linkClass}>
+                <NavLink to="/registrar-general" className={linkClass}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
                   <span className="ms-3">Registrar producto</span>
                 </NavLink>
               </li>
+              {/* DESPLEGABLE DE ADMINISTRACIÓN — solo visible para Administrador y Profesor */}
+              {hasRole(["Administrador", "Profesor"]) && (
+                <li>
+                  <button
+                    onClick={() => setAdminOpen(!adminOpen)}
+                    className="flex items-center w-full px-2 py-2 rounded-base group transition-colors text-body hover:bg-neutral-tertiary hover:text-fg-brand"
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span className="ms-3 flex-grow text-left">Administración</span>
+                    {adminOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
 
-
-                {/* --- NUEVO BOTÓN AÑADIDO AQUÍ --- */}
-              <li>
-                <NavLink to="/registrar-utensilio" className={linkClass}>
-                  {/* Icono de cubiertos/utensilios */}
-                  <Utensils className="w-5 h-5" />
-                  <span className="ms-3">Registrar Utensilio</span>
-                </NavLink>
-              </li>
-              
-
-              <li>
-                <NavLink to="/admin-usuarios" className={linkClass}>
-                  <Users className="w-5 h-5" />
-                  <span className="ms-3">Administrar usuarios</span>
-                </NavLink>
-              </li>
+                  {adminOpen && (
+                    <ul className="mt-1 ms-4 space-y-1 border-l border-neutral-secondary-medium pl-3">
+                      <li>
+                        <NavLink to="/admin-usuarios" className={linkClass}>
+                          <Users className="w-4 h-4" />
+                          <span className="ms-3 text-sm">Administrar usuarios</span>
+                        </NavLink>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              )}
               
           
             </ul>

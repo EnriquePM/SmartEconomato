@@ -1,0 +1,17 @@
+{
+  "name": "smart-economato",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"BACK,FRONT\" --prefix-colors \"bgBlue.bold,bgGreen.bold\" \"npm run dev --prefix EconomatoBack\" \"npm run dev --prefix EconomatoFront\""
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "concurrently": "^9.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
