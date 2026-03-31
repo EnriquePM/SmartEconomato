@@ -1,7 +1,6 @@
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useRecepcionModal } from "../hooks/useModalRecepcion";
-import type { Pedido } from "../models/Pedidos";
 
 export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) => {
   const { 
@@ -12,8 +11,10 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
     manejarBusqueda, 
     actualizarValor,
     seleccionarLinea,
-    enviarDatos
-  } = useRecepcionModal(pedido,onSaveLocal);
+    enviarDatos,
+    finalizarRecepcion,
+    guardando
+  } = useRecepcionModal(pedido, onSaveLocal, onRefresh, onClose);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -49,13 +50,21 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
         {/*FORM*/}
         <div className="px-8 py-4 bg-white shrink-0">
           {lineaEnFoco ? (
-            <div className="bg-blue-50/40 border border-blue-100 p-6 rounded-[1.8rem] animate-fade-in-up">
+            <div className={`p-6 rounded-[1.8rem] animate-fade-in-up border ${Number(lineaEnFoco.cantidad_recibida) < Number(lineaEnFoco.cantidad_solicitada)
+              ? 'bg-red-50/60 border-red-200'
+              : 'bg-blue-50/40 border-blue-100'
+            }`}>
               <div className="flex justify-between items-center mb-5">
-                <h3 className="text-base font-black text-blue-900 uppercase tracking-tight">
+                <h3 className={`text-base font-black uppercase tracking-tight ${Number(lineaEnFoco.cantidad_recibida) < Number(lineaEnFoco.cantidad_solicitada) ? 'text-red-900' : 'text-blue-900'}`}>
                   {lineaEnFoco.nombre}
                 </h3>
                 <div className="flex items-center gap-2">
-                   <span className="bg-blue-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase">Pedido: {lineaEnFoco.cantidad_solicitada} {lineaEnFoco.unidad_medida}</span>
+                   <span className={`${Number(lineaEnFoco.cantidad_recibida) < Number(lineaEnFoco.cantidad_solicitada) ? 'bg-red-600' : 'bg-blue-600'} text-white text-[9px] font-black px-3 py-1 rounded-full uppercase`}>Pedido: {lineaEnFoco.cantidad_solicitada} {lineaEnFoco.unidad_medida}</span>
+                   {Number(lineaEnFoco.cantidad_recibida) < Number(lineaEnFoco.cantidad_solicitada) && (
+                    <span className="bg-red-100 text-red-700 text-[9px] font-black px-3 py-1 rounded-full uppercase border border-red-200">
+                      Recepción parcial
+                    </span>
+                   )}
                 </div>
               </div>
               
@@ -63,6 +72,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
                 <Input 
                   id="c-rec" type="number" label="Cant. Recibida" placeholder="0"
                   value={lineaEnFoco.cantidad_recibida} 
+                  min={lineaEnFoco.cantidad_recibida_inicial}
                   onChange={(v) => actualizarValor(lineaEnFoco.id_referencia, 'cantidad_recibida', v)}
                 />
                 <Input 
@@ -85,6 +95,11 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
                   Guardar y continuar
                 </Button>
               </div>
+              {Number(lineaEnFoco.cantidad_recibida_inicial) > 0 && (
+                <p className="mt-4 text-xs font-semibold text-gray-500">
+                  Ya había {lineaEnFoco.cantidad_recibida_inicial} {lineaEnFoco.unidad_medida} recepcionadas. Solo se sumará al stock la diferencia nueva al finalizar.
+                </p>
+              )}
             </div>
           ) : (
             /* ESPACIO PRODUCTO */
@@ -100,43 +115,66 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
            <div className="flex-1 overflow-y-auto px-8 py-2 bg-gray-50/20 border-t border-gray-50">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-4">
                 {lineasMostradas.map((l: any) => {
-    
-                  const yaRecepcionado = Number(l.cantidad_recibida) > 0;
+                  const cantidadSolicitada = Number(l.cantidad_solicitada) || 0;
+                  const cantidadRecibida = Number(l.cantidad_recibida) || 0;
+                  const recepcionParcial = cantidadRecibida > 0 && cantidadRecibida < cantidadSolicitada;
+                  const recepcionCompleta = cantidadSolicitada > 0 && cantidadRecibida >= cantidadSolicitada;
+                  const bloqueado = pedido.estado === 'CONFIRMADO';
+                  const estadoLinea = recepcionCompleta ? 'Completa' : recepcionParcial ? 'Parcial' : 'Pendiente';
 
                   return (
                     <div 
                       key={l.id_referencia}
-                   
                       onClick={() => {
-                        if (!yaRecepcionado) {
+                        if (!bloqueado) {
                           seleccionarLinea(l);
                         }
                       }}
-                   
                       className={`p-4 bg-white rounded-[1.2rem] border transition-all shadow-sm flex justify-between items-center group
-                        ${yaRecepcionado 
-                          ? 'border-gray-100 bg-gray-50/50 opacity-60 cursor-not-allowed' 
-                          : 'border-gray-100 hover:border-blue-400 hover:shadow-lg cursor-pointer' 
+                        ${bloqueado
+                          ? 'border-gray-100 bg-gray-50/50 opacity-60 cursor-not-allowed'
+                          : recepcionParcial
+                            ? 'border-red-200 bg-red-50/70 hover:border-red-300 hover:shadow-lg cursor-pointer'
+                            : recepcionCompleta
+                              ? 'border-emerald-200 bg-emerald-50/70 hover:border-emerald-300 hover:shadow-lg cursor-pointer'
+                              : 'border-gray-100 hover:border-blue-400 hover:shadow-lg cursor-pointer'
                         }`}
                     >
                       <div className="text-left">
                         <p className={`font-bold text-sm leading-tight transition-colors
-                          ${yaRecepcionado 
-                            ? 'text-gray-400 line-through' 
-                            : 'text-gray-800 group-hover:text-blue-600' 
+                          ${bloqueado
+                            ? 'text-gray-400'
+                            : recepcionParcial
+                              ? 'text-red-700 group-hover:text-red-800'
+                              : recepcionCompleta
+                                ? 'text-emerald-700 group-hover:text-emerald-800'
+                                : 'text-gray-800 group-hover:text-blue-600'
                           }`}>
                           {l.nombre}
                         </p>
                         <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Ref: {l.id_referencia}</p>
                       </div>
 
-                      <span className={`text-xs font-black px-3 py-1.5 rounded-xl border
-                        ${yaRecepcionado
-                          ? 'text-gray-400 bg-gray-100 border-gray-200' 
-                          : 'text-blue-600 bg-blue-50 border-blue-100' 
-                        }`}>
-                        {l.cantidad_recibida} <small className="text-[10px] uppercase">{l.unidad_medida}</small>
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`text-[10px] font-black px-3 py-1 rounded-xl border uppercase
+                          ${recepcionCompleta
+                            ? 'text-emerald-700 bg-emerald-100 border-emerald-200'
+                            : recepcionParcial
+                              ? 'text-red-700 bg-red-100 border-red-200'
+                              : 'text-blue-600 bg-blue-50 border-blue-100'
+                          }`}>
+                          {estadoLinea}
+                        </span>
+                        <span className={`text-xs font-black px-3 py-1.5 rounded-xl border
+                          ${recepcionCompleta
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            : recepcionParcial
+                              ? 'text-red-700 bg-red-50 border-red-200'
+                              : 'text-blue-600 bg-blue-50 border-blue-100'
+                          }`}>
+                          {cantidadRecibida}/{cantidadSolicitada} <small className="text-[10px] uppercase">{l.unidad_medida}</small>
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -145,7 +183,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
 
             <div className="px-8 py-6 border-t bg-white flex gap-4 shrink-0">
               <Button variant="gris" className="flex-1 !rounded-full font-bold" onClick={onClose}>Cerrar</Button>
-              <Button variant="secundario" className="flex-[2] !rounded-full font-bold" onClick={() => console.log("Fin", lineasMostradas)}>
+              <Button variant="secundario" className="flex-[2] !rounded-full font-bold" onClick={finalizarRecepcion} loading={guardando}>
                 Finalizar Recepción
               </Button>
             </div>

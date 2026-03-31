@@ -194,6 +194,31 @@ export const getPedidos = async (req: Request, res: Response) => {
     }
 };
 
+export const getPedidoById = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const idPedido = Number(id);
+
+    if (Number.isNaN(idPedido)) {
+        return res.status(400).json({ error: 'ID de pedido no valido' });
+    }
+
+    try {
+        const pedido = await prisma.pedido.findUnique({
+            where: { id_pedido: idPedido },
+            include: pedidoInclude
+        });
+
+        if (!pedido) {
+            return res.status(404).json({ error: 'Pedido no encontrado' });
+        }
+
+        return res.json(pedido);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error al obtener el detalle del pedido' });
+    }
+};
+
 // 3. VALIDAR PEDIDO
 export const validarPedido = async (req: Request, res: Response) => {
     const { id } = req.params;
