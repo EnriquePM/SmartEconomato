@@ -3,7 +3,7 @@ import { Input } from "../components/ui/Input";
 import { useRecepcionModal } from "../hooks/useModalRecepcion";
 import type { Pedido } from "../models/Pedidos";
 
-export const ModalRecepcion = ({ pedido, onClose }: { pedido: Pedido, onClose: () => void }) => {
+export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) => {
   const { 
     lineasMostradas, 
     lineaEnFoco, 
@@ -11,8 +11,9 @@ export const ModalRecepcion = ({ pedido, onClose }: { pedido: Pedido, onClose: (
     busqueda, 
     manejarBusqueda, 
     actualizarValor,
-    limpiarFoco 
-  } = useRecepcionModal(pedido);
+    seleccionarLinea,
+    enviarDatos
+  } = useRecepcionModal(pedido,onSaveLocal);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -54,18 +55,15 @@ export const ModalRecepcion = ({ pedido, onClose }: { pedido: Pedido, onClose: (
                   {lineaEnFoco.nombre}
                 </h3>
                 <div className="flex items-center gap-2">
-                   <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-                     Pedido: {lineaEnFoco.cantidadSolicitada} {lineaEnFoco.unidad_medida}
-                   </span>
-                   <span className="bg-blue-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase">Foco Activo</span>
+                   <span className="bg-blue-600 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase">Pedido: {lineaEnFoco.cantidad_solicitada} {lineaEnFoco.unidad_medida}</span>
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input 
                   id="c-rec" type="number" label="Cant. Recibida" placeholder="0"
-                  value={lineaEnFoco.cantidadRecibida} 
-                  onChange={(v) => actualizarValor(lineaEnFoco.id_referencia, 'cantidadRecibida', v)}
+                  value={lineaEnFoco.cantidad_recibida} 
+                  onChange={(v) => actualizarValor(lineaEnFoco.id_referencia, 'cantidad_recibida', v)}
                 />
                 <Input 
                   id="f-cad" type="date" label="Vencimiento" placeholder=""
@@ -83,7 +81,7 @@ export const ModalRecepcion = ({ pedido, onClose }: { pedido: Pedido, onClose: (
                 <Button variant="gris" className="flex-1 !rounded-full" onClick={() => setLineaEnFoco(null)}>
                   Volver atrás
                 </Button>
-                <Button variant="secundario" className="flex-[2] !rounded-full shadow-lg shadow-blue-200" onClick={limpiarFoco}>
+                <Button variant="secundario" className="flex-[2] !rounded-full shadow-lg shadow-blue-200" onClick={enviarDatos}>
                   Guardar y continuar
                 </Button>
               </div>
@@ -99,25 +97,49 @@ export const ModalRecepcion = ({ pedido, onClose }: { pedido: Pedido, onClose: (
         {/* LISTA PRODCUTO Y BOTONES  */}
         {!lineaEnFoco && (
           <>
-            <div className="flex-1 overflow-y-auto px-8 py-2 bg-gray-50/20 border-t border-gray-50">
+           <div className="flex-1 overflow-y-auto px-8 py-2 bg-gray-50/20 border-t border-gray-50">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-4">
-                {lineasMostradas.map((l: any) => (
-                  <div 
-                    key={l.id_referencia}
-                    onClick={() => setLineaEnFoco(l)}
-                    className="p-4 bg-white rounded-[1.2rem] border border-gray-100 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer flex justify-between items-center group shadow-sm"
-                  >
-                    <div className="text-left">
-                      <p className="font-bold text-gray-800 text-sm group-hover:text-blue-600 transition-colors leading-tight">
-                        {l.nombre}
-                      </p>
-                      <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Ref: {l.id_referencia}</p>
+                {lineasMostradas.map((l: any) => {
+    
+                  const yaRecepcionado = Number(l.cantidad_recibida) > 0;
+
+                  return (
+                    <div 
+                      key={l.id_referencia}
+                   
+                      onClick={() => {
+                        if (!yaRecepcionado) {
+                          seleccionarLinea(l);
+                        }
+                      }}
+                   
+                      className={`p-4 bg-white rounded-[1.2rem] border transition-all shadow-sm flex justify-between items-center group
+                        ${yaRecepcionado 
+                          ? 'border-gray-100 bg-gray-50/50 opacity-60 cursor-not-allowed' 
+                          : 'border-gray-100 hover:border-blue-400 hover:shadow-lg cursor-pointer' 
+                        }`}
+                    >
+                      <div className="text-left">
+                        <p className={`font-bold text-sm leading-tight transition-colors
+                          ${yaRecepcionado 
+                            ? 'text-gray-400 line-through' 
+                            : 'text-gray-800 group-hover:text-blue-600' 
+                          }`}>
+                          {l.nombre}
+                        </p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Ref: {l.id_referencia}</p>
+                      </div>
+
+                      <span className={`text-xs font-black px-3 py-1.5 rounded-xl border
+                        ${yaRecepcionado
+                          ? 'text-gray-400 bg-gray-100 border-gray-200' 
+                          : 'text-blue-600 bg-blue-50 border-blue-100' 
+                        }`}>
+                        {l.cantidad_recibida} <small className="text-[10px] uppercase">{l.unidad_medida}</small>
+                      </span>
                     </div>
-                    <span className="text-xs font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
-                      {l.cantidadRecibida} <small className="text-[10px] uppercase">{l.unidad_medida}</small>
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
