@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users } from "lucide-react";
-import { NavLink, Link } from 'react-router-dom';
+import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users, ChefHat } from "lucide-react";import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
 import { useAuth } from '../context/AuthContext';
@@ -77,6 +76,14 @@ export default function SideBar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
                   <span className="ms-3">Pedidos</span>
+                </NavLink>
+              </li>
+
+              <li>
+                {/* Asegúrate de que "/recetas" sea la ruta exacta que tienes en tu App.tsx o router */}
+                <NavLink to="/recetas" className={linkClass}>
+                  <ChefHat className="w-5 h-5" />
+                  <span className="ms-3">Recetas</span>
                 </NavLink>
               </li>
               
