@@ -3,128 +3,127 @@ import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { ModalReceta } from "./ModalRecetas"; 
+import { ModalDetalleReceta } from "../components/ModalDetalleReceta";
 
-// Interfaz para la Receta que viene de la Base de Datos
-interface RecetaBD {
-  id_receta: number;
-  nombre: string;
-  descripcion: string;
-  cantidad_platos: number;
-  receta_ingrediente?: any[]; 
-}
+// --- LA RECETA QUE APARECERÁ "POR DEFECTO" ---
+const RECETA_DE_PRUEBA = {
+  id_receta: 1,
+  nombre: "Sopa de Tomate Pro",
+  descripcion: "1 tomate, 2litros de agua, 1 piña",
+  cantidad_platos: 4,
+  receta_ingrediente: [
+    { id_ingrediente: 101, cantidad: 1000, ingrediente: { nombre: "Tomate Pera", unidad_medida: "g" } },
+    { id_ingrediente: 102, cantidad: 200, ingrediente: { nombre: "Cebolla", unidad_medida: "g" } },
+    { id_ingrediente: 103, cantidad: 2, ingrediente: { nombre: "Ajo", unidad_medida: "ud" } }
+  ]
+};
 
 const RecetasPage = () => {
   const [busqueda, setBusqueda] = useState("");
-  const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
   
-  // Estado para guardar las recetas que vienen de Prisma
-  const [recetas, setRecetas] = useState<RecetaBD[]>([]);
-  const [cargando, setCargando] = useState(true);
+  // 1. Empezamos con el detalle CERRADO (null)
+  const [recetaSeleccionada, setRecetaSeleccionada] = useState<any>(null);
+  
+  // 2. Cargamos la receta de prueba directamente en el listado
+  const [recetas, setRecetas] = useState<any[]>([RECETA_DE_PRUEBA]);
+  const [cargando, setCargando] = useState(false); // Ponemos false para que no salga el "Cargando..."
 
-  // FUNCIÓN PARA TRAER RECETAS DEL BACKEND (GET)
-const fetchRecetas = async () => {
+  // Dejamos el fetch aquí por si en el futuro arreglas el back, pero ahora no hará nada
+  const fetchRecetas = async () => {
+   
     try {
-      setCargando(true);
       const token = localStorage.getItem('token'); 
-
       const response = await fetch("http://localhost:3000/api/recetas", {
-        headers: {
-          "Authorization": `Bearer ${token}` // <--- EL PASE VIP
-        }
+        headers: { "Authorization": `Bearer ${token}` }
       });
-      
-      if (!response.ok) throw new Error("Error obteniendo recetas");
-      
-      const data = await response.json();
-      setRecetas(data);
-    } catch (error) {
-      console.error("Error al traer recetas:", error);
-    } finally {
-      setCargando(false);
-    }
+      if (response.ok) {
+        const data = await response.json();
+        setRecetas([RECETA_DE_PRUEBA, ...data]); // Mezclamos la de prueba con las reales
+      }
+    } catch (e) { console.log("Back aún no disponible"); }
+
   };
 
-  // Traer las recetas al cargar la página por primera vez
   useEffect(() => {
     fetchRecetas();
   }, []);
 
-  // Filtrado por nombre (Buscador superior)
   const recetasFiltradas = recetas.filter(r => 
     r.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   return (
-    <div className="p-8 min-h-screen font-sans">
+    <div className="p-8 min-h-screen font-sans bg-gray-50/50">
+      
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Libro de Recetas</h1>
-          <p className="text-gray-500 mt-1">
-            Gestión de elaboraciones
-          </p>
+          <p className="text-gray-500 mt-1">Gestión de elaboraciones</p>
         </div>
         <Button 
           variant="secundario" 
-          className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-pill font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95 w-full md:w-fit"
-          onClick={() => setModalAbierto(true)}
+          className="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-red-700 shadow-lg transition-all"
+          onClick={() => setModalCrearAbierto(true)}
         >
-          + Crear Receta
+          + CREAR RECETA
         </Button>
       </div>
 
-      {/* FILTROS (Buscador) */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
-        <div className="flex-1 relative">
-            <Input 
-              type="text"
-              placeholder="Buscar por nombre de receta..." 
-              value={busqueda}
-              onChange={(v) => setBusqueda(v)}
-              className="pl-12"
-            />
-        </div>
+      {/* BUSCADOR */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8">
+        <Input 
+          type="text"
+          placeholder="Buscar por nombre de receta..." 
+          value={busqueda}
+          onChange={(v) => setBusqueda(v)}
+          className="pl-4"
+        />
       </div>
 
-      {/* GRID DE RECETAS */}
-      {cargando ? (
-        <div className="text-center text-gray-500 py-10 font-bold">Cargando recetario...</div>
-      ) : recetasFiltradas.length === 0 ? (
-        <div className="text-center text-gray-400 py-10">No hay recetas todavía. ¡Haz clic en '+ Crear Receta' para empezar!</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {recetasFiltradas.map((receta) => (
-            <div 
-              key={receta.id_receta}
-              className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
-            >
-              <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full uppercase tracking-wider">
-                    {/* Dependiendo de lo que devuelva tu backend, muestra raciones o cantidad de ingredientes */}
-                    {receta.receta_ingrediente && receta.receta_ingrediente.length > 0 
-                      ? `${receta.receta_ingrediente.length} Ingredientes` 
-                      : `${receta.cantidad_platos} Raciones`}
-                  </span>
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-black text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
-                  {receta.nombre}
-              </h3>
-              <p className="text-gray-400 text-sm font-medium line-clamp-2 leading-relaxed mb-8">
-                  {receta.descripcion || "Sin descripción"}
-              </p>
+      {/* LISTADO DE TARJETAS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {recetasFiltradas.map((receta) => (
+          <div 
+            key={receta.id_receta}
+            // 👇 AL HACER CLIC AQUÍ ES CUANDO SE ABRE LA INFO
+            onClick={() => setRecetaSeleccionada(receta)}
+            className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
+          >
+            <div className="flex justify-between mb-4">
+              <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase">
+                {receta.receta_ingrediente?.length} Ingredientes
+              </span>
             </div>
-          ))}
-        </div>
+            <h3 className="text-2xl font-black text-gray-800 group-hover:text-blue-600 transition-colors">
+                {receta.nombre}
+            </h3>
+            <p className="text-gray-400 text-sm mt-2 line-clamp-2">
+                {receta.descripcion}
+            </p>
+            <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
+                <span className="text-xs font-bold text-gray-400">Raciones: {receta.cantidad_platos}</span>
+                <span className="text-blue-600 font-bold text-xs">VER DETALLES →</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* --- MODALES --- */}
+
+      {/* Modal de Modo Cocina (Solo se abre si haces clic) */}
+      {recetaSeleccionada && (
+        <ModalDetalleReceta 
+          receta={recetaSeleccionada} 
+          onClose={() => setRecetaSeleccionada(null)} 
+        />
       )}
 
-      {/* MODAL DE CREACIÓN */}
-      {modalAbierto && (
+      {/* Modal de Creación */}
+      {modalCrearAbierto && (
         <ModalReceta 
-          onClose={() => setModalAbierto(false)} 
-          // Pasamos la función fetchRecetas para que el modal la ejecute al terminar de guardar
+          onClose={() => setModalCrearAbierto(false)} 
           onRecetaCreada={fetchRecetas} 
         />
       )}
