@@ -1,8 +1,7 @@
 // src/pages/Home.tsx
 import { Link } from "react-router-dom";
-import { ShoppingCart, Package, Users, AlertTriangle, Clock } from "lucide-react"; // ArrowRight quitado de aquí
+import { ShoppingCart, Package, Users, AlertTriangle, Clock } from "lucide-react"; 
 import { useHome } from "../hooks/useHome";
-
 
 // --- CSS DE LA ANIMACIÓN ---
 const backgroundStyle = `
@@ -39,17 +38,17 @@ const Home = () => {
         {/* --- CONTENIDO --- */}
         <div className="relative z-10 w-full h-full overflow-y-auto p-5 space-y-5 scrollbar-hide">
             
-            {/* HEADER - Texto actualizado según tu captura */}
+            {/* HEADER */}
             <div className="pl-1 pt-1">
-            <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
-                Bienvenido
-            </h1>
-            <p className="text-red-200/80 font-medium mt-1">Resumen del día.</p>
+              <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
+                  Bienvenido
+              </h1>
+              <p className="text-red-200/80 font-medium mt-1">Resumen del día.</p>
             </div>
 
-            {/* TARJETAS DE ACCESO */}
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {accesos.map((item, idx) => (
+            {/* TARJETAS DE ACCESO (Responsive: 2x2 en Tableta/Móvil, 4x1 en Escritorio) */}
+{/* AHORA PON ESTO: */}
+<section className="grid grid-cols-2 lg:grid-cols-4 gap-4">            {accesos.map((item, idx) => (
                 <Link
                 key={idx}
                 to={item.ruta}
@@ -67,8 +66,6 @@ const Home = () => {
 
             {/* LISTA DE ACTIVIDAD */}
             <section className="bg-black/20 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/10 p-6 flex-1 mb-0">
-           
-
             <div className="space-y-3">
                 {actividadReciente.map((item) => (
                 <div key={item.id} className="group flex items-center justify-between p-3 bg-white/80 hover:bg-white border border-transparent rounded-xl transition-all duration-200 cursor-default shadow-sm">
@@ -85,13 +82,10 @@ const Home = () => {
                         {item.tipo === 'user' && <Users size={18} />}
                     </div>
                     <div>
-                        {/* Cambia esto: */}
-<h4 className="font-bold text-gray-900 text-sm">
-  {item.titulo.replace('Stock:', 'Ingrediente:')}
-</h4>
-
-{/* Esto se queda igual (subtítulo): */}
-<p className="text-xs text-gray-700 font-medium">{item.sub}</p>
+                        <h4 className="font-bold text-gray-900 text-sm">
+                          {item.titulo.replace('Stock:', 'Ingrediente:')}
+                        </h4>
+                        <p className="text-xs text-gray-700 font-medium">{item.sub}</p>
                     </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">

@@ -12,6 +12,8 @@ import Pedidos from "../pages/Pedidos";
 import IngresoGeneral from "../pages/IngresoGeneral";
 import Home from "../pages/Home";
 import PedidosPage from "../pages/recepcionPedidos";
+import RecetasPage from "../pages/Recetas";
+
 
 export const routes: RouteObject[] = [
   {
@@ -44,6 +46,10 @@ export const routes: RouteObject[] = [
           {
             path: "pedidos",
             element: <Pedidos />,
+          },
+          {
+            path: "recetas",
+            element: <RecetasPage />,
           },
           {
             path: "registrar-general",
