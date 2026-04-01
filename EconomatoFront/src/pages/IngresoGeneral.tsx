@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Globe, Loader2 } from "lucide-react";
+import { Globe, Loader2, Euro } from "lucide-react";
 
 // Servicios e Interfaces
 import { getCategorias, getProveedores, type Categoria, type Proveedor } from "../services/recursos.service";
 
 const IngresoGeneral = () => {
-  // --- ESTADO DE LA VISTA (PESTAÑAS ESTILO PEDIDOS SIN ICONOS) ---
   const [activeTab, setActiveTab] = useState<'ingredientes' | 'utensilios'>('ingredientes');
 
-  // --- ESTADOS COMPARTIDOS ---
   const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
   const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
   const [cargandoListas, setCargandoListas] = useState(true);
 
-  // --- ESTADOS FORMULARIO ---
+  // --- AÑADIMOS EL PRECIO AL ESTADO ---
   const [form, setForm] = useState({
     codigo: "",
     nombre: "",
     stock: "" as number | "",
+    unidad_medida: "",
+    precio_unidad: "" as number | "", // <-- NUEVO ESTADO
     id_categoria: "",
     id_proveedor: ""
   });
@@ -66,7 +66,8 @@ const IngresoGeneral = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nombre || form.stock === "" || !form.id_categoria || !form.id_proveedor) {
+    // Validamos también el precio
+    if (!form.nombre || form.stock === "" || !form.unidad_medida || form.precio_unidad === "" || !form.id_categoria || !form.id_proveedor) {
       setMensaje({ texto: "Rellena todos los campos obligatorios.", tipo: 'error' });
       return;
     }
@@ -74,13 +75,14 @@ const IngresoGeneral = () => {
     setGuardando(true);
     const endpoint = activeTab === 'ingredientes' ? 'ingredientes' : 'materiales';
     
+    // AÑADIMOS EL PRECIO AL PAYLOAD (Y quitamos el 0 fijo que había)
     const payload = {
       nombre: form.nombre,
       stock: Number(form.stock),
       id_categoria: Number(form.id_categoria),
       id_proveedor: Number(form.id_proveedor),
-      precio_unitario: 0,
-      unidad_medida: activeTab === 'ingredientes' ? "Kg." : "U."
+      precio_unidad: Number(form.precio_unidad), // <-- AHORA ENVIAMOS EL PRECIO REAL
+      unidad_medida: form.unidad_medida
     };
 
     try {
@@ -93,7 +95,8 @@ const IngresoGeneral = () => {
       if (!res.ok) throw new Error("Error en el guardado");
 
       setMensaje({ texto: `${activeTab === 'ingredientes' ? 'Ingrediente' : 'Utensilio'} registrado con éxito.`, tipo: 'exito' });
-      setForm({ codigo: "", nombre: "", stock: "", id_categoria: "", id_proveedor: "" });
+      // Limpiamos el formulario incluyendo el precio
+      setForm({ codigo: "", nombre: "", stock: "", unidad_medida: "", precio_unidad: "", id_categoria: "", id_proveedor: "" });
 
     } catch (error) {
       setMensaje({ texto: "Error al conectar con el servidor.", tipo: 'error' });
@@ -104,8 +107,6 @@ const IngresoGeneral = () => {
 
   return (
     <div className="h-full flex flex-col animate-fade-in-up pb-10">
-      
-      {/* HEADER PRINCIPAL (Sin botón aquí arriba) */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
@@ -113,7 +114,6 @@ const IngresoGeneral = () => {
         </div>
       </div>
 
-      {/* PESTAÑAS ESTILO PEDIDOS (SIN ICONOS) */}
       <div className="flex gap-2 mt-4 pl-2 relative items-end">
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
         <button 
@@ -130,12 +130,10 @@ const IngresoGeneral = () => {
         </button>
       </div>
 
-      {/* CONTENIDO PRINCIPAL (ANCHO COMPLETO) */}
       <div className="w-full mt-8">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* BUSCADOR / CÓDIGO (Funciona como referencia o búsqueda OFF) */}
             <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Referencia / Código de Barras</label>
               <div className="flex gap-3">
@@ -159,9 +157,9 @@ const IngresoGeneral = () => {
               </div>
             </div>
 
-            {/* CAMPOS DE DATOS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+              
+              <div className="md:col-span-3">
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Nombre</label>
                 <Input 
                   id="nombre" 
@@ -175,13 +173,45 @@ const IngresoGeneral = () => {
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Stock Inicial</label>
                 <Input 
                   id="stock" 
-                  type="text" 
+                  type="number" 
                   placeholder="0" 
                   value={form.stock.toString()} 
                   onChange={(val) => setForm({...form, stock: val === "" ? "" : Number(val)})} 
                 />
               </div>
 
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Unidad</label>
+                <div className="relative">
+                  <select 
+                      value={form.unidad_medida}
+                      onChange={(e) => setForm({...form, unidad_medida: e.target.value})}
+                      className="w-full bg-input border-none rounded-pill py-4 px-6 text-gray-700 focus:ring-2 focus:ring-slate-200 outline-none appearance-none cursor-pointer font-medium transition-all"
+                  >
+                      <option value="">Selecciona unidad...</option>
+                      <option value="kg">Kilos (kg)</option>
+                      <option value="g">Gramos (g)</option>
+                      <option value="l">Litros (L)</option>
+                      <option value="ml">Mililitros (ml)</option>
+                      <option value="ud">Unidades (ud)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 👇 NUEVO CAMPO: PRECIO 👇 */}
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Precio x Unidad (€)</label>
+                <Input 
+                  id="precio" 
+                  type="number" 
+                  step="0.01" // Permite decimales
+                  placeholder="0.00" 
+                  value={form.precio_unidad.toString()} 
+                  onChange={(val) => setForm({...form, precio_unidad: val === "" ? "" : Number(val)})} 
+                />
+              </div>
+
+              {/* Ajustamos la categoría para que ocupe 1 columna y el proveedor 2 */}
               <div className="w-full">
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Categoría</label>
                 <div className="relative">
@@ -217,7 +247,6 @@ const IngresoGeneral = () => {
               </div>
             )}
 
-            {/* BOTÓN AL FINAL DEL FORMULARIO */}
             <div className="pt-6 border-t border-gray-50">
                 <button 
                     onClick={handleSubmit}
