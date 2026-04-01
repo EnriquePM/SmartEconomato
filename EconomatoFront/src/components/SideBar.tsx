@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users, ChefHat } from "lucide-react";import { NavLink, Link } from 'react-router-dom';
 import logoSmart from '../assets/logoSmart.png';
 import { UserProfile } from './UserProfile';
 import { useAuth } from '../context/AuthContext';
 
 
-// --- COMPONENTE PRINCIPAL: SideBar ---
 export default function SideBar() {
   const { hasRole } = useAuth();
   const [adminOpen, setAdminOpen] = useState(false);
@@ -44,7 +43,6 @@ export default function SideBar() {
 
               <li>
                 <NavLink to="/" className={linkClass} end>
-                   {/* 'end' es importante para que no se quede siempre marcado */}
                   <LayoutDashboard className="w-5 h-5" />
                   <span className="ms-3">Panel Principal</span>
                 </NavLink>
@@ -66,7 +64,6 @@ export default function SideBar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                   <span className="ms-3">Recepcionar</span>
-                  <span className="inline-flex items-center justify-center w-5 h-5 ms-auto text-[10px] font-bold text-white bg-red-500 rounded-full">2</span>
                 </NavLink>
               </li>
 
@@ -80,7 +77,6 @@ export default function SideBar() {
               </li>
 
               <li>
-                {/* Asegúrate de que "/recetas" sea la ruta exacta que tienes en tu App.tsx o router */}
                 <NavLink to="/recetas" className={linkClass}>
                   <ChefHat className="w-5 h-5" />
                   <span className="ms-3">Recetas</span>
@@ -96,7 +92,6 @@ export default function SideBar() {
                   <span className="ms-3">Registrar producto</span>
                 </NavLink>
               </li>
-              {/* DESPLEGABLE DE ADMINISTRACIÓN — solo visible para Administrador y Profesor */}
               {hasRole(["Administrador", "Profesor"]) && (
                 <li>
                   <button
