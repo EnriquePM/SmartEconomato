@@ -1,4 +1,4 @@
-export interface Receta {
+export  interface Receta {
   id_receta?: number;
   nombre: string;
   descripcion?: string;

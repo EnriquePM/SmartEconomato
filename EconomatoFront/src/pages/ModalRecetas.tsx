@@ -1,144 +1,14 @@
-// src/pages/ModalRecetas.tsx
-import { useState, useEffect } from "react";
 import { X, Search, Plus, Trash2 } from "lucide-react";
-
-// --- INTERFACES ---
-interface IngredienteDB {
-  id_ingrediente: number;
-  nombre: string;
-  unidad_medida: string;
-}
-
-interface IngredienteSeleccionado {
-  id_ingrediente: number;
-  nombre: string;
-  cantidad: string;
-  unidad_medida: string;
-  rendimiento: string;
-}
+import { useRecetaForm } from "../hooks/useRecetasForm";
 
 interface ModalRecetaProps {
   onClose: () => void;
-  onRecetaCreada: () => void; // Avisa a la página principal para recargar
+  onRecetaCreada: () => void; 
 }
 
 export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
-  // --- ESTADOS DEL FORMULARIO ---
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [raciones, setRaciones] = useState<string>("1");
-  const [ingredientes, setIngredientes] = useState<IngredienteSeleccionado[]>([]);
-
-  // --- ESTADO PARA LOS INGREDIENTES DE PRISMA ---
-  const [ingredientesDB, setIngredientesDB] = useState<IngredienteDB[]>([]);
-  const [cargando, setCargando] = useState(true);
-
-  // --- ESTADOS DEL BUSCADOR ---
-  const [busqueda, setBusqueda] = useState("");
-
-  // TRAER INGREDIENTES DEL BACKEND AL ABRIR EL MODAL
-  useEffect(() => {
-    const fetchIngredientes = async () => {
-      try {
-        // 👇 AÑADIDO: Coger token y enviarlo en los headers
-        const token = localStorage.getItem('token'); 
-        
-        const response = await fetch("http://localhost:3000/api/ingredientes", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        }); 
-        
-        if (!response.ok) throw new Error("Error al obtener ingredientes");
-        
-        const data = await response.json();
-        setIngredientesDB(data);
-      } catch (error) {
-        console.error("Error al cargar desde Prisma:", error);
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    fetchIngredientes();
-  }, []);
-
-  // Filtrar ingredientes según lo que escriba el usuario
-  const ingredientesFiltrados = ingredientesDB.filter((ing) =>
-    ing.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  // Añadir un ingrediente a la lista de la receta
-  const agregarIngrediente = (ingDB: IngredienteDB) => {
-    if (ingredientes.find(i => i.id_ingrediente === ingDB.id_ingrediente)) return;
-
-    setIngredientes([
-      ...ingredientes,
-      {
-        id_ingrediente: ingDB.id_ingrediente,
-        nombre: ingDB.nombre,
-        cantidad: "",
-        unidad_medida: ingDB.unidad_medida || "ud", 
-        rendimiento: "", 
-      }
-    ]);
-    setBusqueda(""); 
-  };
-
-  const actualizarIngrediente = (id: number, campo: 'cantidad' | 'rendimiento', valor: string) => {
-    setIngredientes(ingredientes.map(ing => 
-      ing.id_ingrediente === id ? { ...ing, [campo]: valor } : ing
-    ));
-  };
-
-  const eliminarIngrediente = (id: number) => {
-    setIngredientes(ingredientes.filter(ing => ing.id_ingrediente !== id));
-  };
-
-  // --- GUARDAR RECETA (POST A PRISMA) ---
-  const handleGuardar = async () => {
-    if (!nombre.trim() || ingredientes.length === 0) {
-      alert("Por favor, ponle un nombre y añade al menos un ingrediente.");
-      return;
-    }
-
-    const nuevaReceta = {
-      nombre,
-      descripcion,
-      cantidad_platos: Number(raciones),
-      receta_ingrediente: ingredientes.map(ing => ({
-        id_ingrediente: ing.id_ingrediente,
-        cantidad: Number(ing.cantidad),
-        rendimiento: ing.rendimiento ? Number(ing.rendimiento) : null
-      }))
-    };
-    
-    try {
-      // 👇 AÑADIDO: Coger token y enviarlo en los headers del POST
-      const token = localStorage.getItem('token'); 
-
-      const response = await fetch("http://localhost:3000/api/recetas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(nuevaReceta),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al guardar la receta en el servidor");
-      }
-
-      console.log("¡Receta creada con éxito!");
-      onRecetaCreada(); // 1. Recargamos la lista del fondo
-      onClose();        // 2. Cerramos el modal
-      
-    } catch (error) {
-      console.error("Error guardando receta:", error);
-      alert("Hubo un error al guardar la receta en la base de datos.");
-    }
-  };
+  // 👇 INVOCAMOS AL HOOK. Él se encarga de todo el trabajo sucio.
+  const { form, lista, buscador, acciones } = useRecetaForm(onRecetaCreada);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -166,8 +36,8 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                 <label className="block text-sm font-bold text-gray-700 mb-1.5">Nombre de la Receta</label>
                 <input 
                   type="text" 
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
+                  value={form.nombre}
+                  onChange={(e) => form.setNombre(e.target.value)}
                   placeholder="Ej: Mousse de Limón" 
                   className="w-full bg-gray-100 border-transparent rounded-xl px-4 py-3 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none font-medium"
                 />
@@ -176,8 +46,8 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1.5">Descripción</label>
                 <textarea 
-                  value={descripcion}
-                  onChange={(e) => setDescripcion(e.target.value)}
+                  value={form.descripcion}
+                  onChange={(e) => form.setDescripcion(e.target.value)}
                   placeholder="Instrucciones breves o notas de la elaboración..." 
                   className="w-full bg-gray-100 border-transparent rounded-xl px-4 py-3 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none font-medium resize-none h-24"
                 />
@@ -187,8 +57,8 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                 <label className="block text-sm font-bold text-gray-700 mb-1.5">Raciones / Platos</label>
                 <input 
                   type="number" 
-                  value={raciones}
-                  onChange={(e) => setRaciones(e.target.value)}
+                  value={form.raciones}
+                  onChange={(e) => form.setRaciones(e.target.value)}
                   min="1"
                   className="w-1/2 bg-gray-100 border-transparent rounded-xl px-4 py-3 text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none font-medium"
                 />
@@ -206,22 +76,22 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input 
                   type="text" 
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                  placeholder={cargando ? "Cargando tu almacén..." : "Buscar ingrediente (ej. Tomate)..."} 
-                  disabled={cargando}
+                  value={buscador.busqueda}
+                  onChange={(e) => buscador.setBusqueda(e.target.value)}
+                  placeholder={buscador.cargando ? "Cargando tu almacén..." : "Buscar ingrediente (ej. Tomate)..."} 
+                  disabled={buscador.cargando}
                   className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none font-medium shadow-sm disabled:bg-gray-100 disabled:text-gray-400"
                 />
               </div>
 
               {/* Lista desplegable de resultados */}
-              {busqueda.length > 0 && !cargando && (
+              {buscador.busqueda.length > 0 && !buscador.cargando && (
                 <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-10 max-h-48 overflow-y-auto scrollbar-custom">
-                  {ingredientesFiltrados.length > 0 ? (
-                    ingredientesFiltrados.map(ing => (
+                  {buscador.sugerencias.length > 0 ? (
+                    buscador.sugerencias.map(ing => (
                       <button
                         key={ing.id_ingrediente}
-                        onClick={() => agregarIngrediente(ing)}
+                        onClick={() => lista.agregarIngrediente(ing)}
                         className="w-full text-left px-4 py-3 hover:bg-blue-50 flex items-center justify-between border-b border-gray-50 last:border-0 transition-colors"
                       >
                         <span className="font-bold text-gray-700">{ing.nombre}</span>
@@ -231,7 +101,7 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                       </button>
                     ))
                   ) : (
-                    <div className="px-4 py-3 text-sm text-gray-500 font-medium">No se encontraron ingredientes en tu base de datos...</div>
+                    <div className="px-4 py-3 text-sm text-gray-500 font-medium">No se encontraron ingredientes...</div>
                   )}
                 </div>
               )}
@@ -239,13 +109,13 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
 
             {/* Lista de Ingredientes Añadidos */}
             <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm space-y-3 min-h-[200px] overflow-y-auto max-h-[300px]">
-              {ingredientes.length === 0 ? (
+              {lista.ingredientes.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-2 py-8">
                   <span className="text-sm font-medium">No hay ingredientes en la receta</span>
                   <span className="text-xs">Usa el buscador de arriba para añadirlos</span>
                 </div>
               ) : (
-                ingredientes.map((ing) => (
+                lista.ingredientes.map((ing) => (
                   <div key={ing.id_ingrediente} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-gray-800 text-sm truncate">{ing.nombre}</p>
@@ -257,7 +127,7 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                         type="number" 
                         placeholder="0.00"
                         value={ing.cantidad}
-                        onChange={(e) => actualizarIngrediente(ing.id_ingrediente, 'cantidad', e.target.value)}
+                        onChange={(e) => lista.actualizarIngrediente(ing.id_ingrediente, 'cantidad', e.target.value)}
                         className="w-20 text-right bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-bold focus:border-blue-500 outline-none"
                       />
                       <span className="text-xs font-black text-gray-500 w-6">{ing.unidad_medida}</span>
@@ -269,14 +139,14 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                         type="number" 
                         placeholder="Rend. %"
                         value={ing.rendimiento}
-                        onChange={(e) => actualizarIngrediente(ing.id_ingrediente, 'rendimiento', e.target.value)}
+                        onChange={(e) => lista.actualizarIngrediente(ing.id_ingrediente, 'rendimiento', e.target.value)}
                         className="w-16 text-right bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium focus:border-blue-500 outline-none"
                       />
                     </div>
 
                     {/* Botón Eliminar */}
                     <button 
-                      onClick={() => eliminarIngrediente(ing.id_ingrediente)}
+                      onClick={() => lista.eliminarIngrediente(ing.id_ingrediente)}
                       className="ml-1 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 size={18} />
@@ -293,15 +163,17 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
         <div className="p-6 border-t border-gray-100 bg-white flex justify-end gap-4">
           <button 
             onClick={onClose}
-            className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+            disabled={acciones.guardando}
+            className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
           >
             CANCELAR
           </button>
           <button 
-            onClick={handleGuardar}
-            className="px-8 py-3 rounded-xl font-black text-white bg-red-600 hover:bg-red-700 active:scale-95 shadow-lg transition-all"
+            onClick={acciones.handleGuardar}
+            disabled={acciones.guardando}
+            className="px-8 py-3 rounded-xl font-black text-white bg-red-600 hover:bg-red-700 active:scale-95 shadow-lg transition-all disabled:opacity-50 disabled:bg-red-400 flex items-center gap-2"
           >
-            CREAR RECETA
+            {acciones.guardando ? "GUARDANDO..." : "CREAR RECETA"}
           </button>
         </div>
 
