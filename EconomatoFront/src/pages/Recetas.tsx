@@ -38,33 +38,33 @@ const RecetasPage = () => {
   );
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen font-sans">
+    <div className="p-8  min-h-screen font-sans">
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 tracking-tighter italic">Libro de Recetas</h1>
-          <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.2em] mt-1 ml-1">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Libro de Recetas</h1>
+          <p className="text-gray-500 mt-1">
             Gestión de elaboraciones
           </p>
         </div>
         <Button 
           variant="secundario" 
-          className="!rounded-full px-8 shadow-xl shadow-blue-100 hover:scale-105 transition-transform"
+          className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-pill font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95 w-full md:w-fit"
           onClick={() => setModalAbierto(true)}
         >
-          + Crear Nueva Receta
+          + Crear Receta
         </Button>
       </div>
 
       {/* FILTROS: Adaptado a tu componente Input */}
-      <div className="bg-white p-4 rounded-[2.5rem] shadow-sm border border-gray-100 mb-8 flex gap-4 items-center px-8">
-        <div className="flex-1">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1 relative">
             <Input 
               type="text"
               placeholder="Buscar por nombre de receta..." 
               value={busqueda}
               onChange={(v) => setBusqueda(v)}
-              className="!bg-gray-50/50 shadow-inner"
+              className="pl-12"
             />
         </div>
       </div>
@@ -76,15 +76,10 @@ const RecetasPage = () => {
             key={receta.id_receta}
             className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer group relative overflow-hidden"
           >
-            {/* Decoración sutil de fondo */}
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50/50 rounded-full group-hover:bg-blue-100/50 transition-colors" />
+            
 
             <div className="flex justify-between items-start mb-6 relative z-10">
-              <div className="bg-blue-600 text-white p-4 rounded-[1.5rem] shadow-lg shadow-blue-200">
-                <span className="font-black text-xl">
-                    {receta.nombre.charAt(0).toUpperCase()}
-                </span>
-              </div>
+              
               <div className="flex flex-col items-end">
                 <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full uppercase tracking-wider">
                   {receta.num_ingredientes} Items
