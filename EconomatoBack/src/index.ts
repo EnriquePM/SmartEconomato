@@ -12,6 +12,7 @@ import proveedorRoutes from './routes/proveedor.routes';
 import movimientoRoutes from './routes/movimiento.routes';
 import recetaRoutes from './routes/receta.routes';
 import escandalloRoutes from './routes/escandallo.routes';
+import alergenoRoutes from './routes/alergeno.routes';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/proveedores', proveedorRoutes);
 app.use('/api/movimientos', movimientoRoutes);
 app.use('/api/recetas', recetaRoutes);
 app.use('/api/escandallos', escandalloRoutes);
+app.use('/api/alergenos', alergenoRoutes);
 
 app.listen(port, () => {
     console.log(`Servidor listo en http://localhost:${port}`);

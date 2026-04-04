@@ -13,6 +13,7 @@ interface Producto {
   precio?: number;     
   id_categoria: number; 
   id_proveedor?: number; 
+  alergenos?: { id_alergeno: number, nombre: string }[];
 }
 
 const Inventario = () => {
@@ -64,9 +65,10 @@ useEffect(() => {
                  id: i.id_ingrediente,
                  nombre: i.nombre,
                  codigo: i.codigo || 'ING-' + i.id_ingrediente,
-                 stock: i.stock_actual,
+                 stock: i.stock_actual || i.stock || 0, // ensure we fallback to stock
                  id_categoria: i.id_categoria,
-                 tipo: 'ingrediente'
+                 tipo: 'ingrediente',
+                 alergenos: i.alergenos || []
              }));
              setProductos(ingredientesAdaptados);
           }
@@ -265,6 +267,7 @@ useEffect(() => {
                             Categoría <IconoOrden campo="categoria" />
                         </div>
                     </th>
+                    <th className="p-4">Alérgenos</th>
                     <th className="p-4 text-center cursor-pointer" onClick={() => cambiarOrden('stock')}>
                         <div className="flex items-center justify-center gap-2">
                             Stock <IconoOrden campo="stock" />
@@ -285,6 +288,19 @@ useEffect(() => {
                             </td>
                             <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
                             <td className="p-4 text-sm text-gray-500">{renderizarCategoria(item)}</td>
+                            <td className="p-4">
+                                {item.alergenos && item.alergenos.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1">
+                                        {item.alergenos.map((al) => (
+                                            <span key={al.id_alergeno} className="px-2 py-1 text-[10px] uppercase font-bold bg-orange-50 text-orange-600 rounded-sm border border-orange-200" title={al.nombre}>
+                                                {al.nombre}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-gray-300">-</span>
+                                )}
+                            </td>
                             <td className="p-4 text-center">
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                                     item.stock < 10 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'

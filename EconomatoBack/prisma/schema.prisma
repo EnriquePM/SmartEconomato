@@ -109,6 +109,15 @@ model ingrediente {
   movimiento         movimiento[]
   pedido_ingrediente pedido_ingrediente[]
   receta_ingrediente receta_ingrediente[]
+  alergenos          alergeno[]
+}
+
+model alergeno {
+  id_alergeno   Int           @id @default(autoincrement())
+  nombre        String        @unique @db.VarChar(100)
+  icono         String?       @db.VarChar(255)
+  // Relación M-N implícita con ingrediente
+  ingredientes  ingrediente[] 
 }
 
 // OPERATIVA (Movimientos, Pedidos, Recetas)

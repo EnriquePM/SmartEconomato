@@ -14,6 +14,12 @@ export interface Proveedor {
     nombre: string;
 }
 
+export interface Alergeno {
+    id_alergeno: number;
+    nombre: string;
+    icono: string | null;
+}
+
 export const getCategorias = async (): Promise<Categoria[]> => {
     try {
         const res = await authFetch(`${API_URL}/categorias`);
@@ -29,6 +35,17 @@ export const getProveedores = async (): Promise<Proveedor[]> => {
     try {
         const res = await authFetch(`${API_URL}/proveedores`);
         if (!res.ok) throw new Error("Error cargando proveedores");
+        return await res.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+export const getAlergenos = async (): Promise<Alergeno[]> => {
+    try {
+        const res = await authFetch(`${API_URL}/alergenos`);
+        if (!res.ok) throw new Error("Error cargando alérgenos");
         return await res.json();
     } catch (error) {
         console.error(error);

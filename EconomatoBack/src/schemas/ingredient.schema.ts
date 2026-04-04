@@ -9,6 +9,7 @@ export const createIngredientSchema = z.object({
     tipo: z.string().optional().nullable(),
     id_categoria: z.number().int('Debe ser un número entero').positive('Categoría inválida').optional().nullable(),
     id_proveedor: z.number().int('Debe ser un número entero').positive('Proveedor inválido').optional().nullable(),
+    alergenosIds: z.array(z.number()).optional(),
   })
 });
 
@@ -24,6 +25,7 @@ export const updateIngredientSchema = z.object({
     tipo: z.string().optional().nullable(),
     id_categoria: z.number().int('Debe ser un número entero').positive().optional().nullable(),
     id_proveedor: z.number().int('Debe ser un número entero').positive().optional().nullable(),
+    alergenosIds: z.array(z.number()).optional(),
   })
 });
 
