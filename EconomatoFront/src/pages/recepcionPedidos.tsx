@@ -157,17 +157,23 @@ const abrirPedido = async (idPedido: number) => {
     onClick={() => abrirPedido(pedido.id_pedido)}
     disabled={abriendoPedidoId === pedido.id_pedido}
     className="
-      inline-flex items-center gap-2.5 
-      px-5 py-2.5 rounded-xl 
-      font-bold text-xs tracking-tight 
-      transition-all duration-200
-      
-   bg-brand-red/10 text-brand-red
+    /* 1. ESTRUCTURA Y TIPOGRAFÍA */
+    inline-flex items-center gap-2.5 
+    px-5 py-2.5 rounded-xl 
+    font-bold text-xs tracking-tight 
+    transition-all duration-200
+    
+    bg-blue-50 text-blue-600 border border-blue-100/50
+ 
+    hover:bg-blue-600 hover:text-white 
+    hover:border-blue-600
+    hover:shadow-lg hover:shadow-blue-600/20
+    hover:-translate-y-0.5
   
-  hover:bg-acento hover:text-white hover:shadow-lg hover:shadow-brand-red/10
-  
-  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-wait
-    "
+    active:scale-95
+    
+    disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
+  "
   >
     {abriendoPedidoId === pedido.id_pedido ? (
       <>

@@ -77,7 +77,7 @@ const Inventario = () => {
     );
   }
 return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="h-full flex flex-col gap-6 animate-fade-in-up">
       {/* CABECERA */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -143,8 +143,8 @@ return (
       </div>
 
       {/* TABLA DE RESULTADOS */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+        <div className="overflow-auto scrollbar-global">
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 text-gray-400 uppercase text-xs font-bold">
               <tr>
@@ -169,7 +169,7 @@ return (
                 productosFiltrados.map((item) => (
                   <tr key={`${item.id}`} className="hover:bg-gray-50 transition-colors">
                     <td className="p-4">
-                      <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">
+                      <span className="font-mono text-xs px-2 py-1 rounded text-gray-600">
                         {item.id}
                       </span>
                     </td>
