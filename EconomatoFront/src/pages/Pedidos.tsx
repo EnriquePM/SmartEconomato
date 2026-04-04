@@ -2,7 +2,9 @@ import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
 import { Select } from '../components/ui/select';
+import { Button } from '../components/ui/Button';
 import type { EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
+import { Eye, Plus } from 'lucide-react';
 
 const Pedidos = () => {
     const {
@@ -229,22 +231,30 @@ const Pedidos = () => {
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Pedidos a Proveedores</h1>
                     <p className="text-gray-500 mt-1">Gestiona y envía tus órdenes de compra</p>
                 </div>
-                <div className="w-full md:w-auto">
-                    <button onClick={() => { 
-                        setPedidoActual({ 
-                            id_usuario: 1,
-                            proveedor: '', 
-                            fecha_pedido: new Date().toISOString().split('T')[0], 
-                            estado: 'BORRADOR', 
-                            total_estimado: 0, 
-                            tipo_pedido: tipoPedido, 
-                            observaciones: '', 
-                            pedido_ingrediente: [], 
-                            pedido_material: [] 
-                        }); 
-                        setVista('formulario'); 
-                    }} className="flex items-center justify-center gap-2 bg-black text-white px-6 py-3 rounded-pill font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95 w-full md:w-fit">➕ NUEVO PEDIDO</button>
-                </div>
+            <div className="w-full md:w-auto">
+  <Button 
+    variant="primario" 
+    onClick={() => { 
+      setPedidoActual({ 
+        id_usuario: 1,
+        proveedor: '', 
+        fecha_pedido: new Date().toISOString().split('T')[0], 
+        estado: 'BORRADOR', 
+        total_estimado: 0, 
+        tipo_pedido: tipoPedido, 
+        observaciones: '', 
+        pedido_ingrediente: [], 
+        pedido_material: [] 
+      }); 
+      setVista('formulario'); 
+    }} 
+   
+    className="w-full md:w-fit px-8 shadow-lg"
+  >
+    <Plus size={16} color="#ffffff" strokeWidth={3} />
+     NUEVO PEDIDO
+  </Button>
+</div>
             </div>
 
             {/* BARRA DE HERRAMIENTAS - BUSCAR Y FILTRAR POR PROVEEDOR */}
@@ -317,9 +327,29 @@ const Pedidos = () => {
                                                     setTipoPedido(p.tipo_pedido === 'utensilios' ? 'utensilios' : 'productos');
                                                     setVista('formulario');
                                                 }} 
-                                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                                              className="
+                                                inline-flex items-center gap-2.5 
+                                                px-5 py-2.5 rounded-xl 
+                                                font-bold text-xs tracking-tight 
+                                                transition-all duration-200
+                                                
+                                                /* ESTADO NORMAL: Azul sutil (Recuerda a un link, pero moderno) */
+                                                /* Usamos un fondo azul muy claro (5%) y texto azul corporativo */
+                                                bg-blue-50 text-blue-600 border border-blue-100/50
+                                                
+                                                /* ESTADO HOVER: Se vuelve un botón sólido azul profundo */
+                                                hover:bg-blue-600 hover:text-white 
+                                                hover:border-blue-600
+                                                hover:shadow-lg hover:shadow-blue-600/20
+                                                hover:-translate-y-0.5
+                                                
+                                                active:scale-95
+                                            "
                                             >
-                                                {p.estado === 'BORRADOR' ? 'Editar' : 'Ver'}
+                                               <Eye size={16} color="currentColor" strokeWidth={3} />
+                                                <span>
+                                                    {p.estado === 'BORRADOR' ? 'Editar' : 'Ver'}
+                                                </span>
                                             </button>
                                             {p.estado === 'BORRADOR' && (
                                                 <button onClick={() => eliminarPedido(p.id_pedido!)} className="text-gray-400 hover:text-red-500 transition-colors" title="Eliminar borrador">❌</button>

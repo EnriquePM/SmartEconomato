@@ -8,13 +8,13 @@ export default function Layout() {
     const isHome = location.pathname === "/";
 
     return (
-        <div className="h-screen w-full bg-gray-200 flex overflow-hidden font-sans">
+        <div className="h-screen w-full fondo flex overflow-hidden font-sans">
             <SideBar />
             <main className="flex-1 flex flex-col sm:ml-sidebar h-full overflow-hidden transition-all duration-300">
                 <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
                     isHome 
-                        ? "p-2 sm:p-3 bg-gray-200" 
-                        : "p-4 bg-gray-200"
+                        ? "p-2 sm:p-3 fondo" 
+                        : "p-4 fondo"
                 }`}>
                     <div className={`
                         flex-1 relative overflow-y-auto scrollbar-custom transition-all duration-300

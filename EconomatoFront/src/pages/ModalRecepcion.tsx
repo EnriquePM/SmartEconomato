@@ -24,7 +24,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
         <div className="px-8 py-5 bg-gray-50/50 border-b flex justify-between items-center shrink-0">
           <div>
             <h2 className="text-xl font-black text-gray-900 tracking-tight">
-              {lineaEnFoco ? "Editando Recepción" : `Pedido #${pedido.id_pedido}`}
+              {lineaEnFoco ? "Editando Recepción" : `Pedido ${pedido.id_pedido}`}
             </h2>
             <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">
               {lineaEnFoco ? `Item: ${lineaEnFoco.nombre}` : pedido.proveedor}
@@ -183,7 +183,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
 
             <div className="px-8 py-6 border-t bg-white flex gap-4 shrink-0">
               <Button variant="gris" className="flex-1 !rounded-full font-bold" onClick={onClose}>Cerrar</Button>
-              <Button variant="secundario" className="flex-[2] !rounded-full font-bold" onClick={finalizarRecepcion} loading={guardando}>
+              <Button variant="primario" className="flex-[2] !rounded-full font-bold" onClick={finalizarRecepcion} loading={guardando}>
                 Finalizar Recepción
               </Button>
             </div>

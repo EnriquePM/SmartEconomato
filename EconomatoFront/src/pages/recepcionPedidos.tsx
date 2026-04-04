@@ -4,6 +4,7 @@ import { getPedidoByIdService, getPedidosService } from "../services/pedidoServi
 import { useEffect } from "react";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/select";
+import { PackageCheck, Loader2 } from "lucide-react";
 
 const RecepcionPage = () => {
   const [pedidos, setPedidos] = useState<any[]>([]); 
@@ -120,16 +121,16 @@ const abrirPedido = async (idPedido: number) => {
 
 </div>
 
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
   <div className="overflow-auto scrollbar-global">
-    <table className="w-full text-left">
+    <table className="w-full text-left border-collapse table-fixed">
       
       <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold sticky top-0 z-10">
         <tr>
-          <th className="p-5 bg-gray-50">ID</th>
-          <th className="p-5 bg-gray-50">Proveedor</th>
-          <th className="p-5 bg-gray-50">Fecha</th>
-          <th className="p-5 text-right bg-gray-50">Acción</th>
+          <th className="p-5 bg-gray-50 w-1/4">ID</th>
+          <th className="p-5 bg-gray-50 w-1/4">Proveedor</th>
+          <th className="p-5 bg-gray-50 w-1/4 text-center">Fecha</th>
+          <th className="p-5 bg-gray-50 w-1/4 text-center" >Acción</th>
         </tr>
       </thead>
 
@@ -141,24 +142,45 @@ const abrirPedido = async (idPedido: number) => {
               {pedido.id_pedido}
             </td>
 
-            <td className="p-5 font-medium text-gray-900">
+            <td className="p-5 font-medium text-gray-900 truncate">
               {pedido.proveedor}
             </td>
 
-            <td className="p-5 text-gray-600">
+            <td className="p-5 text-gray-600 text-center">
               {pedido.fecha_pedido
                 ? new Date(pedido.fecha_pedido).toLocaleDateString()
                 : "-"}
             </td>
 
-              <td className="p-5 text-right">
+              <td className="p-5 text-center">
               <button
-                onClick={() => abrirPedido(pedido.id_pedido)}
-                disabled={abriendoPedidoId === pedido.id_pedido}
-                className="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:text-gray-400 disabled:cursor-wait"
-              >
-                {abriendoPedidoId === pedido.id_pedido ? "Abriendo..." : "Recepcionar"}
-              </button>
+    onClick={() => abrirPedido(pedido.id_pedido)}
+    disabled={abriendoPedidoId === pedido.id_pedido}
+    className="
+      inline-flex items-center gap-2.5 
+      px-5 py-2.5 rounded-xl 
+      font-bold text-xs tracking-tight 
+      transition-all duration-200
+      
+   bg-brand-red/10 text-brand-red
+  
+  hover:bg-acento hover:text-white hover:shadow-lg hover:shadow-brand-red/10
+  
+  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-wait
+    "
+  >
+    {abriendoPedidoId === pedido.id_pedido ? (
+      <>
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Abriendo...
+      </>
+    ) : (
+      <>
+        <PackageCheck className="w-4 h-4" />
+        Recepcionar
+      </>
+    )}
+  </button>
             </td>
 
           </tr>

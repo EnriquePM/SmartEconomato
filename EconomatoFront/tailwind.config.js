@@ -15,8 +15,10 @@ export default {
         primario: colors.black,       // El negro de tus botones y títulos
         secundario: colors.gray[500], // El gris de tus subtítulos, placeholder y footer
         acento: '#DC2626', // Focus
+        'brand-red': '#ff5758',
+        'acento': '#DC2626',
         // Superficies
-        fondo: '#F0F2F5',             // Tu color de fondo personalizado
+        fondo: '#f4f7fa',             // Tu color de fondo personalizado
         tarjeta: colors.white,        // El blanco de tus contenedores
         input: colors.gray[100],      // El fondo de tus inputs y filas de tabla
       },
