@@ -7,7 +7,6 @@ import { useRecetas } from "../hooks/useRecetas";
 import { CirclePlus, Plus } from "lucide-react";
 
 const RecetasPage = () => {
-  // 👇 AQUÍ ESTÁ LA MAGIA. Llamamos a nuestro Hook y él nos da todo ya masticado.
   const { recetasFiltradas, busqueda, setBusqueda, cargando, refrescar } = useRecetas();
   
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);

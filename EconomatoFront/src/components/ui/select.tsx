@@ -30,7 +30,7 @@ export const Select = ({
     {label && (
       <label 
         htmlFor={id} 
-        className="block text-sm font-bold text-gray-700 mb-2 ml-4 uppercase tracking-wide"
+        className="block text-sm font-medium text-gray-500 mb-1 ml-1"
       >
         {label}
       </label>
@@ -49,10 +49,8 @@ export const Select = ({
           ${className}
         `}
       >
-        {/* Opción por defecto para cuando no hay nada seleccionado */}
         <option value="" disabled>{placeholder}</option>
 
-        {/* Renderizado dinámico  */}
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
@@ -60,7 +58,6 @@ export const Select = ({
         ))}
       </select>
 
-      {/* Icono de flecha */}
       <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-400">
         <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
           <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
