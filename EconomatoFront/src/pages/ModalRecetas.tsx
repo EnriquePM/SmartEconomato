@@ -1,14 +1,15 @@
 import { X, Search, Plus, Trash2 } from "lucide-react";
 import { useRecetaForm } from "../hooks/useRecetasForm";
+import type { Receta } from "../models/Receta";
 
 interface ModalRecetaProps {
   onClose: () => void;
   onRecetaCreada: () => void; 
+  recetaInicial?: Receta | null;
 }
 
-export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
-  // 👇 INVOCAMOS AL HOOK. Él se encarga de todo el trabajo sucio.
-  const { form, lista, buscador, acciones } = useRecetaForm(onRecetaCreada);
+export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: ModalRecetaProps) => {
+  const { form, lista, buscador, acciones } = useRecetaForm({ onSuccess: onRecetaCreada, recetaInicial });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -17,7 +18,7 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
         {/* HEADER */}
         <div className="flex justify-between items-center p-6 border-b border-gray-100">
           <div>
-            <h2 className="text-2xl font-black text-gray-900">Nueva Elaboración</h2>
+            <h2 className="text-2xl font-black text-gray-900">{acciones.titulo}</h2>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Receta paso a paso</p>
           </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
@@ -127,6 +128,8 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                         type="number" 
                         placeholder="0.00"
                         value={ing.cantidad}
+                        min="0"
+                        step="0.01"
                         onChange={(e) => lista.actualizarIngrediente(ing.id_ingrediente, 'cantidad', e.target.value)}
                         className="w-20 text-right bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-bold focus:border-blue-500 outline-none"
                       />
@@ -139,6 +142,8 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
                         type="number" 
                         placeholder="Rend. %"
                         value={ing.rendimiento}
+                        min="0"
+                        step="0.01"
                         onChange={(e) => lista.actualizarIngrediente(ing.id_ingrediente, 'rendimiento', e.target.value)}
                         className="w-16 text-right bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-medium focus:border-blue-500 outline-none"
                       />
@@ -173,7 +178,7 @@ export const ModalReceta = ({ onClose, onRecetaCreada }: ModalRecetaProps) => {
             disabled={acciones.guardando}
             className="px-8 py-3 rounded-xl font-black text-white bg-red-600 hover:bg-red-700 active:scale-95 shadow-lg transition-all disabled:opacity-50 disabled:bg-red-400 flex items-center gap-2"
           >
-            {acciones.guardando ? "GUARDANDO..." : "CREAR RECETA"}
+            {acciones.guardando ? "GUARDANDO..." : acciones.textoBoton}
           </button>
         </div>
 

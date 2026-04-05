@@ -14,6 +14,7 @@ export interface RecetaIngrediente {
   ingrediente?: {
     nombre: string;
     unidad_medida: string;
+    stock?: number;
     precio_unitario?: number; 
   };
 }

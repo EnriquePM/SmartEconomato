@@ -1,16 +1,35 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { ModalReceta } from "./ModalRecetas"; 
 import { ModalDetalleReceta } from "../components/ModalDetalleReceta";
 import { useRecetas } from "../hooks/useRecetas";
+import type { Receta } from "../models/Receta";
 
 const RecetasPage = () => {
   // 👇 AQUÍ ESTÁ LA MAGIA. Llamamos a nuestro Hook y él nos da todo ya masticado.
-  const { recetasFiltradas, busqueda, setBusqueda, cargando, refrescar } = useRecetas();
+  const { recetasFiltradas, busqueda, setBusqueda, cargando, error, refrescar } = useRecetas();
   
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
-  const [recetaSeleccionada, setRecetaSeleccionada] = useState<any>(null);
+  const [recetaSeleccionada, setRecetaSeleccionada] = useState<Receta | null>(null);
+  const [recetaEnEdicion, setRecetaEnEdicion] = useState<Receta | null>(null);
+
+  const openCreateModal = () => {
+    setRecetaEnEdicion(null);
+    setModalCrearAbierto(true);
+  };
+
+  const openEditModal = (receta: Receta) => {
+    setRecetaEnEdicion(receta);
+    setModalCrearAbierto(true);
+  };
+
+  const handleRecetaGuardada = () => {
+    refrescar();
+    setModalCrearAbierto(false);
+    setRecetaEnEdicion(null);
+  };
 
   return (
     <div className="p-8 min-h-screen font-sans bg-gray-50/50">
@@ -24,7 +43,7 @@ const RecetasPage = () => {
         <Button 
           variant="secundario" 
           className="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-red-700 shadow-lg transition-all"
-          onClick={() => setModalCrearAbierto(true)}
+          onClick={openCreateModal}
         >
           + CREAR RECETA
         </Button>
@@ -48,6 +67,12 @@ const RecetasPage = () => {
         </div>
       )}
 
+      {error && !cargando && (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* LISTADO DE TARJETAS */}
       {!cargando && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -61,6 +86,15 @@ const RecetasPage = () => {
                 <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase">
                   {receta.receta_ingrediente?.length || 0} Ingredientes
                 </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openEditModal(receta);
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-200"
+                >
+                  <Pencil size={12} /> Editar
+                </button>
               </div>
               <h3 className="text-2xl font-black text-gray-800 group-hover:text-blue-600 transition-colors">
                   {receta.nombre}
@@ -89,17 +123,23 @@ const RecetasPage = () => {
       {recetaSeleccionada && (
         <ModalDetalleReceta 
           receta={recetaSeleccionada} 
-          onClose={() => setRecetaSeleccionada(null)} 
+          onClose={() => setRecetaSeleccionada(null)}
+          onEdit={(receta) => {
+            setRecetaSeleccionada(null);
+            openEditModal(receta);
+          }}
+          onRecetaHecha={() => {
+            setRecetaSeleccionada(null);
+            refrescar();
+          }}
         />
       )}
 
       {modalCrearAbierto && (
         <ModalReceta 
           onClose={() => setModalCrearAbierto(false)} 
-          onRecetaCreada={() => {
-            refrescar(); // Volvemos a pedir las recetas al back
-            setModalCrearAbierto(false); // Cerramos el modal
-          }} 
+          onRecetaCreada={handleRecetaGuardada}
+          recetaInicial={recetaEnEdicion}
         />
       )}
     </div>

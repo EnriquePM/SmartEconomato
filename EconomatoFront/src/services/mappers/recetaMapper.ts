@@ -20,6 +20,7 @@ export const recetaMapper = {
             ingrediente: ri.ingrediente ? {
               nombre: ri.ingrediente.nombre || "Desconocido",
               unidad_medida: ri.ingrediente.unidad_medida || "ud",
+              stock: ri.ingrediente.stock !== undefined ? Number(ri.ingrediente.stock) : undefined,
               // Cuidado aquí: mapeamos 'precio_unidad' de la base de datos a 'precio_unitario' del front
               precio_unitario: ri.ingrediente.precio_unidad ? Number(ri.ingrediente.precio_unidad) : undefined
             } : undefined
