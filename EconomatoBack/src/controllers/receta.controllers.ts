@@ -94,7 +94,7 @@ export const createReceta = async (req: Request, res: Response): Promise<void> =
   try {
     const { nombre, descripcion, cantidad_platos } = req.body;
     const normalizedIngredientes = normalizeIngredientesPayload(req.body);
-    
+
     if (!nombre || typeof nombre !== 'string' || !nombre.trim()) {
       res.status(400).json({ error: 'El nombre y al menos un ingrediente son obligatorios' });
       return;
@@ -168,12 +168,12 @@ export const getRecetaById = async (req: Request, res: Response): Promise<void> 
         }
       }
     });
-    
+
     if (!receta) {
       res.status(404).json({ error: 'Receta no encontrada' });
       return;
     }
-    
+
     res.json(receta);
   } catch (error) {
     res.status(500).json({ error: 'Error al buscar la receta' });

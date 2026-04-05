@@ -22,7 +22,7 @@ export const recetaService = {
   async getAll(): Promise<Receta[]> {
     const res = await fetch(`${API_URL}/recetas`, { headers: getHeaders() });
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al obtener recetas"));
-    
+
     const data = await res.json();
     // Aquí usamos el Traductor (Mapper) del Paso 1 para limpiar los datos
     return data.map((item: any) => recetaMapper.fromJson(item));

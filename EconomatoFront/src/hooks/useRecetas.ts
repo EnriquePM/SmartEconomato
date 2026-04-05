@@ -14,7 +14,7 @@ export const useRecetas = () => {
     try {
       setCargando(true);
       setError(null);
-      const data = await recetaService.getAll(); 
+      const data = await recetaService.getAll();
       setRecetas(data);
     } catch (err: any) {
       console.error("Error cargando recetas:", err);
@@ -42,6 +42,6 @@ export const useRecetas = () => {
     setBusqueda,
     cargando,
     error,
-    refrescar: fetchRecetas, 
+    refrescar: fetchRecetas,
   };
 };
