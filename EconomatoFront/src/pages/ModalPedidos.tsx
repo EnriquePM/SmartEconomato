@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Button } from "../components/ui/Button"; 
 import { Input } from "../components/ui/Input";  
 import { Select } from "../components/ui/select"; 
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PedidoPDF } from "./PedidoPDF"; 
+import { Printer } from "lucide-react";
 
 export const ModalPedido = ({
   onClose, pedidoActual, setPedidoActual, catalogoProveedores,
@@ -29,11 +32,11 @@ export const ModalPedido = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      {/* Aumentamos la altura del modal a 92vh para que quepan más cosas */}
-      <div className="bg-white rounded-[2.5rem] w-full max-w-4xl shadow-2xl flex flex-col h-[92vh] overflow-hidden animate-fade-in-up border border-gray-100">
+
+      <div className="bg-white rounded-[2.5rem] w-full max-w-4xl shadow-2xl flex flex-col h-[80vh] overflow-hidden animate-fade-in-up border border-gray-100">
         
-        {/* HEADER (RESTABLECIDO A TU TAMAÑO ORIGINAL) */}
-        <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100 bg-white shrink-0">
+        {/* HEADER */}
+        <div className="flex justify-between items-center px-8 py-2 border-b border-gray-100 bg-white shrink-0">
           <div className="flex items-center gap-3 p-2.5 ">
             <div className="bg-acento p-2.5 rounded-xl text-white shadow-lg">
               <ShoppingBasket size={25} color="#ffffff" strokeWidth={2} />
@@ -85,7 +88,7 @@ export const ModalPedido = ({
             </div>
           </div>
 
-          {/* BUSCADOR (OPTIMIZADO PARA GANAR ESPACIO) */}
+          {/* BUSCADOR */}
           {!esSoloLectura && (
             <div className="shrink-0">
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative ">
@@ -131,7 +134,7 @@ export const ModalPedido = ({
             </div>
           )}
 
-          {/* LISTADO DE ARTÍCULOS (EL CUADRADO GRIS) */}
+          {/* LISTADO DE ARTÍCULOS */}
           <div className="flex-1 bg-gray-50 rounded-[2rem] p-6 overflow-hidden flex flex-col border border-gray-100/50">
             <div className="flex items-center gap-2 mb-4 px-2 shrink-0">
                 <ShoppingCart size={14} className="text-gray-400" />
@@ -187,15 +190,46 @@ export const ModalPedido = ({
           </div>
         </div>
 
-        {/* FOOTER (RESTABLECIDO A TU TAMAÑO ORIGINAL) */}
-        <div className="px-8 py-6 border-t border-gray-100 bg-white flex justify-end gap-3 shrink-0">
-          {!esSoloLectura && (
+       {/* FOOTER */}
+        <div className="px-8 py-4 border-t border-gray-100 bg-white flex justify-end gap-3 shrink-0">
+          {pedidoActual.id_pedido && (
+            <PDFDownloadLink
+              document={
+                <PedidoPDF 
+                  pedido={pedidoActual} 
+                  catalogoProductos={catalogoProductos} 
+                  tipoPedido={tipoPedido} 
+                />
+              }
+              fileName={`Pedido_${pedidoActual.id_pedido}.pdf`}
+              style={{ textDecoration: 'none' }} 
+            >
+              {({ loading }) => (
+                <Button 
+                  variant="primario" 
+                  
+                >
+                  <Printer size={16} color="#ffffff" strokeWidth={3} />
+                  {loading ? 'GENERANDO...' : 'IMPRIMIR PDF'}
+                </Button>
+              )}
+            </PDFDownloadLink>
+          )}
+          
+          {!esSoloLectura ? (
             <>
-              <Button variant="gris" onClick={guardarBorrador} className="px-8">BORRADOR</Button>
+              <Button variant="gris" onClick={guardarBorrador} className="px-8">
+                BORRADOR
+              </Button>
               <Button variant="primario" onClick={enviarPedido} className="px-10">
-                <Send size={16} /> CONFIRMAR Y ENVIAR
+                <Send size={16} color="#ffffff" strokeWidth={3} /> 
+                CONFIRMAR Y ENVIAR
               </Button>
             </>
+          ) : (
+            <Button variant="gris" onClick={onClose} className="px-8">
+              CERRAR
+            </Button>
           )}
         </div>
       </div>
