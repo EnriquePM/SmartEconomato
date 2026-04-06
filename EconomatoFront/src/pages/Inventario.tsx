@@ -290,15 +290,46 @@ useEffect(() => {
                             <td className="p-4 text-sm text-gray-500">{renderizarCategoria(item)}</td>
                             <td className="p-4">
                                 {item.alergenos && item.alergenos.length > 0 ? (
-                                    <div className="flex flex-wrap gap-1">
-                                        {item.alergenos.map((al) => (
-                                            <span key={al.id_alergeno} className="px-2 py-1 text-[10px] uppercase font-bold bg-orange-50 text-orange-600 rounded-sm border border-orange-200" title={al.nombre}>
-                                                {al.nombre}
-                                            </span>
-                                        ))}
+                                    <div className="flex flex-wrap items-center">
+                                        {item.alergenos.map((al: any, idx: number) => {
+                                            const imgName = al.icono ? al.icono : `${al.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}.png`;
+                                            
+                                            return (
+                                                <div 
+                                                    key={al.id_alergeno} 
+                                                    className={`relative group flex items-center transition-all duration-300 hover:z-10 hover:-translate-y-1 hover:scale-110 ${idx > 0 ? '-ml-2' : ''}`}
+                                                >
+                                                    {/* Tooltip personalizado suave */}
+                                                    <div className="absolute bottom-full left-1/2 min-w-max -translate-x-1/2 -translate-y-2 px-2 py-1 bg-gray-900 border border-gray-700 text-white text-[10px] uppercase font-bold rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg z-20">
+                                                        {al.nombre}
+                                                        {/* Flechita del tooltip */}
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900"></div>
+                                                    </div>
+
+                                                    {/* Imagen del icono (estilo premium) */}
+                                                    <img 
+                                                        src={`/alergenos/${imgName}`}
+                                                        alt={al.nombre}
+                                                        className="w-8 h-8 rounded-full bg-white object-cover border-2 border-white shadow-sm"
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = 'none';
+                                                            const spanFallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                                            if (spanFallback) spanFallback.style.display = 'flex';
+                                                        }}
+                                                    />
+                                                    
+                                                    {/* Fallback de error más estético */}
+                                                    <span 
+                                                        className="hidden w-8 h-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 text-[9px] uppercase font-bold border-2 border-white shadow-sm tracking-tighter"
+                                                    >
+                                                        {al.nombre.substring(0, 3)}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 ) : (
-                                    <span className="text-xs text-gray-300">-</span>
+                                    <span className="text-xs font-medium text-gray-300 px-2 py-1 bg-gray-50 rounded-full border border-gray-100">Sin Alérgenos</span>
                                 )}
                             </td>
                             <td className="p-4 text-center">
