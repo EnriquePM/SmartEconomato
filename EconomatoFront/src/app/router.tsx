@@ -1,44 +1,39 @@
-import { createBrowserRouter } from "react-router-dom";
-import type { RouteObject } from "react-router-dom";
-import { ProtectedRoute } from "../components/ProtectedRoute";
 
-// IMPORTAMOS TUS PÁGINAS NUEVAS
-import LoginPage from "../pages/LoginPage";         
-import CambiarPassword from "../pages/CambiarPassword"; 
+import type { RouteObject } from "react-router-dom";
+import { ProtectedRoute, RoleProtectedRoute } from "../components/ProtectedRoute";
+
+import LoginPage from "../pages/LoginPage";
+import CambiarPassword from "../pages/CambiarPassword";
 import Layout from "../layout/Layout";
-import Inicio from "../pages/inicioPrueba"; // Ojo, revisa si cambiaste este nombre
-import IngresarProducto from "../pages/IngresarProducto";
 import Inventario from "../pages/Inventario";
 import AdminUsuarios from "../pages/AdminUsuarios";
 import Perfil from "../pages/Perfil";
-import RegistrarUtensilio from "../pages/RegistrarUtensilio";
+import Pedidos from "../pages/Pedidos";
+import IngresoGeneral from "../pages/IngresoGeneral";
+import Home from "../pages/Home";
+import PedidosPage from "../pages/recepcionPedidos";
+import RecetasPage from "../pages/Recetas";
 
-// Componentes temporales para las rutas que aún no tienen archivo propio
-const Recepcion = () => <div><h1>Módulo de Recepción de Pedidos</h1></div>;
-const Pedidos = () => <div><h1>Listado de Pedidos Actuales</h1></div>;
 
 export const routes: RouteObject[] = [
   {
-    // 1. LOGIN (PÚBLICO)
     path: "/login",
-    element: <LoginPage />, // Usamos el componente nuevo
+    element: <LoginPage />,
   },
   {
-    // 2. CAMBIAR PASSWORD (PÚBLICO PERO CONTROLADO)
     path: "/cambiar-password",
     element: <CambiarPassword />,
   },
   {
-    // 3. RUTAS PROTEGIDAS (Requieren localStorage "isAuthenticated")
-    element: <ProtectedRoute />, 
+    element: <ProtectedRoute />,
     children: [
       {
         path: "/",
-        element: <Layout />, 
+        element: <Layout />,
         children: [
           {
-            index: true, 
-            element: <Inicio />,
+            index: true,
+            element: <Home />,
           },
           {
             path: "inventario",
@@ -46,28 +41,32 @@ export const routes: RouteObject[] = [
           },
           {
             path: "recepcion",
-            element: <Recepcion />,
+            element: <PedidosPage />, 
           },
           {
             path: "pedidos",
             element: <Pedidos />,
           },
           {
-            path: "registrar",
-            element: <IngresarProducto />,
+            path: "recetas",
+            element: <RecetasPage />,
           },
           {
-              path: "admin-usuarios",
-              element: <AdminUsuarios />,
+            path: "registrar-general",
+            element: <IngresoGeneral />,
           },
-          // 2. AÑADIMOS LA RUTA DE PERFIL AQUÍ
+          {
+            element: <RoleProtectedRoute allowedRoles={["Administrador", "Profesor"]} />,
+            children: [
+              {
+                path: "admin-usuarios",
+                element: <AdminUsuarios />,
+              },
+            ],
+          },
           {
             path: "perfil",
             element: <Perfil />,
-          },
-          {
-            path: "registrar-utensilio",
-            element: <RegistrarUtensilio />
           },
         ],
       },

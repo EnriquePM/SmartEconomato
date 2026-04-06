@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 
-// 1. OBTENER TODOS LOS PRODUCTOS
 export const getIngredientes = async (req: Request, res: Response) => {
     try {
         const ingredientes = await prisma.ingrediente.findMany({
             include: {
-                categoria: true, // Incluimos el nombre de la categoría
-                proveedor: true, // Incluimos el nombre del proveedor
-                alergenos: true  // Incluimos alérgenos
+                categoria: true, 
+                proveedor: true  
             }
         });
         res.json(ingredientes);
@@ -17,12 +15,11 @@ export const getIngredientes = async (req: Request, res: Response) => {
     }
 };
 
-// 2. CREAR UN PRODUCTO
 export const createIngrediente = async (req: Request, res: Response) => {
     try {
-        const { nombre, imagen, stock, stock_minimo, tipo, id_categoria, id_proveedor, alergenosIds } = req.body;
+        // 👇 AÑADIMOS precio_unidad para recogerlo
+        const { nombre, imagen, stock, stock_minimo, tipo, id_categoria, id_proveedor, unidad_medida, precio_unidad } = req.body;
 
-        // Prisma nos autocompleta los campos basados en tu tabla SQL
         const nuevoIngrediente = await prisma.ingrediente.create({
             data: {
                 nombre,
@@ -32,9 +29,8 @@ export const createIngrediente = async (req: Request, res: Response) => {
                 tipo,
                 id_categoria,
                 id_proveedor,
-                alergenos: alergenosIds && alergenosIds.length > 0 ? {
-                    connect: alergenosIds.map((id: number) => ({ id_alergeno: id }))
-                } : undefined
+                unidad_medida,
+                precio_unidad: Number(precio_unidad) || 0 // 👇 SE LO PASAMOS A PRISMA
             }
         });
 
@@ -44,31 +40,22 @@ export const createIngrediente = async (req: Request, res: Response) => {
     }
 };
 
-// 3. MODIFICAR PRODUCTO
 export const updateIngrediente = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params; // ID viene de la URL
-        const { alergenosIds, ...datos } = req.body;
-
-        const updateData: any = { ...datos };
-
-        if (alergenosIds !== undefined) {
-             updateData.alergenos = {
-                 set: alergenosIds.map((alergenoId: number) => ({ id_alergeno: alergenoId }))
-             };
-        }
+        const { id } = req.params; 
+        const datos = req.body;
 
         const actualizado = await prisma.ingrediente.update({
             where: { id_ingrediente: Number(id) },
-            data: updateData
+            data: datos 
         });
 
         res.json(actualizado);
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Error al actualizar' });
     }
 };
+
 export const deleteIngrediente = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

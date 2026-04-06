@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "db:setup":"npx prisma db push --force-reset && npx prisma db seed"
   },
   "keywords": [],
   "author": "",
@@ -31,5 +32,8 @@
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "prisma":{
+    "seed": "ts-node seed.ts"
   }
 }

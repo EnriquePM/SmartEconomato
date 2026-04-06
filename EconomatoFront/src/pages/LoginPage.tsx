@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
@@ -8,6 +9,7 @@ import fondo from '../assets/fondo.png';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { setUsuario } = useAuth();
 
   // Estados
   const [user, setUser] = useState('');
@@ -62,11 +64,11 @@ const LoginPage = () => {
       } 
       
       // CASO: LOGIN NORMAL
-      localStorage.setItem("isAuthenticated", "true");
-      if (data.token) localStorage.setItem("token", data.token);
-      localStorage.setItem("usuario", JSON.stringify(data.usuario));
-      
-      navigate("/"); // O '/inventario'
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      setUsuario(data.usuario); // Actualiza el contexto (y el localStorage internamente)
+      navigate("/");
 
     } catch (error) {
       console.error("Error de conexión:", error);
@@ -98,13 +100,11 @@ const LoginPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
             Bienvenido a SmartEconomato
           </h1>
-          <p className="text-xl text-gray-500 mt-2">
-            Un economato a tu medida
-          </p>
+          
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
+        <form  onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
           <Input 
             type="text" 
             placeholder="Usuario" 
@@ -121,9 +121,10 @@ const LoginPage = () => {
           />
           
           <Button 
-            text={loading ? "Entrando..." : "Entrar"} 
-            onClick={() => handleLogin()} 
-          />
+            loading={loading}
+            type="submit"
+            className="w-full"
+            >Entrar</Button>
         </form>
       </main>
       <FooterBar />

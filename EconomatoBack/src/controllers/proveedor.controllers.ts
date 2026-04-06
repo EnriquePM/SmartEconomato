@@ -12,13 +12,13 @@ export const getProveedores = async (req: Request, res: Response): Promise<void>
 
 export const createProveedor = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { nombre, email, telefono, persona_contacto } = req.body;
+    const { nombre } = req.body;
     if (!nombre) {
       res.status(400).json({ error: 'El nombre es obligatorio' });
       return;
     }
     const nuevoProveedor = await prisma.proveedor.create({
-      data: { nombre, email, telefono, persona_contacto }
+      data: { nombre }
     });
     res.status(201).json(nuevoProveedor);
   } catch (error) {
@@ -29,10 +29,10 @@ export const createProveedor = async (req: Request, res: Response): Promise<void
 export const updateProveedor = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { nombre, email, telefono, persona_contacto } = req.body;
+    const { nombre } = req.body;
     const proveedorActualizado = await prisma.proveedor.update({
       where: { id_proveedor: Number(id) },
-      data: { nombre, email, telefono, persona_contacto }
+      data: { nombre }
     });
     res.json(proveedorActualizado);
   } catch (error) {
