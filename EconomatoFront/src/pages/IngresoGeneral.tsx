@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Globe, Loader2 } from "lucide-react";
+import { Globe, Loader2, Camera } from "lucide-react";
+import { ModalScanner } from "../components/ModalScanner";
 
 // Servicios e Interfaces
 import { getCategorias, getProveedores, type Categoria, type Proveedor } from "../services/recursos.service";
 
 const IngresoGeneral = () => {
-  // --- ESTADO DE LA VISTA (PESTAÑAS ESTILO PEDIDOS SIN ICONOS) ---
   const [activeTab, setActiveTab] = useState<'ingredientes' | 'utensilios'>('ingredientes');
 
-  // --- ESTADOS COMPARTIDOS ---
   const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
   const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
   const [cargandoListas, setCargandoListas] = useState(true);
 
-  // --- ESTADOS FORMULARIO ---
   const [form, setForm] = useState({
     codigo: "",
     nombre: "",
     stock: "" as number | "",
+    unidad_medida: "",
+    precio_unidad: "" as number | "", 
     id_categoria: "",
     id_proveedor: ""
   });
@@ -27,6 +27,9 @@ const IngresoGeneral = () => {
   const [buscandoOFF, setBuscandoOFF] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string, tipo: 'exito' | 'error' } | null>(null);
+  
+  // Estado para controlar la cámara
+  const [mostrarScanner, setMostrarScanner] = useState(false);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -43,18 +46,30 @@ const IngresoGeneral = () => {
     cargarDatos();
   }, []);
 
-  const buscarProductoOFF = async () => {
-    if (!form.codigo) return;
+  // --- BÚSQUEDA INTELIGENTE (Manual o por Cámara) ---
+  const buscarProductoOFF = async (codigoDesdeScanner?: string | React.MouseEvent) => {
+    // Si viene del escáner (string), usamos ese. Si no, usamos el del estado del formulario.
+    const codigoABuscar = typeof codigoDesdeScanner === 'string' ? codigoDesdeScanner : form.codigo;
+
+    if (!codigoABuscar) return;
+    
     setBuscandoOFF(true);
     setMensaje(null);
     try {
-      const respuesta = await fetch(`https://world.openfoodfacts.org/api/v0/product/${form.codigo}.json`);
+      const respuesta = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigoABuscar}.json`);
       const data = await respuesta.json();
       if (data.status === 1) {
         const productoOFF = data.product;
-        setForm(prev => ({ ...prev, nombre: productoOFF.product_name_es || productoOFF.product_name }));
+        // Rellenamos el formulario automáticamente si lo encuentra
+        setForm(prev => ({ 
+          ...prev, 
+          codigo: codigoABuscar, 
+          nombre: productoOFF.product_name_es || productoOFF.product_name || ""
+        }));
         setMensaje({ texto: "¡Producto encontrado!", tipo: 'exito' });
       } else {
+        // Si no lo encuentra, dejamos el código escrito de todas formas
+        setForm(prev => ({ ...prev, codigo: codigoABuscar }));
         setMensaje({ texto: "No encontrado en la base de datos mundial.", tipo: 'error' });
       }
     } catch (error) {
@@ -66,7 +81,12 @@ const IngresoGeneral = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nombre || form.stock === "" || !form.id_categoria || !form.id_proveedor) {
+    
+    // --- LÓGICA DE VALIDACIÓN DINÁMICA ---
+    const faltaUnidad = activeTab === 'ingredientes' && !form.unidad_medida;
+    const faltaCategoria = activeTab === 'ingredientes' && !form.id_categoria;
+
+    if (!form.nombre || form.stock === "" || faltaUnidad || faltaCategoria || form.precio_unidad === "" || !form.id_proveedor) {
       setMensaje({ texto: "Rellena todos los campos obligatorios.", tipo: 'error' });
       return;
     }
@@ -74,13 +94,14 @@ const IngresoGeneral = () => {
     setGuardando(true);
     const endpoint = activeTab === 'ingredientes' ? 'ingredientes' : 'materiales';
     
+    // --- PAYLOAD INTELIGENTE ---
     const payload = {
       nombre: form.nombre,
       stock: Number(form.stock),
-      id_categoria: Number(form.id_categoria),
+      id_categoria: activeTab === 'utensilios' ? 3 : Number(form.id_categoria),
       id_proveedor: Number(form.id_proveedor),
-      precio_unitario: 0,
-      unidad_medida: activeTab === 'ingredientes' ? "Kg." : "U."
+      precio_unidad: Number(form.precio_unidad), 
+      unidad_medida: activeTab === 'utensilios' ? 'ud' : form.unidad_medida 
     };
 
     try {
@@ -92,8 +113,10 @@ const IngresoGeneral = () => {
 
       if (!res.ok) throw new Error("Error en el guardado");
 
-      setMensaje({ texto: `${activeTab === 'ingredientes' ? 'Ingrediente' : 'Utensilio'} registrado con éxito.`, tipo: 'exito' });
-      setForm({ codigo: "", nombre: "", stock: "", id_categoria: "", id_proveedor: "" });
+      setMensaje({ texto: `${activeTab === 'ingredientes' ? 'Producto' : 'Utensilio'} registrado con éxito.`, tipo: 'exito' });
+      
+      // Limpiar formulario
+      setForm({ codigo: "", nombre: "", stock: "", unidad_medida: "", precio_unidad: "", id_categoria: "", id_proveedor: "" });
 
     } catch (error) {
       setMensaje({ texto: "Error al conectar con el servidor.", tipo: 'error' });
@@ -105,7 +128,7 @@ const IngresoGeneral = () => {
   return (
     <div className="h-full flex flex-col animate-fade-in-up pb-10">
       
-      {/* HEADER PRINCIPAL (Sin botón aquí arriba) */}
+      {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
@@ -113,7 +136,7 @@ const IngresoGeneral = () => {
         </div>
       </div>
 
-      {/* PESTAÑAS ESTILO PEDIDOS (SIN ICONOS) */}
+      {/* TABS SELECTOR */}
       <div className="flex gap-2 mt-4 pl-2 relative items-end">
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
         <button 
@@ -130,28 +153,38 @@ const IngresoGeneral = () => {
         </button>
       </div>
 
-      {/* CONTENIDO PRINCIPAL (ANCHO COMPLETO) */}
+      {/* FORMULARIO CONTENEDOR */}
       <div className="w-full mt-8">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* BUSCADOR / CÓDIGO (Funciona como referencia o búsqueda OFF) */}
+            {/* BUSCADOR OPEN FOOD FACTS Y ESCÁNER */}
             <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
               <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Referencia / Código de Barras</label>
-              <div className="flex gap-3">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 flex gap-2">
                   <Input 
                     id="ean" 
-                    placeholder="Escribe el código para buscar o como referencia..." 
+                    placeholder="Escribe el código para buscar o escanéalo..." 
                     value={form.codigo} 
                     onChange={(val) => setForm({...form, codigo: val})} 
                   />
+                  {/* BOTÓN DE CÁMARA */}
+                  <button
+                    type="button"
+                    onClick={() => setMostrarScanner(true)}
+                    className="bg-gray-200 text-gray-700 px-4 rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center shrink-0 shadow-sm"
+                    title="Escanear con cámara"
+                  >
+                    <Camera size={20} />
+                  </button>
                 </div>
+                
                 <button
                   type="button"
                   onClick={buscarProductoOFF}
-                  disabled={buscandoOFF}
-                  className="bg-black text-white px-6 rounded-pill font-bold text-xs hover:bg-gray-800 transition-all flex items-center gap-2 disabled:opacity-50"
+                  disabled={buscandoOFF || !form.codigo}
+                  className="bg-black text-white px-6 py-3 sm:py-0 rounded-pill font-bold text-xs hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {buscandoOFF ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
                   BUSCAR EN OFF
@@ -159,9 +192,10 @@ const IngresoGeneral = () => {
               </div>
             </div>
 
-            {/* CAMPOS DE DATOS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <div className="md:col-span-2">
+            {/* GRID DE DATOS */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+              
+              <div className="md:col-span-3">
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Nombre</label>
                 <Input 
                   id="nombre" 
@@ -175,28 +209,64 @@ const IngresoGeneral = () => {
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Stock Inicial</label>
                 <Input 
                   id="stock" 
-                  type="text" 
+                  type="number" 
                   placeholder="0" 
                   value={form.stock.toString()} 
                   onChange={(val) => setForm({...form, stock: val === "" ? "" : Number(val)})} 
                 />
               </div>
 
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Categoría</label>
-                <div className="relative">
-                  <select 
-                      value={form.id_categoria}
-                      onChange={(e) => setForm({...form, id_categoria: e.target.value})}
-                      className="w-full bg-input border-none rounded-pill py-4 px-6 text-gray-700 focus:ring-2 focus:ring-slate-200 outline-none appearance-none cursor-pointer font-medium transition-all"
-                  >
-                      <option value="">Selecciona una categoría...</option>
-                      {listaCategorias.map(c => <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>)}
-                  </select>
+              {activeTab === 'ingredientes' && (
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Unidad</label>
+                  <div className="relative">
+                    <select 
+                        value={form.unidad_medida}
+                        onChange={(e) => setForm({...form, unidad_medida: e.target.value})}
+                        className="w-full bg-input border-none rounded-pill py-4 px-6 text-gray-700 focus:ring-2 focus:ring-slate-200 outline-none appearance-none cursor-pointer font-medium transition-all"
+                    >
+                        <option value="">Selecciona unidad...</option>
+                        <option value="kg">Kilos (kg)</option>
+                        <option value="g">Gramos (g)</option>
+                        <option value="l">Litros (L)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                        <option value="ud">Unidades (ud)</option>
+                    </select>
+                  </div>
                 </div>
+              )}
+
+              <div className={activeTab === 'ingredientes' ? "w-full" : "w-full md:col-span-2"}>
+                <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">
+                  {activeTab === 'ingredientes' ? 'Precio x Unidad (€)' : 'Coste (€)'}
+                </label>
+                <Input 
+                  id="precio" 
+                  type="number" 
+                  step="0.01" 
+                  placeholder="0.00" 
+                  value={form.precio_unidad.toString()} 
+                  onChange={(val) => setForm({...form, precio_unidad: val === "" ? "" : Number(val)})} 
+                />
               </div>
 
-              <div className="md:col-span-2">
+              {activeTab === 'ingredientes' && (
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Categoría</label>
+                  <div className="relative">
+                    <select 
+                        value={form.id_categoria}
+                        onChange={(e) => setForm({...form, id_categoria: e.target.value})}
+                        className="w-full bg-input border-none rounded-pill py-4 px-6 text-gray-700 focus:ring-2 focus:ring-slate-200 outline-none appearance-none cursor-pointer font-medium transition-all"
+                    >
+                        <option value="">Selecciona una categoría...</option>
+                        {listaCategorias.map(c => <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div className={activeTab === 'ingredientes' ? "md:col-span-2" : "md:col-span-3"}>
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Proveedor</label>
                 <div className="relative">
                   <select 
@@ -217,7 +287,6 @@ const IngresoGeneral = () => {
               </div>
             )}
 
-            {/* BOTÓN AL FINAL DEL FORMULARIO */}
             <div className="pt-6 border-t border-gray-50">
                 <button 
                     onClick={handleSubmit}
@@ -231,6 +300,18 @@ const IngresoGeneral = () => {
           </form>
         </div>
       </div>
+
+      {/* 👇 MODAL DEL ESCÁNER AUTOMATIZADO 👇 */}
+      {mostrarScanner && (
+        <ModalScanner 
+          onClose={() => setMostrarScanner(false)}
+          onScan={(codigoLeido) => {
+            setMostrarScanner(false); // Cerramos el modal de la cámara
+            buscarProductoOFF(codigoLeido); // Lanzamos la búsqueda de forma automática
+          }}
+        />
+      )}
+
     </div>
   );
 };

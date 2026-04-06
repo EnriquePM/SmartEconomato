@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getRecetas, createReceta, deleteReceta, getRecetaById } from '../controllers/receta.controllers';
-import { authenticateToken } from '../middlewares/auth.middleware';
+import { getRecetas, createReceta, deleteReceta, getRecetaById, makeReceta, updateReceta } from '../controllers/receta.controllers';
+import { authenticateToken, requireRole } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -11,6 +11,8 @@ router.use(authenticateToken);
 router.get('/', getRecetas);
 router.post('/', createReceta);
 router.get('/:id', getRecetaById);
+router.put('/:id', updateReceta);
 router.delete('/:id', deleteReceta);
+router.post('/:id/hacer', requireRole(['Profesor', 'Jefe_Economato', 'Jefe Economato', 'Administrador']), makeReceta);
 
 export default router;

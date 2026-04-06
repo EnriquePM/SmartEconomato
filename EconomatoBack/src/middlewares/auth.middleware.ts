@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 
+const normalizeRole = (role: string) =>
+    role
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s_-]+/g, '');
+
 // Extender la interfaz Request para incluir los datos del usuario
 interface AuthRequest extends Request {
     user?: any;
@@ -27,9 +34,11 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 // Exportamos la funcion requireRole que recibe un array de roles permitidos
 export const requireRole = (allowedRoles: string[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
-        const userRole = req.user?.role; // Asumimos que el token tiene el campo "role"
+        const userRole = req.user?.role as string | undefined; // Asumimos que el token tiene el campo "role"
+        const normalizedAllowed = allowedRoles.map(normalizeRole);
+        const normalizedUserRole = userRole ? normalizeRole(userRole) : null;
 
-        if (!userRole || !allowedRoles.includes(userRole)) {
+        if (!normalizedUserRole || !normalizedAllowed.includes(normalizedUserRole)) {
             res.status(403).json({ error: 'Acceso prohibido: No tienes permisos suficientes' });
             return;
         }
