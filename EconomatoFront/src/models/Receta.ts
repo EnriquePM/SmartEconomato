@@ -1,4 +1,4 @@
-export  interface Receta {
+export interface Receta {
   id_receta?: number;
   nombre: string;
   descripcion?: string;
@@ -14,6 +14,7 @@ export interface RecetaIngrediente {
   ingrediente?: {
     nombre: string;
     unidad_medida: string;
-    precio_unitario?: number; 
+    stock?: number;
+    precio_unitario?: number;
   };
 }

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import bcrypt from 'bcryptjs';
+import { generateToken } from '../utils/jwt';
 
 // --- CONFIGURACIÓN ---
 const PASSWORD_POR_DEFECTO = "Economato123";
@@ -176,9 +177,16 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // LOGIN NORMAL
+    const token = generateToken({
+      id: usuario.id_usuario,
+      username: usuario.username,
+      role: usuario.rol?.nombre
+    });
+
     res.json({
       mensaje: 'Login exitoso',
       requiereCambioPass: false,
+      token,
       usuario: {
         id: usuario.id_usuario,
         username: usuario.username,

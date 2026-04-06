@@ -64,6 +64,9 @@ const LoginPage = () => {
       } 
       
       // CASO: LOGIN NORMAL
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       setUsuario(data.usuario); // Actualiza el contexto (y el localStorage internamente)
       navigate("/");
 

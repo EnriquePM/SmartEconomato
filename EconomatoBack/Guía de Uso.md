@@ -52,6 +52,38 @@ npm run dev
 - Validar                   PUT     http://localhost:3000/api/pedidos/:id
 - Confirmar                 PUT     http://localhost:3000/api/pedidos/:id/confirmar
 
+## Recetas
+- Listar recetas            GET     http://localhost:3000/api/recetas
+- Ver una receta            GET     http://localhost:3000/api/recetas/:id
+- Crear receta              POST    http://localhost:3000/api/recetas
+- Editar receta             PUT     http://localhost:3000/api/recetas/:id
+- Eliminar receta           DELETE  http://localhost:3000/api/recetas/:id
+
+### Body de creación/edición de recetas
+Se aceptan ambas formas para los ingredientes:
+
+Opción A (backend tradicional):
+{
+  "nombre": "Tortilla de patata",
+  "descripcion": "Receta base",
+  "cantidad_platos": 4,
+  "ingredientes": [
+    { "id_ingrediente": 1, "cantidad": 0.8, "rendimiento": 100 },
+    { "id_ingrediente": 2, "cantidad": 0.4, "rendimiento": 95 }
+  ]
+}
+
+Opción B (compatibilidad con frontend hardcodeado):
+{
+  "nombre": "Tortilla de patata",
+  "descripcion": "Receta base",
+  "cantidad_platos": 4,
+  "receta_ingrediente": [
+    { "id_ingrediente": 1, "cantidad": 0.8, "rendimiento": 100 },
+    { "id_ingrediente": 2, "cantidad": 0.4, "rendimiento": 95 }
+  ]
+}
+
 
 # Como crear un usuario mediante Thunder Client
 ## Paso 1

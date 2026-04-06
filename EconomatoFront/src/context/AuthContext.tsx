@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
+const normalizeRole = (role: string) =>
+  role
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s_-]+/g, '');
+
 export interface UsuarioAuth {
   id: number;
   username: string;
@@ -37,11 +44,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       localStorage.removeItem('usuario');
       localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('token');
     }
   };
 
   const hasRole = (roles: string[]) => {
-    return usuario ? roles.includes(usuario.rol) : false;
+    if (!usuario?.rol) return false;
+    const normalizedCurrentRole = normalizeRole(usuario.rol);
+    return roles.some((role) => normalizeRole(role) === normalizedCurrentRole);
   };
 
   const logout = () => {
