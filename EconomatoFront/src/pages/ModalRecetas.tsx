@@ -37,178 +37,168 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
           </button>
         </div>
 
-        <div className="flex flex-1 overflow-hidden bg-white">
+        {/* CONTENIDO CENTRAL */}
+        {/* 👇 AÑADIDO: overflow-y-auto para que el modal entero pueda scrollear si la pantalla es pequeña */}
+        <div className="flex-1 p-8 overflow-y-auto flex flex-col gap-6 bg-white scrollbar-global">
           
-          {/* COLUMNA IZQUIERDA: DATOS GENERALES + ALERGENOS */}
-          <div className="space-y-6">
-            <h3 className="text-sm font-black text-blue-600 uppercase tracking-wider">1. Datos Generales</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Nombre de la Receta</label>
-                <Input
-                  type="text" 
-                  placeholder=""
-                  value={form.nombre}
-                  onChange={(val) => form.setNombre(val)}
-                />
-              </div>
-              <div className="w-28">
-                <Input 
-                  label="Raciones"
-                  type="number"
-                  placeholder="0"
-                  value={form.raciones}
-                  onChange={(val) => form.setRaciones(val)}
-                  min={1}
-                />
-              </div>
-            </div>
-
-            {/* SECCIÓN DE ALÉRGENOS */}
-            <div>
-              <h3 className="text-sm font-black text-amber-600 uppercase tracking-wider mb-3">2. Alérgenos</h3>
-              {alergenos.lista.length === 0 ? (
-                <p className="text-gray-400 text-sm italic">No hay alérgenos registrados en el sistema.</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {alergenos.lista.map((al) => {
-                    const seleccionado = alergenos.seleccionados.includes(al.id_alergeno);
-                    return (
-                      <button
-                        type="button"
-                        key={al.id_alergeno}
-                        onClick={() => alergenos.toggle(al.id_alergeno)}
-                        title={al.nombre}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-bold transition-all duration-150
-                          ${seleccionado
-                            ? 'bg-amber-50 border-amber-400 text-amber-800 shadow-md scale-105'
-                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                      >
-                        {al.icono ? (
-                          <img src={al.icono} alt={al.nombre} className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        ) : (
-                          <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-black">A</span>
-                        )}
-                        <span>{al.nombre}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {alergenos.seleccionados.length > 0 && (
-                <p className="text-xs text-amber-600 font-semibold mt-2">
-                  {alergenos.seleccionados.length} alérgeno{alergenos.seleccionados.length > 1 ? 's' : ''} seleccionado{alergenos.seleccionados.length > 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* COLUMNA DERECHA: INGREDIENTES */}
-          <div className="space-y-6">
-            <h3 className="text-sm font-black text-blue-600 uppercase tracking-wider">3. Ingredientes en Receta</h3>
-            
-            {/* Buscador de Ingredientes */}
-            <div className="relative">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="text" 
-                  value={buscador.busqueda}
-                  onChange={(e) => buscador.setBusqueda(e.target.value)}
-                  placeholder={buscador.cargando ? "Cargando tu almacén..." : "Buscar ingrediente (ej. Tomate)..."} 
-                  disabled={buscador.cargando}
-                  className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none font-medium shadow-sm disabled:bg-gray-100 disabled:text-gray-400"
-                />
-              </div>
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 z-10" size={18} />
-                  <Input 
-                    type="text"
-                    placeholder="Escribe para buscar ingredientes..." 
-                    value={buscador.busqueda}
-                    onChange={(val) => buscador.setBusqueda(val)}
-                    className="pl-12 !bg-gray-50/50 !border-none" 
-                  />
-                </div>
-
-                {/* SUGERENCIAS DEL BUSCADOR */}
-                {buscador.busqueda.length > 1 && buscador.sugerencias.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-                    {buscador.sugerencias.map((ing: any) => (
-                      <button
-                        key={ing.id_ingrediente}
-                        className="w-full flex justify-between items-center px-6 py-4 hover:bg-gray-50 text-left border-b border-gray-50 last:border-none"
-                        onClick={() => {
-                          lista.agregarIngrediente(ing);
-                          buscador.setBusqueda("");
-                        }}
-                      >
-                        <span className="font-bold text-gray-700 text-sm">{ing.nombre}</span>
-                        <Plus size={16} className="text-gray-900" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* LISTA DE SELECCIONADOS */}
-            <div className="flex-1 bg-gray-50 rounded-[2rem] p-5 overflow-hidden flex flex-col border border-gray-100">
-              <div className="flex items-center gap-2 mb-4 px-2 shrink-0">
-                <ShoppingCart size={14} className="text-gray-400" />
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ingredientes seleccionados</span>
-              </div>
-              <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-global">
-                {lista.ingredientes.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-2">
-                    <Plus size={24} />
-                    <p className="text-[10px] font-bold uppercase tracking-tighter">Sin ingredientes</p>
-                  </div>
-                ) : (
-                  lista.ingredientes.map((ing: any) => (
-                    <div key={ing.id_ingrediente} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-black text-gray-800 truncate leading-none">{ing.nombre}</p>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">{ing.unidad_medida}</p>
-                      </div>
-                      <div className="w-20">
-                        <input 
-                          type="number"
-                          value={ing.cantidad}
-                          onChange={(e) => lista.actualizarIngrediente(ing.id_ingrediente, 'cantidad', e.target.value)}
-                          className="w-full text-center bg-gray-50 rounded-lg py-1 text-sm font-bold border-none outline-none focus:ring-1 focus:ring-gray-200"
-                        />
-                      </div>
-                      <button onClick={() => lista.eliminarIngrediente(ing.id_ingrediente)} className="text-gray-300 hover:text-red-500 transition-colors">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* COLUMNA DERECHA: PASOS DE ELABORACIÓN */}
-          <div className="w-1/2 p-8 bg-gray-50/30 flex flex-col gap-4">
-            <div className="flex items-center gap-2 px-1">
-              <FileText size={16} className="text-gray-900" />
-              <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Pasos de Elaboración</h3>
-            </div>
-            
-            <div className="flex-1 relative">
-              <textarea 
-                placeholder="1. Precalentar el horno a 180°C...&#10;2. Batir los huevos con el azúcar..."
-                value={form.descripcion}
-                onChange={(e) => form.setDescripcion(e.target.value)}
-                className="w-full h-full bg-white border border-gray-100 rounded-[2rem] p-8 text-sm font-semibold text-gray-800 placeholder:text-gray-300 focus:ring-2 focus:ring-gray-200 outline-none transition-all resize-none shadow-sm leading-relaxed"
+          {/* SECCIÓN CONFIGURACIÓN: Nombre y Raciones */}
+          <div className="grid grid-cols-12 gap-6 shrink-0 items-end px-2">
+            <div className="col-span-8">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nombre de la Receta</label>
+              <Input
+                type="text" 
+                placeholder="Ej. Tarta de Manzana"
+                value={form.nombre}
+                onChange={(val) => form.setNombre(val)}
               />
-              <div className="absolute bottom-6 right-8 text-[10px] font-black text-gray-300 uppercase tracking-widest pointer-events-none">
-                Modo Redacción
+            </div>
+            <div className="col-span-4">
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Raciones</label>
+              <Input 
+                type="number"
+                placeholder="0"
+                value={form.raciones}
+                onChange={(val) => form.setRaciones(val)}
+                min={1}
+              />
+            </div>
+          </div>
+
+          {/* SECCIÓN ALÉRGENOS */}
+          <div className="shrink-0 px-2 mt-1">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Alérgenos</label>
+            {alergenos.lista.length === 0 ? (
+              <p className="text-gray-400 text-sm italic">No hay alérgenos registrados en el sistema.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {alergenos.lista.map((al) => {
+                  const seleccionado = alergenos.seleccionados.includes(al.id_alergeno);
+                  return (
+                    <button
+                      type="button"
+                      key={al.id_alergeno}
+                      onClick={() => alergenos.toggle(al.id_alergeno)}
+                      title={al.nombre}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-bold transition-all duration-150
+                        ${seleccionado
+                          ? 'bg-amber-50 border-amber-400 text-amber-800 shadow-md scale-105'
+                          : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                      {al.icono ? (
+                        <img src={al.icono} alt={al.nombre} className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-black">A</span>
+                      )}
+                      <span>{al.nombre}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* COLUMNAS INFERIORES: Buscador + Ingredientes / Pasos de elaboración */}
+          {/* 👇 AÑADIDO: min-h-[450px] y shrink-0. ¡Se acabó el aplastar esta caja! */}
+          <div className="shrink-0 flex gap-6 px-2 mt-2 min-h-[450px]">
+            
+            {/* MITAD IZQUIERDA: Ingredientes */}
+            <div className="w-1/2 flex flex-col gap-4">
+              
+              {/* BUSCADOR */}
+              <div className="shrink-0">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 z-10" size={18} />
+                    <Input 
+                      type="text"
+                      placeholder={buscador.cargando ? "Cargando almacén..." : "Buscar ingrediente..."} 
+                      value={buscador.busqueda}
+                      onChange={(val) => buscador.setBusqueda(val)}
+                      disabled={buscador.cargando}
+                      className="pl-12 !bg-gray-50/50" 
+                    />
+                  </div>
+
+                  {/* SUGERENCIAS DEL BUSCADOR */}
+                  {buscador.busqueda.length > 1 && buscador.sugerencias.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                      {buscador.sugerencias.map((ing: any) => (
+                        <button
+                          key={ing.id_ingrediente}
+                          className="w-full flex justify-between items-center px-6 py-4 hover:bg-gray-50 text-left border-b border-gray-50 last:border-none transition-colors"
+                          onClick={() => {
+                            lista.agregarIngrediente(ing);
+                            buscador.setBusqueda("");
+                          }}
+                        >
+                          <span className="font-bold text-gray-700 text-sm">{ing.nombre}</span>
+                          <Plus size={16} className="text-gray-900" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* LISTA DE SELECCIONADOS */}
+              <div className="flex-1 bg-gray-50 rounded-[2rem] p-6 overflow-hidden flex flex-col border border-gray-100/50">
+                <div className="flex items-center gap-2 mb-4 px-2 shrink-0">
+                  <ShoppingCart size={14} className="text-gray-400" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ingredientes añadidos ({lista.ingredientes.length})</span>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-global">
+                  {lista.ingredientes.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-gray-300 gap-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em]">Sin ingredientes</p>
+                    </div>
+                  ) : (
+                    lista.ingredientes.map((ing: any) => (
+                      <div key={ing.id_ingrediente} className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm shrink-0">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-black text-gray-800 truncate leading-none">{ing.nombre}</p>
+                          <p className="text-[9px] text-gray-400 font-bold uppercase mt-1.5 tracking-tighter">Medida: {ing.unidad_medida}</p>
+                        </div>
+                        <div className="w-24">
+                          <Input 
+                            type="number"
+                            placeholder="0"
+                            value={ing.cantidad}
+                            onChange={(val) => lista.actualizarIngrediente(ing.id_ingrediente, 'cantidad', val)}
+                            className="text-center !py-2 !rounded-xl !bg-gray-50/50 border border-gray-100"
+                          />
+                        </div>
+                        <button onClick={() => lista.eliminarIngrediente(ing.id_ingrediente)} className="p-2 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* MITAD DERECHA: Pasos de Elaboración */}
+            <div className="w-1/2 bg-gray-50 rounded-[2rem] p-6 flex flex-col border border-gray-100/50">
+              <div className="flex items-center gap-2 mb-4 px-2 shrink-0">
+                <FileText size={14} className="text-gray-400" />
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pasos de Elaboración</span>
+              </div>
+              
+              <div className="flex-1 relative">
+                <textarea 
+                  placeholder="1. Precalentar el horno a 180°C...&#10;2. Batir los huevos con el azúcar..."
+                  value={form.descripcion}
+                  onChange={(e) => form.setDescripcion(e.target.value)}
+                  className="w-full h-full bg-white border border-gray-100 rounded-3xl p-6 text-sm font-semibold text-gray-800 placeholder:text-gray-300 focus:ring-2 focus:ring-gray-200 outline-none transition-all resize-none shadow-sm leading-relaxed"
+                />
+                <div className="absolute bottom-6 right-8 text-[10px] font-black text-gray-300 uppercase tracking-widest pointer-events-none">
+                  Modo Redacción
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
