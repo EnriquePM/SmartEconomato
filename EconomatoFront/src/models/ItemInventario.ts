@@ -1,11 +1,7 @@
 export interface ItemInventario {
   id: number;
   nombre: string;
-  stock: number;
-  stock_minimo: number;
-  unidad: string;
   precio: number;
-  id_categoria: number;
-  id_proveedor: number;
-  tipo: 'ingrediente' | 'material';
+  stock?: number;
+  unidad_medida?: string;
 }

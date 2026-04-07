@@ -27,6 +27,7 @@ const IngresarProducto = () => {
   const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
   const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
 
+
   const [buscando, setBuscando] = useState(false);
   const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
   const [historial, setHistorial] = useState<Movimiento[]>([]);
@@ -34,7 +35,6 @@ const IngresarProducto = () => {
   // 4. USE EFFECT: CARGAR DATOS AL ENTRAR EN LA PÁGINA
   useEffect(() => {
     const cargarDatos = async () => {
-      // Pedimos las dos cosas a la vez
       const [cats, provs] = await Promise.all([
         getCategorias(),
         getProveedores()
@@ -88,7 +88,7 @@ const IngresarProducto = () => {
       codigo: codigoBarras, 
       nombre: nombre,
       stock: Number(stock),
-      id_categoria: Number(categoria), // Convertimos a número porque el value del select es string
+      id_categoria: Number(categoria),
       id_proveedor: Number(proveedor)
     };
 
@@ -240,6 +240,8 @@ const IngresarProducto = () => {
                 </select>
              </div>
           </div>
+
+
 
           {mensaje && (
             <div className={`p-4 rounded-lg text-center font-medium ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>

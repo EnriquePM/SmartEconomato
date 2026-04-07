@@ -6,9 +6,7 @@ export default {
   theme: {
     extend: {
       fontSize: {
-        'size-label': ['0.8rem', { lineHeight: '1rem', fontWeight: '700' }], //label
-        'size-input': ['0.85rem', { lineHeight: '1.25rem' }], //placeholder e input
-        'caption': ['0.8rem', { lineHeight: '1rem', fontWeight: '400' }], //footer
+        'caption': ['0.7rem', { lineHeight: '1rem', fontWeight: '400' }],
       },
       colors: {
         // Colores de marca basados en tus componentes
@@ -24,7 +22,7 @@ export default {
       },
       borderRadius: {
         'panel': '2rem',              // El rounded-[2rem] de tu layout
-        'pill': '25px',               // El rounded-[30px] de tus inputs
+        'pill': '30px',               // El rounded-[30px] de tus inputs
       },
       spacing: {
         'sidebar': '15rem',           // El sm:ml-60 (60 * 0.25rem = 15rem)

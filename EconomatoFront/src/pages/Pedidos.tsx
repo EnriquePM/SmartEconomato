@@ -3,9 +3,10 @@ import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
 import { Select } from '../components/ui/select';
 import { Button } from '../components/ui/Button';
-import type { EstadoPedido } from '../models/Pedidos';
 import { Eye, Plus, Pencil, Trash2 } from 'lucide-react';
 import { ModalPedido } from '../pages/ModalPedidos';
+import type { EstadoPedido} from '../models/Pedidos';
+
 
 const Pedidos = () => {
     const {

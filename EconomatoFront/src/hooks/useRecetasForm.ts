@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Receta } from "../models/Receta";
 import { recetaService } from "../services/recetaService";
+import { getAlergenos, type Alergeno } from "../services/recursos.service";
 
 interface IngredienteDB {
     id_ingrediente: number;
@@ -41,19 +42,27 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
     const [busqueda, setBusqueda] = useState("");
     const [guardando, setGuardando] = useState(false);
 
+    // Allergen state
+    const [listaAlergenos, setListaAlergenos] = useState<Alergeno[]>([]);
+    const [alergenosSeleccionados, setAlergenosSeleccionados] = useState<number[]>([]);
+
     useEffect(() => {
-        const fetchIngredientes = async () => {
+        const fetchData = async () => {
             try {
-                const data = await recetaService.getIngredientesDisponibles();
-                setIngredientesDB(data);
+                const [ingredientesData, alergenosData] = await Promise.all([
+                    recetaService.getIngredientesDisponibles(),
+                    getAlergenos()
+                ]);
+                setIngredientesDB(ingredientesData);
+                setListaAlergenos(alergenosData);
             } catch (error) {
-                console.error("Error al cargar ingredientes:", error);
+                console.error("Error al cargar datos:", error);
             } finally {
                 setCargando(false);
             }
         };
 
-        fetchIngredientes();
+        fetchData();
     }, []);
 
     useEffect(() => {
@@ -72,6 +81,12 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
         }));
 
         setIngredientes(iniciales);
+
+        // Pre-populate allergens from existing recipe
+        const alergenosIniciales = (recetaInicial.receta_alergeno || []).map(
+            (ra) => ra.id_alergeno
+        );
+        setAlergenosSeleccionados(alergenosIniciales);
     }, [recetaInicial]);
 
     const ingredientesFiltrados = useMemo(
@@ -104,6 +119,12 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
 
     const eliminarIngrediente = (id: number) => {
         setIngredientes((prev) => prev.filter((ing) => ing.id_ingrediente !== id));
+    };
+
+    const toggleAlergeno = (id: number) => {
+        setAlergenosSeleccionados((prev) =>
+            prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+        );
     };
 
     const handleRacionesChange = (valor: string) => {
@@ -155,7 +176,8 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
             nombre: nombre.trim(),
             descripcion,
             cantidad_platos: cantidadPlatos,
-            ingredientes: ingredientesPayload
+            ingredientes: ingredientesPayload,
+            alergenos: alergenosSeleccionados
         };
 
         try {
@@ -178,6 +200,7 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
         form: { nombre, setNombre, descripcion, setDescripcion, raciones, setRaciones: handleRacionesChange },
         lista: { ingredientes, agregarIngrediente, actualizarIngrediente, eliminarIngrediente },
         buscador: { busqueda, setBusqueda, sugerencias: ingredientesFiltrados, cargando },
+        alergenos: { lista: listaAlergenos, seleccionados: alergenosSeleccionados, toggle: toggleAlergeno },
         acciones: {
             handleGuardar,
             guardando,

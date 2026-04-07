@@ -94,6 +94,35 @@ export const ModalDetalleReceta = ({ receta, onClose, onEdit, onRecetaHecha }: M
               <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
                 {receta.nombre || "Receta sin nombre"}
               </h2>
+              {/* Allergen icons in header */}
+              {receta.receta_alergeno && receta.receta_alergeno.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {receta.receta_alergeno.map((ra) => {
+                    const imgName = ra.alergeno.icono ? ra.alergeno.icono : `${ra.alergeno.nombre.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")}.png`;
+                    return (
+                        <div key={ra.id_alergeno} className="relative group">
+                          <img
+                            src={`/alergenos/${imgName}`}
+                            alt={ra.alergeno.nombre}
+                            title={ra.alergeno.nombre}
+                            className="w-8 h-8 object-contain rounded-lg bg-white/20 p-0.5"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                const spanFallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                                if (spanFallback) spanFallback.style.display = 'inline-flex';
+                            }}
+                          />
+                          <span
+                            title={ra.alergeno.nombre}
+                            className="hidden items-center px-2 py-0.5 rounded-lg bg-white/20 text-white text-xs font-bold"
+                          >
+                            {ra.alergeno.nombre.substring(0,3).toUpperCase()}
+                          </span>
+                        </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <button onClick={onClose} className="p-3 bg-white text-[#C00000] hover:bg-gray-100 rounded-full shadow-md transition-all active:scale-95">
               <X size={28} strokeWidth={3} />

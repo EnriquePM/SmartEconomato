@@ -80,6 +80,9 @@ export const getRecetas = async (req: Request, res: Response): Promise<void> => 
             ingrediente: true // Para devolver el nombre y datos del ingrediente además de la cantidad
           }
         },
+        receta_alergeno: {
+          include: { alergeno: true }
+        },
         escandallo: true // Traemos también si tiene escandallos asociados
       },
       orderBy: { fecha_creacion: 'desc' }
@@ -131,11 +134,29 @@ export const createReceta = async (req: Request, res: Response): Promise<void> =
         data: ingredientesData
       });
 
+      // 4. Crear las asociones de alérgenos
+      if (Array.isArray(req.body.alergenos) && req.body.alergenos.length > 0) {
+        // Asume que alergenos son strings o números, los casteamos a número por seguridad
+        const alergenoIds = req.body.alergenos.map(Number).filter((id: number) => !isNaN(id));
+        if (alergenoIds.length > 0) {
+          const alergenosData = alergenoIds.map((idAlergeno: number) => ({
+            id_receta: receta.id_receta,
+            id_alergeno: idAlergeno
+          }));
+          await tx.receta_alergeno.createMany({
+            data: alergenosData
+          });
+        }
+      }
+
       const recetaCompleta = await tx.receta.findUnique({
         where: { id_receta: receta.id_receta },
         include: {
           receta_ingrediente: {
             include: { ingrediente: true }
+          },
+          receta_alergeno: {
+            include: { alergeno: true }
           },
           escandallo: true
         }
@@ -165,6 +186,9 @@ export const getRecetaById = async (req: Request, res: Response): Promise<void> 
       include: {
         receta_ingrediente: {
           include: { ingrediente: true }
+        },
+        receta_alergeno: {
+          include: { alergeno: true }
         }
       }
     });
@@ -260,11 +284,33 @@ export const updateReceta = async (req: Request, res: Response): Promise<void> =
         });
       }
 
+      if (req.body.alergenos !== undefined) {
+        await tx.receta_alergeno.deleteMany({
+          where: { id_receta: recetaId }
+        });
+
+        if (Array.isArray(req.body.alergenos) && req.body.alergenos.length > 0) {
+          const alergenoIds = req.body.alergenos.map(Number).filter((id: number) => !isNaN(id));
+          if (alergenoIds.length > 0) {
+            const alergenosData = alergenoIds.map((idAlergeno: number) => ({
+              id_receta: recetaId,
+              id_alergeno: idAlergeno
+            }));
+            await tx.receta_alergeno.createMany({
+              data: alergenosData
+            });
+          }
+        }
+      }
+
       const recetaCompleta = await tx.receta.findUnique({
         where: { id_receta: recetaId },
         include: {
           receta_ingrediente: {
             include: { ingrediente: true }
+          },
+          receta_alergeno: {
+            include: { alergeno: true }
           },
           escandallo: true
         }
