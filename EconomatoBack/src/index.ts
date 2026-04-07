@@ -26,7 +26,6 @@ app.use(express.json());
 app.use('/api/ingredientes', ingredientRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', userRoutes);
-app.use('/api', recursosRoutes);
 app.use('/api/pedidos', pedidoRoutes);
 app.use('/api/materiales', materialRoutes);
 app.use('/api/categorias', categoriaRoutes);
@@ -35,6 +34,9 @@ app.use('/api/movimientos', movimientoRoutes);
 app.use('/api/recetas', recetaRoutes);
 app.use('/api/escandallos', escandalloRoutes);
 app.use('/api/alergenos', alergenoRoutes);
+
+// Recursos (se monta en /api, por lo que afecta a las rutas de recursos si coinciden)
+app.use('/api', recursosRoutes);
 
 app.listen(port, () => {
     console.log(`Servidor listo en http://localhost:${port}`);

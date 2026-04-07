@@ -3,7 +3,7 @@ import { Button } from "../components/ui/Button";
 // 1. IMPORTAMOS LOS NUEVOS ICONOS
 import { Globe, Search, Loader2 } from "lucide-react";
 // 1. IMPORTAMOS EL SERVICIO
-import { getCategorias, getProveedores, getAlergenos, type Categoria, type Proveedor, type Alergeno } from "../services/recursos.service";
+import { getCategorias, getProveedores, type Categoria, type Proveedor } from "../services/recursos.service";
 import { authFetch } from "../services/auth-service";
 
 type Movimiento = {
@@ -26,8 +26,7 @@ const IngresarProducto = () => {
   // 3. ESTADOS PARA LAS LISTAS QUE VIENEN DEL BACKEND
   const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
   const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
-  const [listaAlergenos, setListaAlergenos] = useState<Alergeno[]>([]);
-  const [alergenosSeleccionados, setAlergenosSeleccionados] = useState<number[]>([]);
+
 
   const [buscando, setBuscando] = useState(false);
   const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
@@ -36,15 +35,12 @@ const IngresarProducto = () => {
   // 4. USE EFFECT: CARGAR DATOS AL ENTRAR EN LA PÁGINA
   useEffect(() => {
     const cargarDatos = async () => {
-      // Pedimos las cosas a la vez
-      const [cats, provs, alergs] = await Promise.all([
+      const [cats, provs] = await Promise.all([
         getCategorias(),
-        getProveedores(),
-        getAlergenos()
+        getProveedores()
       ]);
       setListaCategorias(cats);
       setListaProveedores(provs);
-      setListaAlergenos(alergs);
     };
     cargarDatos();
   }, []);
@@ -92,9 +88,8 @@ const IngresarProducto = () => {
       codigo: codigoBarras, 
       nombre: nombre,
       stock: Number(stock),
-      id_categoria: Number(categoria), // Convertimos a número porque el value del select es string
-      id_proveedor: Number(proveedor),
-      alergenosIds: alergenosSeleccionados
+      id_categoria: Number(categoria),
+      id_proveedor: Number(proveedor)
     };
 
     try {
@@ -130,7 +125,6 @@ const IngresarProducto = () => {
         // Opcional: reiniciar los selects
         setCategoria(""); 
         setProveedor("");
-        setAlergenosSeleccionados([]);
       } else {
         throw new Error(data.error || "Error al guardar en el servidor");
       }
@@ -247,41 +241,7 @@ const IngresarProducto = () => {
              </div>
           </div>
 
-          <hr className="border-gray-100" />
-          
-          {/* ALERGENOS BUTTONS/CHECKBOXES */}
-          <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Alérgenos</label>
-              {listaAlergenos.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No hay alérgenos registrados.</p>
-              ) : (
-                  <div className="flex flex-wrap gap-3">
-                      {listaAlergenos.map((al) => {
-                          const seleccionado = alergenosSeleccionados.includes(al.id_alergeno);
-                          return (
-                              <button
-                                  type="button"
-                                  key={al.id_alergeno}
-                                  onClick={() => {
-                                      setAlergenosSeleccionados(prev => 
-                                          seleccionado
-                                              ? prev.filter(id => id !== al.id_alergeno)
-                                              : [...prev, al.id_alergeno]
-                                      );
-                                  }}
-                                  className={`px-4 py-2 border rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2
-                                      ${seleccionado 
-                                          ? 'bg-blue-100 border-blue-400 text-blue-800' 
-                                          : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                                      }`}
-                              >
-                                  {al.nombre}
-                              </button>
-                          );
-                      })}
-                  </div>
-              )}
-          </div>
+
 
           {mensaje && (
             <div className={`p-4 rounded-lg text-center font-medium ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>

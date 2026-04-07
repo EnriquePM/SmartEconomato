@@ -102,6 +102,33 @@ const RecetasPage = () => {
               <p className="text-gray-400 text-sm mt-2 line-clamp-2">
                   {receta.descripcion}
               </p>
+
+              {/* Allergen icons strip */}
+              {receta.receta_alergeno && receta.receta_alergeno.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {receta.receta_alergeno.map((ra) => (
+                    ra.alergeno.icono ? (
+                      <img
+                        key={ra.id_alergeno}
+                        src={ra.alergeno.icono}
+                        alt={ra.alergeno.nombre}
+                        title={ra.alergeno.nombre}
+                        className="w-7 h-7 object-contain rounded-md bg-amber-50 p-0.5 border border-amber-100"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span
+                        key={ra.id_alergeno}
+                        title={ra.alergeno.nombre}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold"
+                      >
+                        {ra.alergeno.nombre}
+                      </span>
+                    )
+                  ))}
+                </div>
+              )}
+
               <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
                   <span className="text-xs font-bold text-gray-400">Raciones: {receta.cantidad_platos}</span>
                   <span className="text-blue-600 font-bold text-xs">VER DETALLES →</span>

@@ -9,7 +9,7 @@ interface ModalRecetaProps {
 }
 
 export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: ModalRecetaProps) => {
-  const { form, lista, buscador, acciones } = useRecetaForm({ onSuccess: onRecetaCreada, recetaInicial });
+  const { form, lista, buscador, alergenos, acciones } = useRecetaForm({ onSuccess: onRecetaCreada, recetaInicial });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -29,7 +29,7 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
         {/* CUERPO DEL MODAL */}
         <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 bg-gray-50/50">
           
-          {/* COLUMNA IZQUIERDA: DATOS GENERALES */}
+          {/* COLUMNA IZQUIERDA: DATOS GENERALES + ALERGENOS */}
           <div className="space-y-6">
             <h3 className="text-sm font-black text-blue-600 uppercase tracking-wider">1. Datos Generales</h3>
             <div className="space-y-4">
@@ -65,11 +65,50 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
                 />
               </div>
             </div>
+
+            {/* SECCIÓN DE ALÉRGENOS */}
+            <div>
+              <h3 className="text-sm font-black text-amber-600 uppercase tracking-wider mb-3">2. Alérgenos</h3>
+              {alergenos.lista.length === 0 ? (
+                <p className="text-gray-400 text-sm italic">No hay alérgenos registrados en el sistema.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {alergenos.lista.map((al) => {
+                    const seleccionado = alergenos.seleccionados.includes(al.id_alergeno);
+                    return (
+                      <button
+                        type="button"
+                        key={al.id_alergeno}
+                        onClick={() => alergenos.toggle(al.id_alergeno)}
+                        title={al.nombre}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-sm font-bold transition-all duration-150
+                          ${seleccionado
+                            ? 'bg-amber-50 border-amber-400 text-amber-800 shadow-md scale-105'
+                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                      >
+                        {al.icono ? (
+                          <img src={al.icono} alt={al.nombre} className="w-6 h-6 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        ) : (
+                          <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-black">A</span>
+                        )}
+                        <span>{al.nombre}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {alergenos.seleccionados.length > 0 && (
+                <p className="text-xs text-amber-600 font-semibold mt-2">
+                  {alergenos.seleccionados.length} alérgeno{alergenos.seleccionados.length > 1 ? 's' : ''} seleccionado{alergenos.seleccionados.length > 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* COLUMNA DERECHA: INGREDIENTES */}
           <div className="space-y-6">
-            <h3 className="text-sm font-black text-blue-600 uppercase tracking-wider">2. Ingredientes en Receta</h3>
+            <h3 className="text-sm font-black text-blue-600 uppercase tracking-wider">3. Ingredientes en Receta</h3>
             
             {/* Buscador de Ingredientes */}
             <div className="relative">

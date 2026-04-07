@@ -1,7 +1,7 @@
 import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import type { EstadoPedido, PedidoIngrediente, PedidoMaterial } from '../models/Pedidos';
 
 const Pedidos = () => {

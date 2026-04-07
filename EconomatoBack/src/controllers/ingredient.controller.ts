@@ -6,7 +6,8 @@ export const getIngredientes = async (req: Request, res: Response) => {
         const ingredientes = await prisma.ingrediente.findMany({
             include: {
                 categoria: true, 
-                proveedor: true  
+                proveedor: true,
+                alergenos: true
             }
         });
         res.json(ingredientes);
@@ -17,8 +18,8 @@ export const getIngredientes = async (req: Request, res: Response) => {
 
 export const createIngrediente = async (req: Request, res: Response) => {
     try {
-        // 👇 AÑADIMOS precio_unidad para recogerlo
-        const { nombre, imagen, stock, stock_minimo, tipo, id_categoria, id_proveedor, unidad_medida, precio_unidad } = req.body;
+        // 👇 AÑADIMOS precio_unidad para recogerlo y alergenosIds
+        const { nombre, imagen, stock, stock_minimo, tipo, id_categoria, id_proveedor, unidad_medida, precio_unidad, alergenosIds } = req.body;
 
         const nuevoIngrediente = await prisma.ingrediente.create({
             data: {
@@ -30,7 +31,10 @@ export const createIngrediente = async (req: Request, res: Response) => {
                 id_categoria,
                 id_proveedor,
                 unidad_medida,
-                precio_unidad: Number(precio_unidad) || 0 // 👇 SE LO PASAMOS A PRISMA
+                precio_unidad: Number(precio_unidad) || 0, // 👇 SE LO PASAMOS A PRISMA
+                alergenos: alergenosIds ? {
+                    connect: alergenosIds.map((id: number) => ({ id_alergeno: id }))
+                } : undefined
             }
         });
 
@@ -43,11 +47,18 @@ export const createIngrediente = async (req: Request, res: Response) => {
 export const updateIngrediente = async (req: Request, res: Response) => {
     try {
         const { id } = req.params; 
-        const datos = req.body;
+        const { alergenosIds, ...rest } = req.body;
+
+        const dataUpdate: any = { ...rest };
+        if (alergenosIds) {
+            dataUpdate.alergenos = {
+                set: alergenosIds.map((id: number) => ({ id_alergeno: Number(id) }))
+            };
+        }
 
         const actualizado = await prisma.ingrediente.update({
             where: { id_ingrediente: Number(id) },
-            data: datos 
+            data: dataUpdate 
         });
 
         res.json(actualizado);
