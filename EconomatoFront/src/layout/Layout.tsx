@@ -5,16 +5,16 @@ import { Outlet, useLocation } from "react-router-dom";
 
 export default function Layout() {
     const location = useLocation();
-    const isHome = location.pathname === "/";
+    const isHome = location.pathname === "/hola";
 
     return (
-        <div className="h-screen w-full fondo flex overflow-hidden font-sans">
+        <div className="h-screen w-full bg-'fondo' flex overflow-hidden font-sans">
             <SideBar />
             <main className="flex-1 flex flex-col sm:ml-sidebar h-full overflow-hidden transition-all duration-300">
                 <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
                     isHome 
-                        ? "p-2 sm:p-3 fondo" 
-                        : "p-4 fondo"
+                        ? "p-2 sm:p-3 bg-'fondo'" 
+                        : "p-4 bg-'fondo'"
                 }`}>
                     <div className={`
                         flex-1 relative overflow-y-auto scrollbar-custom transition-all duration-300

@@ -1,105 +1,118 @@
-// src/pages/Home.tsx
-import { Link } from "react-router-dom";
-import { ShoppingCart, Package, Users, AlertTriangle, Clock } from "lucide-react"; 
-import { useHome } from "../hooks/useHome";
+import { useState, useEffect } from "react";
+import { 
+  CloudSun, Clock, Calendar as CalendarIcon, 
+  ChevronRight, Utensils, ShoppingCart, AlertCircle 
+} from "lucide-react";
 
-// --- CSS DE LA ANIMACIÓN ---
-const backgroundStyle = `
-  @keyframes blob {
-    0% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(50px, -80px) scale(1.2); }
-    66% { transform: translate(-40px, 40px) scale(0.8); }
-    100% { transform: translate(0px, 0px) scale(1); }
-  }
-  .animate-blob { animation: blob 8s infinite; }
-  .animation-delay-2000 { animation-delay: 2s; }
-  .animation-delay-4000 { animation-delay: 4s; }
-`;
+const HomePage = () => {
+  const [fecha, setFecha] = useState(new Date());
 
-const Home = () => {
-  const { accesos, actividadReciente, cargando } = useHome();
+  useEffect(() => {
+    const timer = setInterval(() => setFecha(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  if (cargando) {
-    return <div className="w-full h-full bg-[#450a0a] flex items-center justify-center text-white">Cargando SmartEconomato...</div>;
-  }
+
 
   return (
-    <div className="relative w-full h-full bg-[#450a0a] animate-fade-in-up overflow-hidden">
-      <style>{backgroundStyle}</style>
-
-        {/* --- CAPA DE MOVIMIENTO --- */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-red-600 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-blob"></div>
-            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-500 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-blob animation-delay-2000"></div>
-            <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-rose-600 rounded-full mix-blend-screen filter blur-[100px] opacity-70 animate-blob animation-delay-4000"></div>
-             <div className="absolute top-[30%] left-[40%] w-[400px] h-[400px] bg-red-900 rounded-full mix-blend-overlay filter blur-[60px] opacity-80 animate-blob"></div>
+    <div className="p-12 min-h-screen bg-[#fcfcfc] font-sans text-slate-800">
+      
+      {/* --- HEADER MINIMAL --- */}
+      <header className="flex justify-between items-end mb-20">
+        <div>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-[0.3em] mb-2">Panel Principal</p>
+          <h1 className="text-3xl font-light tracking-tight">
+            Buenos días, <span className="font-semibold text-slate-900">Chef.</span>
+          </h1>
         </div>
 
-        {/* --- CONTENIDO --- */}
-        <div className="relative z-10 w-full h-full overflow-y-auto p-5 space-y-5 scrollbar-hide">
+        <div className="flex items-center gap-8 text-slate-400">
+          <div className="flex items-center gap-2">
+            <CloudSun size={18} strokeWidth={1.5} />
+            <span className="text-sm font-medium">22°C</span>
+          </div>
+          <div className="flex items-center gap-2 border-l border-slate-200 pl-8">
+            <Clock size={18} strokeWidth={1.5} />
+            <span className="text-sm font-medium tabular-nums uppercase">
+              {fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-12 gap-16">
+        
+        {/* COLUMNA IZQUIERDA: MENOS ES MÁS */}
+        <div className="col-span-12 lg:col-span-4 space-y-12">
+          <section>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-6">Agenda</h3>
+            <div className="aspect-[4/3] bg-white rounded-xl border border-slate-100 flex items-center justify-center">
+              <span className="text-[10px] text-slate-300 tracking-widest uppercase">Calendario</span>
+            </div>
             
-            {/* HEADER */}
-            <div className="pl-1 pt-1">
-              <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">
-                  Bienvenido
-              </h1>
-              <p className="text-red-200/80 font-medium mt-1">Resumen del día.</p>
-            </div>
-
-            {/* TARJETAS DE ACCESO (Responsive: 2x2 en Tableta/Móvil, 4x1 en Escritorio) */}
-{/* AHORA PON ESTO: */}
-<section className="grid grid-cols-2 lg:grid-cols-4 gap-4">            {accesos.map((item, idx) => (
-                <Link
-                key={idx}
-                to={item.ruta}
-                className="group relative bg-white/10 backdrop-blur-md h-36 rounded-[1.5rem] shadow-lg border border-white/20 hover:bg-white/20 hover:scale-[1.02] transition-all duration-300 flex flex-col items-center justify-center gap-3 cursor-pointer overflow-hidden"
-                >
-                <div className={`p-3 rounded-xl ${item.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <item.icono size={24} strokeWidth={2} />
+            <div className="mt-6">
+              <div className="flex items-start gap-3 group cursor-pointer">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5"></div>
+                <div>
+                  <p className="text-sm font-medium text-slate-600">Harina de Trigo</p>
+                  <p className="text-xs text-slate-400">Caduca en 2 días</p>
                 </div>
-                <span className="font-bold text-white text-sm tracking-tight drop-shadow-sm">
-                    {item.titulo}
-                </span>
-                </Link>
-            ))}
-            </section>
-
-            {/* LISTA DE ACTIVIDAD */}
-            <section className="bg-black/20 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/10 p-6 flex-1 mb-0">
-            <div className="space-y-3">
-                {actividadReciente.map((item) => (
-                <div key={item.id} className="group flex items-center justify-between p-3 bg-white/80 hover:bg-white border border-transparent rounded-xl transition-all duration-200 cursor-default shadow-sm">
-                    <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shadow-sm ${
-                        item.estado === 'warning' ? 'bg-orange-100 text-orange-600' :
-                        item.estado === 'success' ? 'bg-green-100 text-green-600' :
-                        item.estado === 'danger' ? 'bg-red-100 text-red-600' :
-                        'bg-blue-100 text-blue-600'
-                    }`}>
-                        {item.tipo === 'pedido' && <ShoppingCart size={18} />}
-                        {item.tipo === 'stock' && <Package size={18} />}
-                        {item.tipo === 'alerta' && <AlertTriangle size={18} />}
-                        {item.tipo === 'user' && <Users size={18} />}
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-gray-900 text-sm">
-                          {item.titulo.replace('Stock:', 'Ingrediente:')}
-                        </h4>
-                        <p className="text-xs text-gray-700 font-medium">{item.sub}</p>
-                    </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] font-bold text-gray-500 bg-white/50 px-2 py-0.5 rounded-full border border-gray-200/50">
-                        {item.hora}
-                    </span>
-                    </div>
-                </div>
-                ))}
+              </div>
             </div>
-            </section>
+          </section>
         </div>
+
+        {/* COLUMNA DERECHA: FLUJO LIMPIO */}
+        <div className="col-span-12 lg:col-span-8 space-y-12">
+          
+          {/* RECETAS */}
+          <section>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">Recetas</h3>
+              <button className="text-[10px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">Ver todo</button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-100 border border-slate-100 rounded-lg overflow-hidden">
+              {['Mousse de Gofio', 'Potaje de Berros'].map((receta) => (
+                <div key={receta} className="bg-white p-6 hover:bg-slate-50 transition-colors cursor-pointer group">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-slate-700">{receta}</span>
+                    <ChevronRight size={14} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* PEDIDOS */}
+          <section>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-6">Pedidos activos</h3>
+            <div className="space-y-1">
+              {[
+                { id: '104', prov: 'Frutas Paco', total: '145.20', estado: 'Enviado' },
+                { id: '105', prov: 'Makro', total: '412.00', estado: 'Borrador' }
+              ].map((pedido, i) => (
+                <div key={i} className="flex items-center justify-between py-4 border-b border-slate-50 last:border-none">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-mono text-slate-300">#{pedido.id}</span>
+                    <span className="text-sm font-medium text-slate-600">{pedido.prov}</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <span className="text-xs text-slate-400">{pedido.total}€</span>
+                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${
+                      pedido.estado === 'Enviado' ? 'text-emerald-500' : 'text-amber-500'
+                    }`}>
+                      {pedido.estado}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Home;
+export default HomePage;
