@@ -1,4 +1,5 @@
 import type { Pedido } from "../models/Pedidos";
+import type { EstadoPedido } from "../models/Pedidos";
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -15,18 +16,24 @@ const normalizarPedidoPayload = (pedidoData: Pedido) => ({
   id_usuario: pedidoData.id_usuario || 1
 });
 
-// 1. Obtener todos los pedidos (para la lista principal)
+
 export const getPedidosService = async (): Promise<Pedido[]> => {
   const res = await fetch(`${API_URL}/pedidos`);
   if (!res.ok) throw new Error("Error al obtener pedidos");
   return await res.json();
 };
 
-// 2. Obtener UN pedido con todo su detalle (productos incluidos)
+
 export const getPedidoByIdService = async (id: number): Promise<Pedido> => {
   const res = await fetch(`${API_URL}/pedidos/${id}`);
   if (!res.ok) throw new Error("Error al obtener el detalle del pedido");
   return await res.json();
+};
+
+export const getPedidosPendientes = async (): Promise<Pedido[]> => {
+  const pedidos = await getPedidosService();
+  const estadosActivos: EstadoPedido[] = ['PENDIENTE'];
+  return pedidos.filter(p => estadosActivos.includes(p.estado));
 };
 
 export const guardarPedidoService = async (pedidoData: Pedido) => {
