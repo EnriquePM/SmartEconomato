@@ -41,9 +41,11 @@ const AdminUsuarios = () => {
       const data = await res.json();
       if (Array.isArray(data)) {
         setUsuarios(data);
+      } else {
+        console.error("La API no devolvió un array válido:", data);
       }
     } catch (error) {
-      console.error("Error cargando usuarios:", error);
+      console.error("Error de conexión o de red:", error);
     }
   };
 
@@ -194,7 +196,9 @@ const AdminUsuarios = () => {
           </div>
 
           <div className="pt-2">
-            <Button text={loading ? "Creando..." : "Crear Usuario"} onClick={() => {}} />
+            <Button type="submit" loading={loading}>
+              {loading ? "Creando..." : "Crear Usuario"}
+            </Button>
           </div>
         </form>
       </section>
