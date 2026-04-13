@@ -38,12 +38,25 @@ const AdminUsuarios = () => {
   const cargarUsuarios = async () => {
     try {
       const res = await authFetch("http://localhost:3000/api/usuarios");
+      
+      if (!res.ok) {
+         const errorText = await res.text();
+         console.error("Error al obtener usuarios (HTTP no ok):", res.status, errorText);
+         // Si es 403, alertamos al usuario que no tiene permisos
+         if (res.status === 403) {
+             alert("No tienes permisos suficientes (Jefe Economato o Profesor) para ver el listado de usuarios.");
+         }
+         return;
+      }
+
       const data = await res.json();
       if (Array.isArray(data)) {
         setUsuarios(data);
+      } else {
+        console.error("La API no devolvió un array válido:", data);
       }
     } catch (error) {
-      console.error("Error cargando usuarios:", error);
+      console.error("Error de conexión o de red:", error);
     }
   };
 
@@ -194,7 +207,9 @@ const AdminUsuarios = () => {
           </div>
 
           <div className="pt-2">
-            <Button text={loading ? "Creando..." : "Crear Usuario"} onClick={() => {}} />
+            <Button type="submit" loading={loading}>
+              {loading ? "Creando..." : "Crear Usuario"}
+            </Button>
           </div>
         </form>
       </section>
