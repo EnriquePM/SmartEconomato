@@ -19,7 +19,7 @@ const IngresarProducto = () => {
   const [nombre, setNombre] = useState("");
   const [stock, setStock] = useState<number | "">(""); 
   
-  // 2. ESTADOS DE SELECCIÓN (Iniciamos vacíos para obligar a elegir)
+  // 2. ESTADOS DE SELECCION (Iniciamos vacios para obligar a elegir)
   const [categoria, setCategoria] = useState(""); 
   const [proveedor, setProveedor] = useState("");
 
@@ -32,7 +32,7 @@ const IngresarProducto = () => {
   const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
   const [historial, setHistorial] = useState<Movimiento[]>([]);
 
-  // 4. USE EFFECT: CARGAR DATOS AL ENTRAR EN LA PÁGINA
+  // 4. USE EFFECT: CARGAR DATOS AL ENTRAR EN LA PAGINA
   useEffect(() => {
     const cargarDatos = async () => {
       const [cats, provs] = await Promise.all([
@@ -60,9 +60,9 @@ const IngresarProducto = () => {
             const productoOFF = data.product;
             const nombreEncontrado = productoOFF.product_name_es || productoOFF.product_name;
             setNombre(nombreEncontrado);
-            setMensaje({ texto: "¡Producto encontrado en la base de datos mundial!", tipo: 'exito' });
+            setMensaje({ texto: "!Producto encontrado en la base de datos mundial!", tipo: 'exito' });
         } else {
-            setMensaje({ texto: "No encontrado en Open Food Facts. Introdúcelo manual.", tipo: 'error' });
+            setMensaje({ texto: "No encontrado en Open Food Facts. Introducelo manual.", tipo: 'error' });
             setNombre("");
             setNombre("");
         }
@@ -74,13 +74,13 @@ const IngresarProducto = () => {
     }
   };
 
-  // 5. LÓGICA DE ENVÍO
+  // 5. LOGICA DE ENVIO
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
 
-    // Validamos que se haya seleccionado categoría y proveedor
+    // Validamos que se haya seleccionado categoria y proveedor
     if (!nombre || stock === "" || !categoria || !proveedor) {
-        setMensaje({ texto: "Por favor, rellena todos los campos (incluyendo categoría y proveedor).", tipo: 'error' });
+        setMensaje({ texto: "Por favor, rellena todos los campos (incluyendo categoria y proveedor).", tipo: 'error' });
         return;
     }
 
@@ -96,9 +96,9 @@ const IngresarProducto = () => {
       // 2. ENVIAR AL BACKEND (POST /api/ingredientes)
       /* 
        * NOTA: Usamos authFetch para que lleve el token.
-       * Si no, el servidor nos rechazaría (401/403).
+       * Si no, el servidor nos rechazaria (401/403).
        */
-      const respuesta = await authFetch("http://localhost:3000/api/ingredientes", { 
+      const respuesta = await authFetch("/api/ingredientes", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoProducto),
@@ -130,7 +130,7 @@ const IngresarProducto = () => {
       }
     } catch (error: any) {
       console.error(error);
-      setMensaje({ texto: error.message || "Error de conexión con el servidor.", tipo: 'error' });
+      setMensaje({ texto: error.message || "Error de conexion con el servidor.", tipo: 'error' });
     }
   };
 
@@ -139,16 +139,16 @@ const IngresarProducto = () => {
       
       <header className="text-left">
         <h1 className="text-3xl font-bold text-gray-900">Ingresar Nuevo Producto</h1>
-        <p className="text-gray-500 mt-2">Escanea el código o escribe los datos manualmente.</p>
+        <p className="text-gray-500 mt-2">Escanea el codigo o escribe los datos manualmente.</p>
       </header>
 
       <section className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mb-8 w-full">
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           
-          {/* CÓDIGO DE BARRAS */}
+          {/* CODIGO DE BARRAS */}
           <div className="flex gap-4 items-end">
             <div className="flex-1">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Código de Barras (EAN)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Codigo de Barras (EAN)</label>
                 <input 
                 type="text" 
                 placeholder="Ej: 5449000000996 (Coca-Cola)"
@@ -162,7 +162,7 @@ const IngresarProducto = () => {
                     type="button" 
                     onClick={buscarProductoOFF}
                     disabled={buscando}
-                    // Añadido 'flex items-center gap-2' para alinear icono y texto
+                    // Anadido 'flex items-center gap-2' para alinear icono y texto
                     className="bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                     {buscando ? (
@@ -187,7 +187,7 @@ const IngresarProducto = () => {
             <label className="block text-sm font-bold text-gray-700 mb-2">Nombre del Producto</label>
             <input 
               type="text" 
-              placeholder="Se rellenará solo o escríbelo tú..."
+              placeholder="Se rellenara solo o escribelo tu..."
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none transition-all bg-gray-50"
@@ -206,15 +206,15 @@ const IngresarProducto = () => {
                 />
              </div>
 
-             {/* 6. SELECT DE CATEGORÍA DINÁMICO */}
+             {/* 6. SELECT DE CATEGORIA DINAMICO */}
              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Categoría</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Categoria</label>
                 <select 
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg bg-white cursor-pointer focus:ring-2 focus:ring-gray-900 outline-none transition-all"
                 >
-                    <option value="" disabled>-- Selecciona una categoría --</option>
+                    <option value="" disabled>-- Selecciona una categoria --</option>
                     {listaCategorias.map((cat) => (
                         <option key={cat.id_categoria} value={cat.id_categoria}>
                             {cat.nombre}
@@ -223,7 +223,7 @@ const IngresarProducto = () => {
                 </select>
              </div>
 
-             {/* 7. SELECT DE PROVEEDOR DINÁMICO */}
+             {/* 7. SELECT DE PROVEEDOR DINAMICO */}
              <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Proveedor</label>
                 <select 
@@ -265,7 +265,7 @@ const IngresarProducto = () => {
       {historial.length > 0 && (
         <section className="animate-fade-in-up w-full">
             <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
-                Historial de sesión
+                Historial de sesion
             </h3>
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <ul>

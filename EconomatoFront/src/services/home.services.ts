@@ -6,7 +6,7 @@ import { ConciergeBell, ShoppingCart, Package, Archive } from "lucide-react";
 export const getAccesos = async (): Promise<Acceso[]> => {
   return [
     { 
-      titulo: "Recepción",            
+      titulo: "Recepcion",            
       icono: ConciergeBell,           
       color: "bg-sky-500",            
       ruta: "/recepcion"              
@@ -28,8 +28,8 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
 
     // 1. Ya no hacemos fetch a pedidos, solo a ingredientes y materiales
     const [resIngredientes, resMateriales] = await Promise.all([
-      fetch("http://localhost:3000/api/ingredientes", { headers }).catch(() => null),
-      fetch("http://localhost:3000/api/materiales", { headers }).catch(() => null)
+      fetch("/api/ingredientes", { headers }).catch(() => null),
+      fetch("/api/materiales", { headers }).catch(() => null)
     ]);
 
     const ingredientes = resIngredientes?.ok ? await resIngredientes.json() : [];
@@ -50,11 +50,11 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
         sub: `Quedan ${alimento.stock || alimento.cantidad || 0} ${alimento.unidad_medida || 'uds'}`,
         tipo: "stock",
         estado: "success",
-        hora: "Al día"
+        hora: "Al dia"
       });
     });
 
-    // --- B. Alertas de Stock crítico AL AZAR (Max 2) ---
+    // --- B. Alertas de Stock critico AL AZAR (Max 2) ---
     const ingredientesCriticos = ingredientes
       .filter((i: any) => (i.stock || i.cantidad) < 5)
       .sort(() => 0.5 - Math.random()) 
@@ -63,11 +63,11 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
     ingredientesCriticos.forEach((critico: any, index: number) => {
       actividadMixta.push({
         id: `ing-critico-${critico.id_ingrediente || index}`, 
-        titulo: `¡Alerta! ${critico.nombre}`,
+        titulo: `!Alerta! ${critico.nombre}`,
         sub: `Solo quedan ${critico.stock || critico.cantidad} ${critico.unidad_medida || 'uds'}`,
         tipo: "alerta", 
         estado: "danger",
-        hora: "¡Revisar!"
+        hora: "!Revisar!"
       });
     });
 
@@ -89,7 +89,7 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
 
     if (actividadMixta.length === 0) {
       return [{
-        id: "empty-1", titulo: "Sistema iniciado", sub: "Aún no hay actividad", tipo: "info", estado: "success", hora: "Ahora"
+        id: "empty-1", titulo: "Sistema iniciado", sub: "Aun no hay actividad", tipo: "info", estado: "success", hora: "Ahora"
       }];
     }
 
@@ -99,7 +99,7 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
   } catch (error) {
     console.error("Fallo al traer datos reales:", error);
     return [{
-      id: "error-1", titulo: "Error de conexión", sub: "No se pudieron cargar los datos", tipo: "alerta", estado: "danger", hora: "Ahora"
+      id: "error-1", titulo: "Error de conexion", sub: "No se pudieron cargar los datos", tipo: "alerta", estado: "danger", hora: "Ahora"
     }];
   }
 };

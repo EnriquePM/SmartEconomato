@@ -10,7 +10,7 @@ const CambiarPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Recuperamos los datos que nos pasó el Login
+  // Recuperamos los datos que nos paso el Login
   const { username, oldPassword } = location.state || {};
 
   // Estados
@@ -18,7 +18,7 @@ const CambiarPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Protección de ruta
+  // Proteccion de ruta
   useEffect(() => {
     if (!username || !oldPassword) {
       navigate('/login');
@@ -35,7 +35,7 @@ const CambiarPassword = () => {
     }
 
     if (newPassword !== confirmPassword) {
-      alert("Las contraseñas no coinciden.");
+      alert("Las contrasenas no coinciden.");
       return;
     }
 
@@ -44,7 +44,7 @@ const CambiarPassword = () => {
 
     try {
       // 2. Llamada al Backend
-      const response = await fetch('http://localhost:3000/api/auth/change-password', {
+      const response = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,18 +59,18 @@ const CambiarPassword = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Error al cambiar la contraseña");
+        alert(data.error || "Error al cambiar la contrasena");
         setLoading(false);
         return;
       }
 
-      // 3. Éxito
-      alert("¡Contraseña actualizada con éxito! Por favor, inicia sesión con tu nueva clave.");
+      // 3. Exito
+      alert("!Contrasena actualizada con exito! Por favor, inicia sesion con tu nueva clave.");
       navigate('/login'); 
 
     } catch (error) {
       console.error("Error:", error);
-      alert("Error de conexión con el servidor.");
+      alert("Error de conexion con el servidor.");
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,7 @@ const CambiarPassword = () => {
             Por motivos de seguridad, detectamos que es tu primer acceso.
           </p>
           <p className="text-lg text-gray-800 font-medium mt-2">
-            Debes configurar una nueva contraseña personal para continuar.
+            Debes configurar una nueva contrasena personal para continuar.
           </p>
         </div>
 
@@ -113,7 +113,7 @@ const CambiarPassword = () => {
           
           <div className="space-y-4">
              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Nueva Contraseña</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Nueva Contrasena</label>
                 <Input 
                     type="password" 
                     placeholder="Escribe tu nueva clave" 
@@ -124,7 +124,7 @@ const CambiarPassword = () => {
              </div>
 
              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Confirmar Contraseña</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Confirmar Contrasena</label>
                 <Input 
                     type="password" 
                     placeholder="Repite la clave" 

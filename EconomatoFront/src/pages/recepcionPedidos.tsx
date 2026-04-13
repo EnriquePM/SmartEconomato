@@ -3,7 +3,7 @@ import { ModalRecepcion } from "./ModalRecepcion";
 import { getPedidoByIdService, getPedidosService } from "../services/pedidoService";
 import { useEffect } from "react";
 import { Input } from "../components/ui/Input";
-import { Select } from "../components/ui/select";
+import { Select } from "../components/ui/Select";
 
 const RecepcionPage = () => {
   const [pedidos, setPedidos] = useState<any[]>([]); 

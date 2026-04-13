@@ -1,14 +1,14 @@
 import { recetaMapper } from "./mappers/recetaMapper";
 import type { Receta } from "../models/Receta";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "/api";
 
 const getErrorMessage = async (res: Response, fallback: string): Promise<string> => {
   const payload = await res.json().catch(() => null);
   return payload?.error || payload?.mensaje || fallback;
 };
 
-// Función de ayuda para no repetir los headers y el token en cada petición
+// Funcion de ayuda para no repetir los headers y el token en cada peticion
 const getHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -24,7 +24,7 @@ export const recetaService = {
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al obtener recetas"));
 
     const data = await res.json();
-    // Aquí usamos el Traductor (Mapper) del Paso 1 para limpiar los datos
+    // Aqui usamos el Traductor (Mapper) del Paso 1 para limpiar los datos
     return data.map((item: any) => recetaMapper.fromJson(item));
   },
 

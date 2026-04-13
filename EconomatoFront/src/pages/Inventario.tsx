@@ -28,10 +28,10 @@ const Inventario = () => {
   // --- EFECTO DE CARGA DE DATOS (ACTUALIZADO) ---
 useEffect(() => {
     
-    // 1. Definimos la URL según la pestaña
+    // 1. Definimos la URL segun la pestana
     const endpoint = vista === 'ingredientes' 
-        ? "http://localhost:3000/api/ingredientes" 
-        : "http://localhost:3000/api/materiales";
+        ? "/api/ingredientes" 
+        : "/api/materiales";
 
     // 2. Hacemos el fetch DIRECTO (Con headers de Authorization gracias a authFetch)
     authFetch(endpoint)
@@ -40,27 +40,27 @@ useEffect(() => {
         return res.json();
       })
       .then((data) => {
-          // 3. Validación de seguridad básica (que sea un array)
+          // 3. Validacion de seguridad basica (que sea un array)
           if (!Array.isArray(data)) {
-              console.error("El servidor devolvió algo raro (no es una lista):", data);
+              console.error("El servidor devolvio algo raro (no es una lista):", data);
               setProductos([]);
               return;
           }
 
-          // 4. Lógica de adaptación de datos
+          // 4. Logica de adaptacion de datos
           if (vista === 'utensilios') { // Ojo: vista 'utensilios' llama a API 'materiales'
              const materialesAdaptados = data.map((m: any) => ({
                  id: m.id_material,          // Adaptamos ID
                  nombre: m.nombre,
                  codigo: 'MAT-' + m.id_material,
-                 stock: 0,                   // Materiales no tienen stock en tu DB aún
+                 stock: 0,                   // Materiales no tienen stock en tu DB aun
                  // Si el back devuelve objeto categoria, cogemos el nombre, si no, "General"
                  id_categoria: m.categoria ? m.categoria.nombre : (m.id_categoria || "General"),
                  tipo: 'material'
              }));
              setProductos(materialesAdaptados);
           } else {
-             // Lógica para ingredientes (que ya te funcionaba bien antes o similar)
+             // Logica para ingredientes (que ya te funcionaba bien antes o similar)
              const ingredientesAdaptados = data.map((i: any) => ({
                  id: i.id_ingrediente,
                  nombre: i.nombre,
@@ -85,7 +85,7 @@ useEffect(() => {
 
   }, [vista]);
 
-  // --- LÓGICA DE FILTRADO Y ORDENACIÓN ---
+    // --- LOGICA DE FILTRADO Y ORDENACION ---
   const productosFiltrados = productos.filter((producto) => {
     const texto = busqueda.toLowerCase();
     // Validamos que producto.nombre y codigo existan antes de usar includes (por seguridad)
@@ -137,15 +137,15 @@ useEffect(() => {
   };
 
   const renderizarCategoria = (producto: Producto) => {
-    // Si estamos en utensilios, usamos el texto directo de la categoría
+    // Si estamos en utensilios, usamos el texto directo de la categoria
     if (vista === 'utensilios') return <span className="capitalize">{producto.id_categoria}</span>;
     
-    // Si estamos en ingredientes, usamos el switch numérico
+    // Si estamos en ingredientes, usamos el switch numerico
     switch (Number(producto.id_categoria)) {
         case 1: return "Aceites";
         case 2: return "Granos";
         case 3: return "Conservas";
-        case 4: return "Lácteos";
+        case 4: return "Lacteos";
         case 5: return "Condimentos";
         default: return "Varios";
     }
@@ -158,7 +158,7 @@ useEffect(() => {
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
-          <p className="text-gray-500">Gestión de stock y existencias en tiempo real.</p>
+          <p className="text-gray-500">Gestion de stock y existencias en tiempo real.</p>
         </div>
         
         <div className="flex gap-2">
@@ -172,10 +172,10 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* --- ZONA DE PESTAÑAS --- */}
+    {/* --- ZONA DE PESTANAS --- */}
       <div className="flex gap-2 border-b border-gray-200 items-end pl-2">
         
-        {/* PESTAÑA PRODUCTOS */}
+        {/* PESTANA PRODUCTOS */}
         <button
           onClick={() => setVista('ingredientes')}
           className={`
@@ -189,7 +189,7 @@ useEffect(() => {
           PRODUCTOS
         </button>
 
-        {/* PESTAÑA UTENSILIOS */}
+        {/* PESTANA UTENSILIOS */}
         <button
           onClick={() => setVista('utensilios')}
           className={`
@@ -220,7 +220,7 @@ useEffect(() => {
             />
         </div>
 
-        {/* Filtro Categoría */}
+        {/* Filtro Categoria */}
         <div className="relative">
              <span className="absolute left-3 top-3 text-gray-500"><Filter size={16} /></span>
             <select 
@@ -228,21 +228,21 @@ useEffect(() => {
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
             >
-                <option value="todos">Todas las categorías</option>
+                <option value="todos">Todas las categorias</option>
                 {vista === 'ingredientes' ? (
                     <>
                         <option value="1">Aceites y Grasas</option>
                         <option value="2">Granos y Harinas</option>
                         <option value="3">Conservas</option>
-                        <option value="4">Lácteos y Huevos</option>
+                        <option value="4">Lacteos y Huevos</option>
                         <option value="5">Condimentos</option>
                     </>
                 ) : (
                     <>
                         <option value="Menaje">Menaje General</option>
-                        <option value="Cuchillos">Cuchillería</option>
+                        <option value="Cuchillos">Cuchilleria</option>
                         <option value="Sartenes">Sartenes y Ollas</option>
-                        <option value="Electrico">Pequeño Electrodoméstico</option>
+                        <option value="Electrico">Pequeno Electrodomestico</option>
                         <option value="Limpieza">Material de Limpieza</option>
                         <option value="Textil">Textil / Uniformes</option>
                     </>
@@ -256,7 +256,7 @@ useEffect(() => {
         <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
                 <tr>
-                    <th className="p-4">Código</th>
+                    <th className="p-4">Codigo</th>
                     <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('nombre')}>
                         <div className="flex items-center gap-2">
                             {vista === 'ingredientes' ? 'Producto' : 'Utensilio'} <IconoOrden campo="nombre" />
@@ -264,10 +264,10 @@ useEffect(() => {
                     </th>
                     <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('categoria')}>
                         <div className="flex items-center gap-2">
-                            Categoría <IconoOrden campo="categoria" />
+                            Categoria <IconoOrden campo="categoria" />
                         </div>
                     </th>
-                    <th className="p-4">Alérgenos</th>
+                    <th className="p-4">Alergenos</th>
                     <th className="p-4 text-center cursor-pointer" onClick={() => cambiarOrden('stock')}>
                         <div className="flex items-center justify-center gap-2">
                             Stock <IconoOrden campo="stock" />
@@ -283,7 +283,7 @@ useEffect(() => {
                                 {item.codigo ? (
                                     <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">{item.codigo}</span>
                                 ) : (
-                                    <span className="text-xs text-gray-300 italic">Sin código</span>
+                                    <span className="text-xs text-gray-300 italic">Sin codigo</span>
                                 )}
                             </td>
                             <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
@@ -318,7 +318,7 @@ useEffect(() => {
                                                         }}
                                                     />
                                                     
-                                                    {/* Fallback de error más estético */}
+                                                    {/* Fallback de error mas estetico */}
                                                     <span 
                                                         className="hidden w-8 h-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 text-[9px] uppercase font-bold border-2 border-white shadow-sm tracking-tighter"
                                                     >
@@ -329,7 +329,7 @@ useEffect(() => {
                                         })}
                                     </div>
                                 ) : (
-                                    <span className="text-xs font-medium text-gray-300 px-2 py-1 bg-gray-50 rounded-full border border-gray-100">Sin Alérgenos</span>
+                                    <span className="text-xs font-medium text-gray-300 px-2 py-1 bg-gray-50 rounded-full border border-gray-100">Sin Alergenos</span>
                                 )}
                             </td>
                             <td className="p-4 text-center">
