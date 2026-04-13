@@ -14,6 +14,7 @@ const HomePage = () => {
   const [fecha, setFecha] = useState(new Date());
   const { avisos, loadingAvisos, pedidos, loadingPedidos, recetas, loadingRecetas, temperatura } = useHome();
   const navigate = useNavigate();
+  const sinRecetas = !loadingRecetas && recetas.length === 0;
 
   useEffect(() => {
     const timer = setInterval(() => setFecha(new Date()), 1000);
@@ -123,18 +124,30 @@ const HomePage = () => {
         <div className="lg:col-span-8 flex flex-col gap-2 md:gap-3 min-h-0 h-full">
 
           {/* RECETAS */}
-          <section onClick={() => navigate('/recetas')} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col flex-1 min-h-0 overflow-hidden shadow-sm">
+        <section
+            onClick={() => navigate('/recetas')}
+            className={`cursor-pointer bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
+              sinRecetas ? 'shrink-0 h-24' : 'flex-1 min-h-0'
+            }`}
+          >
             <div className="flex justify-between items-center mb-4 md:mb-5 shrink-0">
               <div className="flex items-center gap-2">
                 <Utensils size={14} className="text-acento" />
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recetario Destacado</span>
               </div>
-              <button className="text-[10px] font-black text-acento uppercase tracking-widest hover:underline">Ver todo</button>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate('/recetas'); }}
+                className="text-[10px] font-black text-acento uppercase tracking-widest hover:underline"
+              >
+                Ver todo
+              </button>
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
               {loadingRecetas ? (
                 <span className="text-[10px] text-gray-300">Cargando...</span>
+              ) : sinRecetas ? (
+                <span className="text-[10px] text-gray-300 italic">No hay recetas disponibles</span>
               ) : (
                 <>
                   {/* Desktop */}
@@ -153,18 +166,27 @@ const HomePage = () => {
               )}
             </div>
           </section>
-
           {/* PEDIDOS PENDIENTES */}
-          <section onClick={() => navigate('/pedidos')} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col shrink-0 overflow-hidden lg:h-36 shadow-sm">
-            <div className="flex justify-between items-center  shrink-0">
+          <section
+            onClick={() => navigate('/pedidos')}
+            className={`cursor-pointer bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
+              sinRecetas ? 'flex-1' : 'shrink-0 lg:h-36'
+            }`}
+          >
+            <div className="flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <ShoppingBasket size={14} className="text-acento" />
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pedidos Pendientes</span>
               </div>
-              <button className="text-[10px] font-black text-acento uppercase tracking-widest hover:underline">Gestionar</button>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate('/pedidos'); }}
+                className="text-[10px] font-black text-acento uppercase tracking-widest hover:underline"
+              >
+                Gestionar
+              </button>
             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto scrollbar-hide">
+            <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto scrollbar-hide mt-4">
               {loadingPedidos ? (
                 <span className="text-[10px] text-gray-300">Cargando...</span>
               ) : pedidos.length === 0 ? (
@@ -177,7 +199,7 @@ const HomePage = () => {
                   >
                     <div className="flex items-center gap-3 md:gap-4">
                       <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter">
-                        {pedido.id_pedido}
+                        #{pedido.id_pedido}
                       </span>
                       <div>
                         <span className="text-sm font-black text-gray-700 tracking-tight block leading-none">

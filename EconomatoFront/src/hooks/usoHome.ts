@@ -14,6 +14,7 @@ export const useHome = () => {
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loadingRecetas, setLoadingRecetas] = useState(true);
   const [temperatura, setTemperatura] = useState<number | null>(null);
+  const [errorRecetas, setErrorRecetas] = useState(false);
 
   useEffect(() => {
     getAvisosStock()
