@@ -5,6 +5,6 @@ import { authenticateToken, requireRole } from '../middlewares/auth.middleware';
 const router = Router();
 
 router.get('/', authenticateToken, getMovimientos);
-router.post('/', authenticateToken, requireRole(['Profesor', 'Jefe_Economato']), createMovimiento);
+router.post('/', authenticateToken, requireRole(['Profesor', 'Administrador']), createMovimiento);
 
 export default router;

@@ -28,7 +28,7 @@ const IngresoGeneral = () => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string, tipo: 'exito' | 'error' } | null>(null);
   
-  // Estado para controlar la cámara
+  // Estado para controlar la camara
   const [mostrarScanner, setMostrarScanner] = useState(false);
 
   useEffect(() => {
@@ -46,9 +46,9 @@ const IngresoGeneral = () => {
     cargarDatos();
   }, []);
 
-  // --- BÚSQUEDA INTELIGENTE (Manual o por Cámara) ---
+  // --- BUSQUEDA INTELIGENTE (Manual o por Camara) ---
   const buscarProductoOFF = async (codigoDesdeScanner?: string | React.MouseEvent) => {
-    // Si viene del escáner (string), usamos ese. Si no, usamos el del estado del formulario.
+    // Si viene del escaner (string), usamos ese. Si no, usamos el del estado del formulario.
     const codigoABuscar = typeof codigoDesdeScanner === 'string' ? codigoDesdeScanner : form.codigo;
 
     if (!codigoABuscar) return;
@@ -60,20 +60,20 @@ const IngresoGeneral = () => {
       const data = await respuesta.json();
       if (data.status === 1) {
         const productoOFF = data.product;
-        // Rellenamos el formulario automáticamente si lo encuentra
+        // Rellenamos el formulario automaticamente si lo encuentra
         setForm(prev => ({ 
           ...prev, 
           codigo: codigoABuscar, 
           nombre: productoOFF.product_name_es || productoOFF.product_name || ""
         }));
-        setMensaje({ texto: "¡Producto encontrado!", tipo: 'exito' });
+        setMensaje({ texto: "!Producto encontrado!", tipo: 'exito' });
       } else {
-        // Si no lo encuentra, dejamos el código escrito de todas formas
+        // Si no lo encuentra, dejamos el codigo escrito de todas formas
         setForm(prev => ({ ...prev, codigo: codigoABuscar }));
         setMensaje({ texto: "No encontrado en la base de datos mundial.", tipo: 'error' });
       }
     } catch (error) {
-      setMensaje({ texto: "Error de conexión.", tipo: 'error' });
+      setMensaje({ texto: "Error de conexion.", tipo: 'error' });
     } finally {
       setBuscandoOFF(false);
     }
@@ -82,7 +82,7 @@ const IngresoGeneral = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // --- LÓGICA DE VALIDACIÓN DINÁMICA ---
+    // --- LOGICA DE VALIDACION DINAMICA ---
     const faltaUnidad = activeTab === 'ingredientes' && !form.unidad_medida;
     const faltaCategoria = activeTab === 'ingredientes' && !form.id_categoria;
 
@@ -105,7 +105,7 @@ const IngresoGeneral = () => {
     };
 
     try {
-      const res = await fetch(`http://localhost:3000/api/${endpoint}`, {
+      const res = await fetch(`/api/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -113,7 +113,7 @@ const IngresoGeneral = () => {
 
       if (!res.ok) throw new Error("Error en el guardado");
 
-      setMensaje({ texto: `${activeTab === 'ingredientes' ? 'Producto' : 'Utensilio'} registrado con éxito.`, tipo: 'exito' });
+      setMensaje({ texto: `${activeTab === 'ingredientes' ? 'Producto' : 'Utensilio'} registrado con exito.`, tipo: 'exito' });
       
       // Limpiar formulario
       setForm({ codigo: "", nombre: "", stock: "", unidad_medida: "", precio_unidad: "", id_categoria: "", id_proveedor: "" });
@@ -132,7 +132,7 @@ const IngresoGeneral = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
-          <p className="text-gray-500 mt-1 font-medium">Añade nuevos elementos al inventario general</p>
+          <p className="text-gray-500 mt-1 font-medium">Anade nuevos elementos al inventario general</p>
         </div>
       </div>
 
@@ -158,23 +158,23 @@ const IngresoGeneral = () => {
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* BUSCADOR OPEN FOOD FACTS Y ESCÁNER */}
+            {/* BUSCADOR OPEN FOOD FACTS Y ESCANER */}
             <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Referencia / Código de Barras</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Referencia / Codigo de Barras</label>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 flex gap-2">
                   <Input 
                     id="ean" 
-                    placeholder="Escribe el código para buscar o escanéalo..." 
+                    placeholder="Escribe el codigo para buscar o escanealo..." 
                     value={form.codigo} 
                     onChange={(val) => setForm({...form, codigo: val})} 
                   />
-                  {/* BOTÓN DE CÁMARA */}
+                  {/* BOTON DE CAMARA */}
                   <button
                     type="button"
                     onClick={() => setMostrarScanner(true)}
                     className="bg-gray-200 text-gray-700 px-4 rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center shrink-0 shadow-sm"
-                    title="Escanear con cámara"
+                    title="Escanear con camara"
                   >
                     <Camera size={20} />
                   </button>
@@ -199,7 +199,7 @@ const IngresoGeneral = () => {
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Nombre</label>
                 <Input 
                   id="nombre" 
-                  placeholder={`Ej: ${activeTab === 'ingredientes' ? 'Azúcar Glass' : 'Pinzas de cocina'}`} 
+                  placeholder={`Ej: ${activeTab === 'ingredientes' ? 'Azucar Glass' : 'Pinzas de cocina'}`} 
                   value={form.nombre} 
                   onChange={(val) => setForm({...form, nombre: val})} 
                 />
@@ -238,7 +238,7 @@ const IngresoGeneral = () => {
 
               <div className={activeTab === 'ingredientes' ? "w-full" : "w-full md:col-span-2"}>
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">
-                  {activeTab === 'ingredientes' ? 'Precio x Unidad (€)' : 'Coste (€)'}
+                  {activeTab === 'ingredientes' ? 'Precio x Unidad (EUR)' : 'Coste (EUR)'}
                 </label>
                 <Input 
                   id="precio" 
@@ -252,14 +252,14 @@ const IngresoGeneral = () => {
 
               {activeTab === 'ingredientes' && (
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Categoría</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Categoria</label>
                   <div className="relative">
                     <select 
                         value={form.id_categoria}
                         onChange={(e) => setForm({...form, id_categoria: e.target.value})}
                         className="w-full bg-input border-none rounded-pill py-4 px-6 text-gray-700 focus:ring-2 focus:ring-slate-200 outline-none appearance-none cursor-pointer font-medium transition-all"
                     >
-                        <option value="">Selecciona una categoría...</option>
+                        <option value="">Selecciona una categoria...</option>
                         {listaCategorias.map(c => <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>)}
                     </select>
                   </div>
@@ -301,13 +301,13 @@ const IngresoGeneral = () => {
         </div>
       </div>
 
-      {/* 👇 MODAL DEL ESCÁNER AUTOMATIZADO 👇 */}
+      {/* MODAL DEL ESCANER AUTOMATIZADO */}
       {mostrarScanner && (
         <ModalScanner 
           onClose={() => setMostrarScanner(false)}
           onScan={(codigoLeido) => {
-            setMostrarScanner(false); // Cerramos el modal de la cámara
-            buscarProductoOFF(codigoLeido); // Lanzamos la búsqueda de forma automática
+            setMostrarScanner(false); // Cerramos el modal de la camara
+            buscarProductoOFF(codigoLeido); // Lanzamos la busqueda de forma automatica
           }}
         />
       )}

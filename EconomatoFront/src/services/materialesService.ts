@@ -1,7 +1,7 @@
 import { authFetch } from './auth-service';
 import type { ItemInventario } from '../models/ItemInventario';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 export const getMateriales = async (): Promise<ItemInventario[]> => {
   try {
@@ -20,3 +20,4 @@ export const getMateriales = async (): Promise<ItemInventario[]> => {
     return [];
   }
 };
+

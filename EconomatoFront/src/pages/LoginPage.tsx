@@ -20,7 +20,7 @@ const LoginPage = () => {
     // Si viene de un formulario (Enter), prevenimos la recarga
     if (e) e.preventDefault(); 
     
-    // 1. Validación básica
+    // 1. Validacion basica
     if (!user || !password) {
       alert("Por favor, rellena todos los campos.");
       return;
@@ -30,7 +30,7 @@ const LoginPage = () => {
 
     try {
       // 2. Llamada al Backend
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,14 +44,14 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "Ocurrió un error al iniciar sesión");
+        alert(data.error || "Ocurrio un error al iniciar sesion");
         setLoading(false);
         return;
       }
 
       console.log("Respuesta del servidor:", data);
 
-      // 3. Lógica de Redirección (Sin alertas molestas)
+      // 3. Logica de Redireccion (Sin alertas molestas)
       if (data.requiereCambioPass) {
         // CASO: PRIMER LOGIN
         navigate("/cambiar-password", {
@@ -71,8 +71,8 @@ const LoginPage = () => {
       navigate("/");
 
     } catch (error) {
-      console.error("Error de conexión:", error);
-      alert("No se pudo conectar con el servidor. ¿Está encendido el Backend?");
+      console.error("Error de conexion:", error);
+      alert("No se pudo conectar con el servidor. ?Esta encendido el Backend?");
     } finally {
       setLoading(false);
     }
@@ -114,9 +114,9 @@ const LoginPage = () => {
           />
           <Input 
             type="password" 
-            placeholder="Contraseña" 
+            placeholder="Contrasena" 
             value={password} 
-            id={'contraseña'}
+            id={'contrasena'}
             onChange={setPassword} 
           />
           

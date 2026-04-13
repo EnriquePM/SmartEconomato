@@ -1,22 +1,48 @@
-version: '3.8'
-
 services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: smarteconomato_nginx
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: smarteconomato_frontend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: smarteconomato_backend
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://admin:admin@db:5432/smart_economato?schema=public
+      JWT_SECRET: palabra_secreta_para_firmar_tokens_123
+    depends_on:
+      - db
+
   db:
     image: postgres:15-alpine
     container_name: smarteconomato_postgres
     restart: always
     environment:
-      POSTGRES_USER: admin           # El usuario que usará tu backend
-      POSTGRES_PASSWORD: admin       # La contraseña para desarrollo
-      POSTGRES_DB: smart_economato   # El nombre de la base de datos
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: smart_economato
     ports:
       - "5432:5432"
     volumes:
-      # 1. Persistencia: Guarda los datos para que no se borren al apagar el PC
       - pg_data:/var/lib/postgresql/data
-      
-      # 2. AUTO-INICIALIZACIÓN: Mapea tu carpeta local al contenedor.
-      # Postgres ejecutará automáticamente todo lo que haya aquí al crearse.
       - ./db-init:/docker-entrypoint-initdb.d/
 
 volumes:

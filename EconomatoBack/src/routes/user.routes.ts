@@ -5,12 +5,13 @@ import { authenticateToken, requireRole } from '../middlewares/auth.middleware';
 const router = Router();
 
 // Rutas protegidas (todas requieren token)
-router.use(authenticateToken); // Opcional: aplicar a todas las de abajo de golpe
+router.use(authenticateToken);
 
-router.get('/', requireRole(['Jefe_Economato', 'Administrador', 'Profesor']), getUsers);             // Ver todos (Admin / Profesor)
-router.put('/:id', updateUser);                                            // Editar uno
-router.put('/:id/reset-password', requireRole(['Jefe_Economato', 'Administrador', 'Profesor']), resetPassword); // Solo Jefe puede resetear contraseña
-router.put('/:id/role', requireRole(['Jefe_Economato', 'Administrador', 'Profesor']), updateUserRole);          // Editar rol (Solo Jefe)
-router.delete('/:id', requireRole(['Jefe_Economato', 'Administrador']), deleteUser);                // Eliminar usuario (Solo Jefe)
+// Gestión de usuarios: Administrador y Profesor pueden gestionar todo.
+router.get('/', requireRole(['Administrador', 'Profesor']), getUsers);
+router.put('/:id', requireRole(['Administrador', 'Profesor']), updateUser);
+router.put('/:id/reset-password', requireRole(['Administrador', 'Profesor']), resetPassword);
+router.put('/:id/role', requireRole(['Administrador', 'Profesor']), updateUserRole);
+router.delete('/:id', requireRole(['Administrador', 'Profesor']), deleteUser);
 
 export default router;

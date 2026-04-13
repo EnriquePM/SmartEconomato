@@ -5,8 +5,8 @@ import { authenticateToken, requireRole } from '../middlewares/auth.middleware';
 const router = Router();
 
 router.get('/', authenticateToken, getCategorias);
-router.post('/', authenticateToken, requireRole(['Profesor', 'Jefe_Economato']), createCategoria);
-router.put('/:id', authenticateToken, requireRole(['Profesor', 'Jefe_Economato']), updateCategoria);
-router.delete('/:id', authenticateToken, requireRole(['Profesor', 'Jefe_Economato']), deleteCategoria);
+router.post('/', authenticateToken, requireRole(['Profesor', 'Administrador']), createCategoria);
+router.put('/:id', authenticateToken, requireRole(['Profesor', 'Administrador']), updateCategoria);
+router.delete('/:id', authenticateToken, requireRole(['Profesor', 'Administrador']), deleteCategoria);
 
 export default router;

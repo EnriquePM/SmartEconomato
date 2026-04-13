@@ -5,7 +5,7 @@ import { authFetch } from "../services/auth-service";
 
 // ... (imports are already correct)
 
-// 1. ACTUALIZAMOS LA INTERFAZ (Añadimos username)
+// 1. ACTUALIZAMOS LA INTERFAZ (Anadimos username)
 interface Usuario {
   id_usuario: number;
   username: string;
@@ -37,18 +37,7 @@ const AdminUsuarios = () => {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await authFetch("http://localhost:3000/api/usuarios");
-      
-      if (!res.ok) {
-         const errorText = await res.text();
-         console.error("Error al obtener usuarios (HTTP no ok):", res.status, errorText);
-         // Si es 403, alertamos al usuario que no tiene permisos
-         if (res.status === 403) {
-             alert("No tienes permisos suficientes (Jefe Economato o Profesor) para ver el listado de usuarios.");
-         }
-         return;
-      }
-
+      const res = await authFetch("/api/usuarios");
       const data = await res.json();
       if (Array.isArray(data)) {
         setUsuarios(data);
@@ -71,8 +60,8 @@ const AdminUsuarios = () => {
     setLoading(true);
 
     const endpoint = rol === "alumno" 
-        ? "http://localhost:3000/api/auth/register/alumno"
-        : "http://localhost:3000/api/auth/register/profesor";
+        ? "/api/auth/register/alumno"
+        : "/api/auth/register/profesor";
 
     const body = {
         nombre,
@@ -93,7 +82,7 @@ const AdminUsuarios = () => {
         const data = await res.json();
 
         if (res.ok) {
-            alert(`¡Usuario creado con éxito!\n\n👤 Usuario: ${data.username}\n🔑 Contraseña temporal: Economato123`);
+            alert(`Usuario creado con exito.\n\nUsuario: ${data.username}\nContrasena temporal: Economato123`);
             cargarUsuarios(); 
             
             setNombre("");
@@ -106,7 +95,7 @@ const AdminUsuarios = () => {
         }
     } catch (error) {
         console.error(error);
-        alert("Error de conexión con el servidor");
+        alert("Error de conexion con el servidor");
     } finally {
         setLoading(false);
     }
@@ -122,8 +111,8 @@ const AdminUsuarios = () => {
             <Users size={32} />
         </div>
         <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-            <p className="text-gray-500">Panel de administración para alumnos y profesores.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Gestion de Usuarios</h1>
+            <p className="text-gray-500">Panel de administracion para alumnos y profesores.</p>
         </div>
       </header>
 
@@ -149,7 +138,7 @@ const AdminUsuarios = () => {
                 <label className="block text-sm font-bold text-gray-700 mb-2">Primer Apellido *</label>
                 <input 
                     type="text" 
-                    placeholder="Ej: García" 
+                    placeholder="Ej: Garcia" 
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
                     value={apellido1}
                     onChange={e => setApellido1(e.target.value)}
@@ -159,7 +148,7 @@ const AdminUsuarios = () => {
                 <label className="block text-sm font-bold text-gray-700 mb-2">Segundo Apellido</label>
                 <input 
                     type="text" 
-                    placeholder="Ej: Pérez" 
+                    placeholder="Ej: Perez" 
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
                     value={apellido2}
                     onChange={e => setApellido2(e.target.value)}
