@@ -20,6 +20,14 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
 
   const [usarBascula, setUsarBascula] = useState(false);
 
+  const capturarPesoEnCantidadRecibida = (peso: string) => {
+    if (!lineaEnFoco) {
+      return;
+    }
+
+    actualizarValor(lineaEnFoco.id_referencia, 'cantidad_recibida', peso);
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white w-full max-w-4xl rounded-[2rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-100 font-sans">
@@ -52,7 +60,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
         )}
 
         {/*FORM*/}
-        <div className="px-8 py-4 bg-white shrink-0">
+        <div className={`px-8 py-4 bg-white ${lineaEnFoco ? 'flex-1 overflow-y-auto' : 'shrink-0'}`}>
           {lineaEnFoco ? (
             <div className={`p-6 rounded-[1.8rem] animate-fade-in-up border ${Number(lineaEnFoco.cantidad_recibida) < Number(lineaEnFoco.cantidad_solicitada)
               ? 'bg-red-50/60 border-red-200'
@@ -86,7 +94,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
 
               {usarBascula && (
                 <div className="mb-4 animate-fade-in-up">
-                  <BasculaWidget />
+                  <BasculaWidget onCapturarPeso={capturarPesoEnCantidadRecibida} />
                 </div>
               )}
 
@@ -109,7 +117,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
                 />
               </div>
 
-              <div className="flex gap-3 mt-8">
+              <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm pt-4 pb-1 flex gap-3 mt-8">
                 <Button variant="gris" className="flex-1 !rounded-full" onClick={() => setLineaEnFoco(null)}>
                   Volver atrás
                 </Button>
