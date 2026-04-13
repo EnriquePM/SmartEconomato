@@ -38,7 +38,6 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
         </div>
 
         {/* CONTENIDO CENTRAL */}
-        {/* 👇 AÑADIDO: overflow-y-auto para que el modal entero pueda scrollear si la pantalla es pequeña */}
         <div className="flex-1 p-8 overflow-y-auto flex flex-col gap-6 bg-white scrollbar-global">
           
           {/* SECCIÓN CONFIGURACIÓN: Nombre y Raciones */}
@@ -99,7 +98,6 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
           </div>
 
           {/* COLUMNAS INFERIORES: Buscador + Ingredientes / Pasos de elaboración */}
-          {/* 👇 AÑADIDO: min-h-[450px] y shrink-0. ¡Se acabó el aplastar esta caja! */}
           <div className="shrink-0 flex gap-6 px-2 mt-2 min-h-[450px]">
             
             {/* MITAD IZQUIERDA: Ingredientes */}
@@ -161,11 +159,20 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
                           <p className="text-[9px] text-gray-400 font-bold uppercase mt-1.5 tracking-tighter">Medida: {ing.unidad_medida}</p>
                         </div>
                         <div className="w-24">
+                          {/* 👇 EL INPUT MÁGICO PARA DECIMALES */}
                           <Input 
-                            type="number"
-                            placeholder="0"
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0.00"
                             value={ing.cantidad}
-                            onChange={(val) => lista.actualizarIngrediente(ing.id_ingrediente, 'cantidad', val)}
+                            onChange={(val) => {
+                              // Convertimos coma a punto
+                              const saneado = val.replace(',', '.');
+                              // Validamos que solo haya números y máximo un punto
+                              if (/^\d*\.?\d*$/.test(saneado)) {
+                                lista.actualizarIngrediente(ing.id_ingrediente, 'cantidad', saneado);
+                              }
+                            }}
                             className="text-center !py-2 !rounded-xl !bg-gray-50/50 border border-gray-100"
                           />
                         </div>
