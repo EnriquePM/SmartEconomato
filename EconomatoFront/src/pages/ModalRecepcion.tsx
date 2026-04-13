@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useRecepcionModal } from "../hooks/useModalRecepcion";
+import { BasculaWidget } from "../components/ui/BasculaWidget";
 
 export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) => {
   const { 
@@ -15,6 +17,8 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
     finalizarRecepcion,
     guardando
   } = useRecepcionModal(pedido, onSaveLocal, onRefresh, onClose);
+
+  const [usarBascula, setUsarBascula] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -68,6 +72,24 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal}: any) 
                 </div>
               </div>
               
+              <div className="flex items-center justify-between mb-4 bg-white/50 p-2 rounded-lg border border-gray-100 transition-all">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 text-blue-600 rounded bg-gray-100 border-gray-300 focus:ring-blue-500"
+                    checked={usarBascula}
+                    onChange={(e) => setUsarBascula(e.target.checked)}
+                  />
+                  <span className="text-sm font-bold text-gray-700">Utilizar báscula externa</span>
+                </label>
+              </div>
+
+              {usarBascula && (
+                <div className="mb-4 animate-fade-in-up">
+                  <BasculaWidget />
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input 
                   id="c-rec" type="number" label="Cant. Recibida" placeholder="0"

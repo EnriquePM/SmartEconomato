@@ -13,6 +13,9 @@ import movimientoRoutes from './routes/movimiento.routes';
 import recetaRoutes from './routes/receta.routes';
 import escandalloRoutes from './routes/escandallo.routes';
 import alergenoRoutes from './routes/alergeno.routes';
+import http from 'http';
+import { Server } from 'socket.io';
+import { iniciarServicioBascula } from './services/bascula.service';
 
 dotenv.config();
 
@@ -38,6 +41,17 @@ app.use('/api/alergenos', alergenoRoutes);
 // Recursos (se monta en /api, por lo que afecta a las rutas de recursos si coinciden)
 app.use('/api', recursosRoutes);
 
-app.listen(port, () => {
-    console.log(`Servidor listo en http://localhost:${port}`);
+// --- CONFIGURACIÓN DE SOCKET.IO Y BÁSCULA ---
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*', // Podrías restringir esto luego a tu front-end en producción
+  }
+});
+
+// Inicializamos el servicio de tu lector pasándole el IO
+iniciarServicioBascula(io);
+
+server.listen(port, () => {
+    console.log(`Servidor Listo con Sockets en http://localhost:${port}`);
 });
