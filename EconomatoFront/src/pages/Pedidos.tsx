@@ -3,10 +3,9 @@ import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
 import { Select } from '../components/ui/select';
 import { Button } from '../components/ui/Button';
-import { Eye, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Plus, Pencil, Trash2, AlertTriangle, Send, CheckCircle } from 'lucide-react';
 import { ModalPedido } from '../pages/ModalPedidos';
 import type { EstadoPedido} from '../models/Pedidos';
-
 
 const Pedidos = () => {
     const {
@@ -20,6 +19,11 @@ const Pedidos = () => {
 
     const [busqueda, setBusqueda] = useState("");
     const [filtroProveedor, setFiltroProveedor] = useState("todos");
+
+    // 👇 Estados para los Pop-ups personalizados
+    const [errorUI, setErrorUI] = useState<string | null>(null);
+    const [mostrarConfirmacionEnvio, setMostrarConfirmacionEnvio] = useState(false);
+    const [exitoUI, setExitoUI] = useState<string | null>(null); // Nuevo estado para el éxito
 
     const pedidosFiltrados = pedidos.filter(p => {
         const coincideBusqueda =
@@ -46,18 +50,32 @@ const Pedidos = () => {
 
     const cerrarModal = () => setVista('lista');
     
-    const manejarGuardarBorrador = () => {
-        if (!pedidoActual.proveedor?.trim()) return alert("Selecciona un proveedor");
-        guardarPedido('BORRADOR');
+    // Guardar Borrador 
+    const manejarGuardarBorrador = async () => {
+        if (!pedidoActual.proveedor?.trim()) {
+            setErrorUI("Debes seleccionar un proveedor antes de guardar el borrador.");
+            return;
+        }
+        await guardarPedido('BORRADOR');
         cerrarModal();
+        setExitoUI("Borrador guardado con éxito."); // Mostramos nuestro pop-up
     };
 
-    const manejarEnviarPedido = () => {
-        if (!pedidoActual.proveedor?.trim()) return alert("Selecciona un proveedor");
-        if (confirm("¿Enviar pedido al proveedor? Pasará a estado PENDIENTE.")) {
-            guardarPedido('PENDIENTE');
-            cerrarModal();
+    // Intentar Enviar Pedido 
+    const intentarEnviarPedido = () => {
+        if (!pedidoActual.proveedor?.trim()) {
+            setErrorUI("Debes seleccionar un proveedor antes de enviar el pedido.");
+            return;
         }
+        setMostrarConfirmacionEnvio(true);
+    };
+
+    // Confirmación final de envío
+    const confirmarEnvioPedido = async () => {
+        await guardarPedido('PENDIENTE');
+        setMostrarConfirmacionEnvio(false);
+        cerrarModal();
+        setExitoUI("Pedido enviado con éxito."); // Mostramos nuestro pop-up
     };
 
     return (
@@ -76,7 +94,7 @@ const Pedidos = () => {
                     borrarLinea={borrarLinea}
                     agregarLinea={agregarLinea}
                     guardarBorrador={manejarGuardarBorrador}
-                    enviarPedido={manejarEnviarPedido}
+                    enviarPedido={intentarEnviarPedido}
                 />
             )}
 
@@ -226,6 +244,82 @@ const Pedidos = () => {
                     </table>
                 </div>
             </div>
+
+            {/* POP-UP DE ERROR (Falta Proveedor) */}
+            {errorUI && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                            <AlertTriangle size={32} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">¡Falta información!</h3>
+                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                            {errorUI}
+                        </p>
+                        <Button 
+                            variant="primario" 
+                            onClick={() => setErrorUI(null)} 
+                            className="w-full py-3 font-bold shadow-md shadow-red-200"
+                        >
+                            ENTENDIDO
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* POP-UP DE CONFIRMACIÓN DE ENVÍO */}
+            {mostrarConfirmacionEnvio && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                            <Send size={32} strokeWidth={2.5} className="ml-1" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">¿Enviar Pedido?</h3>
+                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                            ¿Estás seguro de enviar este pedido a <span className="font-bold text-gray-800">{pedidoActual.proveedor}</span>? Pasará a estado <span className="font-bold text-red-600">PENDIENTE</span> y el borrador se cerrará.
+                        </p>
+                        <div className="flex gap-3 w-full">
+                            <Button 
+                                variant="gris" 
+                                onClick={() => setMostrarConfirmacionEnvio(false)} 
+                                className="flex-1 py-3 font-bold"
+                            >
+                                CANCELAR
+                            </Button>
+                            <Button 
+                                variant="primario" 
+                                onClick={confirmarEnvioPedido} 
+                                className="flex-1 py-3 font-bold !bg-red-600 hover:!bg-red-700 shadow-md shadow-red-200"
+                            >
+                                SÍ, ENVIAR
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 👇 NUEVO POP-UP DE ÉXITO */}
+            {exitoUI && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                            <CheckCircle size={32} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">¡Completado!</h3>
+                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                            {exitoUI}
+                        </p>
+                        <Button 
+                            variant="primario" 
+                            onClick={() => setExitoUI(null)} 
+                            className="w-full py-3 font-bold !bg-green-600 hover:!bg-green-700 shadow-md shadow-green-200"
+                        >
+                            ACEPTAR
+                        </Button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
