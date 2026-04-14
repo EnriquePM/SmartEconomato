@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const [fecha, setFecha] = useState(new Date());
-  const { avisos, loadingAvisos, pedidos, loadingPedidos, recetas, loadingRecetas, temperatura } = useHome();
+  const { user, avisos, loadingAvisos, pedidos, loadingPedidos, recetas, loadingRecetas, temperatura } = useHome();
   const navigate = useNavigate();
   const sinRecetas = !loadingRecetas && recetas.length === 0;
 
@@ -41,7 +41,7 @@ const HomePage = () => {
       {/* HEADER */}
       <header className="flex justify-between items-center mb-3 md:mb-6 shrink-0 flex-wrap gap-3">
         <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-          Buenos días, Chef.
+          ¡Hola, {user?.username || "Cargando..."}!
         </h1>
 
         <div className="flex items-center gap-5 md:gap-10">

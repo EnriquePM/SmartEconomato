@@ -5,6 +5,7 @@ import { recetaService } from '../services/recetaService';
 import type { AvisoStock } from '../models/ItemInventario';
 import type { Pedido } from '../models/Pedidos';
 import type { Receta } from '../models/Receta';
+import type { Usuario } from '../models/user.model';
 
 export const useHome = () => {
   const [avisos, setAvisos] = useState<AvisoStock[]>([]);
@@ -14,9 +15,15 @@ export const useHome = () => {
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [loadingRecetas, setLoadingRecetas] = useState(true);
   const [temperatura, setTemperatura] = useState<number | null>(null);
-  const [errorRecetas, setErrorRecetas] = useState(false);
+  const [user, setUser] = useState<Usuario | null>(null);
 
   useEffect(() => {
+
+    const dataUser = localStorage.getItem('usuario');
+    if (dataUser) {
+      setUser(JSON.parse(dataUser));
+    }
+
     getAvisosStock()
       .then(setAvisos)
       .finally(() => setLoadingAvisos(false));
@@ -36,5 +43,5 @@ export const useHome = () => {
       .catch(() => setTemperatura(null));
   }, []);
 
-  return { avisos, loadingAvisos, pedidos, loadingPedidos, recetas, loadingRecetas, temperatura };
+  return { user, avisos, loadingAvisos, pedidos, loadingPedidos, recetas, loadingRecetas, temperatura };
 };
