@@ -16,6 +16,10 @@ const HomePage = () => {
   const navigate = useNavigate();
   const sinRecetas = !loadingRecetas && recetas.length === 0;
 
+  const customShadow = {
+    boxShadow: "5px 5px 5px #e1e1e3af"
+  };
+
   useEffect(() => {
     const timer = setInterval(() => setFecha(new Date()), 1000);
     return () => clearInterval(timer);
@@ -23,24 +27,11 @@ const HomePage = () => {
 
   return (
     <div className="h-full flex flex-col animate-fade-in-up overflow-hidden px-4 relative">
-
-      {/* FONDO */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#fff5f0] via-[#fde8df] to-[#fcd5c5]" />
-      <div
-        className="absolute inset-0 -z-10 pointer-events-none"
-        style={{
-          background: `
-            radial-gradient(ellipse 520px 400px at 10% 90%,  rgba(220,38,38,0.14)  0%, transparent 70%),
-            radial-gradient(ellipse 440px 360px at 90%  5%,  rgba(251,191,36,0.10) 0%, transparent 70%),
-            radial-gradient(ellipse 320px 260px at 78% 75%,  rgba(220,38,38,0.08)  0%, transparent 70%),
-            radial-gradient(ellipse 300px 200px at 50% 40%,  rgba(255,255,255,0.18) 0%, transparent 60%)
-          `,
-        }}
-      />
+   
 
       {/* HEADER */}
-      <header className="flex justify-between items-center mb-3 md:mb-6 shrink-0 flex-wrap gap-3">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+      <header className="flex justify-between items-center px-7 mb-3 md:mb-6 shrink-0 flex-wrap gap-3">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-700 tracking-tight">
           ¡Hola, {user?.username || "Cargando..."}!
         </h1>
 
@@ -67,13 +58,13 @@ const HomePage = () => {
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2 md:gap-3 min-h-0 mb-2 md:mb-3">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-5 min-h-0 mb-2 md:mb-3 mt-5">
 
         {/* COLUMNA IZQUIERDA */}
-        <div className="lg:col-span-4 flex flex-col gap-2 md:gap-3 min-h-0 h-full">
+        <div className="lg:col-span-4 flex flex-col gap-5 md:gap-5 min-h-0 h-full">
 
           {/* CALENDARIO */}
-          <section className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-6 shadow-sm flex flex-col shrink-0 overflow-hidden">
+          <section style={customShadow} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-6 shadow-sm flex flex-col shrink-0 overflow-hidden">
             <div className="w-full flex flex-col justify-center">
               <Calendar
                 onChange={() => {}}
@@ -88,7 +79,7 @@ const HomePage = () => {
           </section>
 
           {/* AVISOS URGENTES */}
-          <section onClick={() => navigate('/inventario')} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-4 flex flex-col lg:h-48 shadow-sm overflow-hidden">
+          <section style={customShadow} onClick={() => navigate('/inventario')} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-4 flex flex-col lg:h-48 shadow-sm overflow-hidden">
         
             <div className="flex items-center gap-2 mb-3 shrink-0">
               <AlertCircle size={12} className="text-orange-500" />
@@ -121,10 +112,11 @@ const HomePage = () => {
         </div>
 
         {/* COLUMNA DERECHA */}
-        <div className="lg:col-span-8 flex flex-col gap-2 md:gap-3 min-h-0 h-full">
+        <div className="lg:col-span-8 flex flex-col gap-5 md:gap-5 min-h-0 h-full">
 
           {/* RECETAS */}
         <section
+            style={customShadow} 
             onClick={() => navigate('/recetas')}
             className={`cursor-pointer bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
               sinRecetas ? 'shrink-0 h-24' : 'flex-1 min-h-0'
@@ -168,6 +160,7 @@ const HomePage = () => {
           </section>
           {/* PEDIDOS PENDIENTES */}
           <section
+            style={customShadow} 
             onClick={() => navigate('/pedidos')}
             className={`cursor-pointer bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
               sinRecetas ? 'flex-1' : 'shrink-0 lg:h-36'
@@ -199,7 +192,7 @@ const HomePage = () => {
                   >
                     <div className="flex items-center gap-3 md:gap-4">
                       <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter">
-                        #{pedido.id_pedido}
+                        {pedido.id_pedido}
                       </span>
                       <div>
                         <span className="text-sm font-black text-gray-700 tracking-tight block leading-none">
