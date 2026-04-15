@@ -133,18 +133,17 @@ const IngresoGeneral = () => {
   };
 
   return (
-    <div className="h-full flex flex-col animate-fade-in-up overflow-hidden pb-2">
+    // 👇 Dejamos de forzar la altura. Dejamos que el bloque fluya naturalmente.
+    <div className="animate-fade-in-up pb-10">
       
-      {/* HEADER COMPACTO */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center shrink-0 pb-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
-          <p className="text-gray-500 mt-1 font-medium text-sm">Añade nuevos elementos al inventario general</p>
-        </div>
+      {/* HEADER */}
+      <div className="pb-6">
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
+        <p className="text-gray-500 mt-1 font-medium text-sm">Añade nuevos elementos al inventario general</p>
       </div>
 
       {/* TABS SELECTOR */}
-      <div className="flex gap-2 mt-2 pl-2 relative items-end shrink-0">
+      <div className="flex gap-2 pl-2 relative items-end">
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
         <button 
             onClick={() => { setActiveTab('ingredientes'); setMensaje(null); }}
@@ -160,14 +159,15 @@ const IngresoGeneral = () => {
         </button>
       </div>
 
-      {/* FORMULARIO CONTENEDOR */}
-      <div className="w-full flex-1 bg-white p-5 rounded-b-2xl rounded-tr-2xl shadow-sm border border-gray-100 flex flex-col justify-center min-h-0">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 h-full max-h-full min-h-0">
+      {/* 👇 FORMULARIO CONTENEDOR: Espaciado interno generoso (p-8 sm:p-10) */}
+      <div className="w-full bg-white p-8 sm:p-10 rounded-b-3xl rounded-tr-3xl shadow-sm border border-gray-100">
+        {/* Usamos gap-10 para separar claramente las 3 zonas (Buscador, Grid, Footer) */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-10">
           
-          {/* 1. BUSCADOR */}
-          <div className="bg-gray-50 p-3 rounded-2xl border border-dashed border-gray-200 shrink-0">
-            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Referencia / Código de Barras</label>
-            <div className="flex flex-col sm:flex-row gap-2">
+          {/* 1. BUSCADOR (Más padding interno para darle cuerpo) */}
+          <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Referencia / Código de Barras</label>
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex gap-2">
                 <Input 
                   id="ean" 
@@ -178,7 +178,7 @@ const IngresoGeneral = () => {
                 <button
                   type="button"
                   onClick={() => setMostrarScanner(true)}
-                  className="bg-gray-200 text-gray-700 px-4 rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center shrink-0 shadow-sm"
+                  className="bg-gray-200 text-gray-700 px-5 rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center shadow-sm"
                   title="Escanear con cámara"
                 >
                   <Camera size={20} />
@@ -189,7 +189,7 @@ const IngresoGeneral = () => {
                 variant="primario"
                 onClick={buscarProductoOFF}
                 disabled={buscandoOFF || !form.codigo}
-                className="px-6 py-2 sm:py-0 text-xs flex items-center justify-center gap-2"
+                className="px-8 py-3 sm:py-0 text-xs flex items-center justify-center gap-2 font-bold"
               >
                 {buscandoOFF ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
                 BUSCAR EN OFF
@@ -197,83 +197,80 @@ const IngresoGeneral = () => {
             </div>
           </div>
 
-          {/* 2. GRID DE DATOS */}
-          <div className="flex-1 mt-1">
-            <div className="grid grid-cols-12 gap-x-6 gap-y-3 content-start">
-              
-              <div className="col-span-12">
-                <Input 
-                  label="Nombre"
-                  id="nombre" 
-                  placeholder={`Ej: ${activeTab === 'ingredientes' ? 'Azúcar Glass' : 'Pinzas de cocina'}`} 
-                  value={form.nombre} 
-                  onChange={(val) => setForm({...form, nombre: val})} 
-                />
-              </div>
+          {/* 2. GRID DE DATOS (Más separación entre filas: gap-y-8) */}
+          <div className="grid grid-cols-12 gap-x-6 gap-y-8">
+            
+            <div className="col-span-12">
+              <Input 
+                label="Nombre"
+                id="nombre" 
+                placeholder={`Ej: ${activeTab === 'ingredientes' ? 'Azúcar Glass' : 'Pinzas de cocina'}`} 
+                value={form.nombre} 
+                onChange={(val) => setForm({...form, nombre: val})} 
+              />
+            </div>
 
-              <div className={activeTab === 'ingredientes' ? "col-span-4" : "col-span-6"}>
-                <Input 
-                  label="Stock Inicial"
-                  id="stock" 
-                  type="number" 
-                  placeholder="0" 
-                  value={form.stock.toString()} 
-                  onChange={(val) => setForm({...form, stock: val === "" ? "" : Number(val)})} 
-                />
-              </div>
+            <div className={activeTab === 'ingredientes' ? "col-span-12 md:col-span-4" : "col-span-12 md:col-span-6"}>
+              <Input 
+                label="Stock Inicial"
+                id="stock" 
+                type="number" 
+                placeholder="0" 
+                value={form.stock.toString()} 
+                onChange={(val) => setForm({...form, stock: val === "" ? "" : Number(val)})} 
+              />
+            </div>
 
-              {activeTab === 'ingredientes' && (
-                <div className="col-span-4">
-                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Unidad</label>
-                  <Select 
-                    placeholder="Selecciona..."
-                    options={opcionesUnidad}
-                    value={form.unidad_medida}
-                    onChange={(val) => setForm({...form, unidad_medida: val})}
-                  />
-                </div>
-              )}
-
-              <div className={activeTab === 'ingredientes' ? "col-span-4" : "col-span-6"}>
-                <Input 
-                  label={activeTab === 'ingredientes' ? 'Precio x Ud (€)' : 'Coste (€)'}
-                  id="precio" 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="0.00" 
-                  value={form.precio_unidad.toString()} 
-                  onChange={(val) => setForm({...form, precio_unidad: val === "" ? "" : Number(val)})} 
-                />
-              </div>
-
-              {activeTab === 'ingredientes' && (
-                <div className="col-span-6">
-                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Categoría</label>
-                  <Select 
-                    placeholder="Selecciona categoría..."
-                    options={opcionesCategorias}
-                    value={form.id_categoria}
-                    onChange={(val) => setForm({...form, id_categoria: val})}
-                  />
-                </div>
-              )}
-
-              <div className={activeTab === 'ingredientes' ? "col-span-6" : "col-span-12"}>
-                <label className="block text-[13px] font-medium text-gray-700 mb-1">Proveedor</label>
+            {activeTab === 'ingredientes' && (
+              <div className="col-span-12 md:col-span-4">
+                <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Unidad</label>
                 <Select 
-                  placeholder="Selecciona proveedor..."
-                  options={opcionesProveedores}
-                  value={form.id_proveedor}
-                  onChange={(val) => setForm({...form, id_proveedor: val})}
+                  placeholder="Selecciona..."
+                  options={opcionesUnidad}
+                  value={form.unidad_medida}
+                  onChange={(val) => setForm({...form, unidad_medida: val})}
                 />
               </div>
+            )}
+
+            <div className={activeTab === 'ingredientes' ? "col-span-12 md:col-span-4" : "col-span-12 md:col-span-6"}>
+              <Input 
+                label={activeTab === 'ingredientes' ? 'Precio x Ud (€)' : 'Coste (€)'}
+                id="precio" 
+                type="number" 
+                step="0.01" 
+                placeholder="0.00" 
+                value={form.precio_unidad.toString()} 
+                onChange={(val) => setForm({...form, precio_unidad: val === "" ? "" : Number(val)})} 
+              />
+            </div>
+
+            {activeTab === 'ingredientes' && (
+              <div className="col-span-12 md:col-span-6">
+                <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Categoría</label>
+                <Select 
+                  placeholder="Selecciona categoría..."
+                  options={opcionesCategorias}
+                  value={form.id_categoria}
+                  onChange={(val) => setForm({...form, id_categoria: val})}
+                />
+              </div>
+            )}
+
+            <div className={activeTab === 'ingredientes' ? "col-span-12 md:col-span-6" : "col-span-12"}>
+              <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Proveedor</label>
+              <Select 
+                placeholder="Selecciona proveedor..."
+                options={opcionesProveedores}
+                value={form.id_proveedor}
+                onChange={(val) => setForm({...form, id_proveedor: val})}
+              />
             </div>
           </div>
 
-          {/* 👇 3. ZONA INFERIOR: ¡Centrada! (py-6 asegura mismo espacio por arriba y por abajo) */}
-          <div className="shrink-0 flex flex-col sm:flex-row justify-between items-center gap-4 py-6 mt-auto border-t border-gray-100">
+          {/* 3. ZONA INFERIOR (Separada de forma natural) */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100">
             
-            {/* Lado izquierdo: Mensaje */}
             <div className="w-full sm:w-1/2">
               {mensaje && (
                 <div className={`py-3 px-4 rounded-xl text-sm font-bold text-center transition-all ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
@@ -282,13 +279,12 @@ const IngresoGeneral = () => {
               )}
             </div>
 
-            {/* Lado derecho: Botones */}
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button 
                   type="button"
                   variant="gris"
                   onClick={limpiarFormulario}
-                  className="px-5 py-2.5 text-xs tracking-widest flex items-center justify-center gap-2"
+                  className="px-6 py-3 text-xs tracking-widest flex items-center justify-center gap-2 font-bold"
               >
                   <Eraser size={16} /> LIMPIAR
               </Button>
@@ -297,7 +293,7 @@ const IngresoGeneral = () => {
                   variant="primario"
                   onClick={handleSubmit}
                   disabled={guardando}
-                  className="px-8 py-2.5 text-xs tracking-widest flex items-center justify-center gap-2 shadow-md"
+                  className="px-10 py-3 text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg font-black"
               >
                   {guardando && <Loader2 size={16} className="animate-spin" />}
                   {guardando ? "PROCESANDO..." : `REGISTRAR ${activeTab === 'ingredientes' ? 'PRODUCTO' : 'UTENSILIO'}`}

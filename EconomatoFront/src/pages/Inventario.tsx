@@ -48,7 +48,7 @@ const Inventario = () => {
              const materialesAdaptados = data.map((m: any) => ({
                  id: m.id_material,
                  nombre: m.nombre,
-                 codigo: 'MAT-' + m.id_material,
+                 codigo: m.id_material.toString(), // 👇 Eliminado 'MAT-'
                  stock: 0,
                  id_categoria: m.categoria ? m.categoria.nombre : (m.id_categoria || "General"),
                  tipo: 'material'
@@ -58,7 +58,7 @@ const Inventario = () => {
              const ingredientesAdaptados = data.map((i: any) => ({
                  id: i.id_ingrediente,
                  nombre: i.nombre,
-                 codigo: i.codigo || 'ING-' + i.id_ingrediente,
+                 codigo: i.codigo || i.id_ingrediente.toString(), // 👇 Eliminado 'ING-'
                  stock: i.stock_actual || i.stock || 0,
                  id_categoria: i.id_categoria,
                  tipo: 'ingrediente',
