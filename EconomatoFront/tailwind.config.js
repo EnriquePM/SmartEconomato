@@ -13,7 +13,6 @@ export default {
         primario: colors.black,       // El negro de tus botones y títulos
         secundario: colors.gray[500], // El gris de tus subtítulos, placeholder y footer
         acento: '#DC2626', // Focus
-        'brand-red': '#ff5758',
         'acento': '#DC2626',
         // Superficies
         fondo: '#f4f7fa',             // Tu color de fondo personalizado

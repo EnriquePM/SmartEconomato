@@ -9,8 +9,7 @@ const RecetaCard = ({ receta }: { receta: Receta }) => {
   const navigate = useNavigate();
 
   return (
-    /* Card principal con hover:scale-105 */
-    <div className="bg-acento backdrop-blur-md p-3 px-5 rounded-pill border transition-all duration-300 cursor-pointer group flex flex-col">
+    <div className="bg-white/90 backdrop-blur-md p-3 px-5 rounded-pill border transition-all duration-300 cursor-pointer group flex flex-col">
 
       <div className="flex md:hidden items-center justify-between w-full">
         <h3 className="text-sm font-black text-gray-800 tracking-tight leading-none">
@@ -18,7 +17,6 @@ const RecetaCard = ({ receta }: { receta: Receta }) => {
         </h3>
         <div
           onClick={() => navigate('/recetas')}
-          /* Botón móvil con hover:scale-110 */
           className="bg-white p-2 rounded-xl text-acento shadow-sm transition-transform hover:scale-110"
         >
           <Eye size={16} strokeWidth={3} />
@@ -31,29 +29,28 @@ const RecetaCard = ({ receta }: { receta: Receta }) => {
           <span className="text-[7px] font-black bg-white/80 backdrop-blur-sm text-acento px-2 py-1 rounded-full uppercase tracking-tighter border border-white/80 shadow-sm">
             {ingredientes_count} Ingredientes
           </span>
-          {/* Botón Eye con hover:scale-110 */}
           <div className="bg-white/90 backdrop-blur-sm p-2 rounded-xl text-acento shadow-sm border border-white transition-transform hover:scale-110 active:scale-90">
             <Eye size={16} strokeWidth={3} />
           </div>
         </div>
 
         <div className="flex-1">
-          <h3 className="text-lg font-black text-white transition-colors leading-tight tracking-tight">
+          <h3 className="text-lg font-black text-gray-700 transition-colors leading-tight tracking-tight">
             {receta.nombre}
           </h3>
-          <p className="text-white/90 text-xs mt-1.5 line-clamp-2 font-medium leading-relaxed italic">
+          <p className="text-gray-400 text-xs mt-1.5 line-clamp-2 font-medium leading-relaxed italic">
             {receta.descripcion}
           </p>
         </div>
 
         <div className="pt-3 flex justify-between items-center shrink-0">
           <div className="flex flex-col">
-            <span className="text-[8px] font-black text-white/90 uppercase italic">Raciones</span>
-            <span className="text-sm font-black text-white/90">{receta.cantidad_platos} pax</span>
+            <span className="text-[8px] font-black text-gray-700 uppercase italic">Raciones</span>
+            <span className="text-sm font-black text-gray-700">{receta.cantidad_platos} pax</span>
           </div>
 
           <div className="flex items-center gap-2 group/btn">
-            <span className="text-white font-black text-[9px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+            <span className="text-acento font-black text-[9px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
               Imprimir
             </span>
             <PDFDownloadLink
@@ -63,7 +60,6 @@ const RecetaCard = ({ receta }: { receta: Receta }) => {
               onClick={(e) => e.stopPropagation()}
             >
               {() => (
-                /* Botón Printer con hover:scale-110 */
                 <div className="bg-white/90 backdrop-blur-sm p-2.5 rounded-xl shadow-sm border border-white transition-transform hover:scale-110 active:scale-90">
                   <Printer size={14} className="text-acento" strokeWidth={3} />
                 </div>

@@ -16,9 +16,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const sinRecetas = !loadingRecetas && recetas.length === 0;
 
-  const customShadow = {
-    boxShadow: "5px 5px 5px #e1e1e3af"
-  };
 
   useEffect(() => {
     const timer = setInterval(() => setFecha(new Date()), 1000);
@@ -31,7 +28,7 @@ const HomePage = () => {
 
       {/* HEADER */}
       <header className="flex justify-between items-center px-7 mb-3 md:mb-6 shrink-0 flex-wrap gap-3">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-700 tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-600 tracking-tight">
           ¡Hola, {user?.username || "Cargando..."}!
         </h1>
 
@@ -64,7 +61,7 @@ const HomePage = () => {
         <div className="lg:col-span-4 flex flex-col gap-5 md:gap-5 min-h-0 h-full">
 
           {/* CALENDARIO */}
-          <section style={customShadow} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-6 shadow-sm flex flex-col shrink-0 overflow-hidden">
+          <section className="bg-white/70 backdrop-blur-md rounded-pill shadow-sm  p-5 md:p-6 shadow-sm flex flex-col shrink-0 overflow-hidden">
             <div className="w-full flex flex-col justify-center">
               <Calendar
                 onChange={() => {}}
@@ -79,10 +76,10 @@ const HomePage = () => {
           </section>
 
           {/* AVISOS URGENTES */}
-          <section style={customShadow} onClick={() => navigate('/inventario')} className="bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-4 flex flex-col lg:h-48 shadow-sm overflow-hidden">
+          <section onClick={() => navigate('/inventario')} className="bg-white/70 backdrop-blur-md rounded-pill shadow-sm border-gray-100 p-4 flex flex-col lg:h-48 shadow-sm overflow-hidden">
         
             <div className="flex items-center gap-2 mb-3 shrink-0">
-              <AlertCircle size={12} className="text-orange-500" />
+              <AlertCircle size={12} className="text-acento" />
               <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Avisos urgentes</span>
             </div>
             <div className="flex flex-col gap-2 lg:flex-1 lg:justify-between overflow-y-auto scrollbar-hide">
@@ -94,16 +91,18 @@ const HomePage = () => {
               ) : (
                 avisos.map((item, i) => (
                   <div
-                    key={i}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl border backdrop-blur-sm
-                      ${item.color === "orange" ? "bg-orange-50/50 border-orange-200/40" : "bg-yellow-50/50 border-yellow-200/40"}`}
-                  >
-                    <span className="text-[11px] font-bold text-gray-600">{item.nombre}</span>
-                    <span className={`text-[8px] font-black uppercase bg-white/80 px-2 py-0.5 rounded-md shadow-sm tracking-tighter
-                      ${item.color === "orange" ? "text-orange-600" : "text-yellow-600"}`}>
-                      {item.badge}
-                    </span>
-                  </div>
+                      key={i}
+                      className="flex items-center justify-between px-3 py-2 rounded-[1rem] bg-white shadow-sm"
+                    >
+                      <span className="text-[11px] font-bold text-gray-700">
+                        {item.nombre}
+                      </span>
+                      <span className={`border border-gray-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter
+                        ${item.color === "orange" ? "text-orange-500" : "text-yellow-600"}`}
+                      >
+                        {item.badge}
+                      </span>
+                    </div>
                 ))
               )}
             </div>
@@ -116,9 +115,8 @@ const HomePage = () => {
 
           {/* RECETAS */}
         <section
-            style={customShadow} 
             onClick={() => navigate('/recetas')}
-            className={`cursor-pointer bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
+            className={`cursor-pointer bg-white/70 backdrop-blur-md rounded-pill shadow-sm  border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
               sinRecetas ? 'shrink-0 h-24' : 'flex-1 min-h-0'
             }`}
           >
@@ -160,9 +158,9 @@ const HomePage = () => {
           </section>
           {/* PEDIDOS PENDIENTES */}
           <section
-            style={customShadow} 
+
             onClick={() => navigate('/pedidos')}
-            className={`cursor-pointer bg-white/50 backdrop-blur-md rounded-pill shadow-sm border border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
+            className={`cursor-pointer bg-white/70 backdrop-blur-md rounded-pill shadow-sm border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
               sinRecetas ? 'flex-1' : 'shrink-0 lg:h-36'
             }`}
           >
@@ -188,7 +186,7 @@ const HomePage = () => {
                 pedidos.map((pedido) => (
                   <div
                     key={pedido.id_pedido}
-                    className="w-full flex items-center justify-between p-3 md:p-4 bg-white/40 backdrop-blur-sm border border-white/60 rounded-[2rem] hover:bg-white/60 transition-all cursor-pointer group"
+                    className="w-full flex items-center justify-between p-3 md:p-4 bg-white/40 shadow-sm backdrop-blur-sm border border-white/60 rounded-[1rem] hover:bg-white/60 transition-all cursor-pointer group"
                   >
                     <div className="flex items-center gap-3 md:gap-4">
                       <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter">
@@ -237,7 +235,7 @@ const HomePage = () => {
           background: none !important;
         }
         .react-calendar__navigation__label__textContent {
-          color: #9ca3af !important;
+          color: #cad2e1ff !important;
           font-weight: 800 !important;
           text-transform: lowercase !important;
           font-size: 18px !important;
@@ -261,7 +259,7 @@ const HomePage = () => {
           align-items: center;
         }
         .react-calendar__navigation button {
-          color: #d1d5db !important;
+          color: #7d8187ff !important;
           min-width: 40px !important;
           font-size: 18px !important;
           transition: color 0.2s ease;
