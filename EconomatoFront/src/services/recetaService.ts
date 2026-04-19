@@ -37,6 +37,7 @@ export const recetaService = {
     return recetaMapper.fromJson(data);
   },
 
+
   // 3. Crear una nueva receta
   async create(receta: Partial<Receta>): Promise<Receta> {
     const res = await fetch(`${API_URL}/recetas`, {
@@ -90,3 +91,4 @@ export const recetaService = {
     return await res.json();
   }
 };
+

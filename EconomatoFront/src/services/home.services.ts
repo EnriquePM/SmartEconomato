@@ -45,7 +45,7 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
       
     ingredientesSanos.forEach((alimento: any, index: number) => {
       actividadMixta.push({
-        id: `ing-sano-${alimento.id_ingrediente || index}`, 
+        id: Number(alimento.id_ingrediente ?? (index + 1)),
         titulo: `Stock: ${alimento.nombre}`,
         sub: `Quedan ${alimento.stock || alimento.cantidad || 0} ${alimento.unidad_medida || 'uds'}`,
         tipo: "stock",
@@ -62,7 +62,7 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
       
     ingredientesCriticos.forEach((critico: any, index: number) => {
       actividadMixta.push({
-        id: `ing-critico-${critico.id_ingrediente || index}`, 
+        id: Number(critico.id_ingrediente ?? (1000 + index)),
         titulo: `!Alerta! ${critico.nombre}`,
         sub: `Solo quedan ${critico.stock || critico.cantidad} ${critico.unidad_medida || 'uds'}`,
         tipo: "alerta", 
@@ -78,7 +78,7 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
       
     materialesRecientes.forEach((material: any, index: number) => {
       actividadMixta.push({
-        id: `mat-${material.id || index}`,
+        id: Number(material.id_material ?? material.id ?? (2000 + index)),
         titulo: `Utensilio: ${material.nombre}`,
         sub: `Disponibles: ${material.stock || material.cantidad || 0}`,
         tipo: "stock",
@@ -89,7 +89,12 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
 
     if (actividadMixta.length === 0) {
       return [{
-        id: "empty-1", titulo: "Sistema iniciado", sub: "Aun no hay actividad", tipo: "info", estado: "success", hora: "Ahora"
+        id: 999001,
+        titulo: "Sistema iniciado",
+        sub: "Aun no hay actividad",
+        tipo: "stock",
+        estado: "success",
+        hora: "Ahora"
       }];
     }
 
@@ -99,7 +104,12 @@ export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
   } catch (error) {
     console.error("Fallo al traer datos reales:", error);
     return [{
-      id: "error-1", titulo: "Error de conexion", sub: "No se pudieron cargar los datos", tipo: "alerta", estado: "danger", hora: "Ahora"
+      id: 999002,
+      titulo: "Error de conexion",
+      sub: "No se pudieron cargar los datos",
+      tipo: "alerta",
+      estado: "danger",
+      hora: "Ahora"
     }];
   }
 };

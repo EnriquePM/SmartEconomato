@@ -5,12 +5,13 @@ import { Input } from "../components/ui/Input";
 import { ModalReceta } from "./ModalRecetas"; 
 import { ModalDetalleReceta } from "../components/ModalDetalleReceta";
 import { useRecetas } from "../hooks/useRecetas";
+import { Plus } from "lucide-react";
+
+
 import type { Receta } from "../models/Receta";
 
 const RecetasPage = () => {
-  // 👇 AQUÍ ESTÁ LA MAGIA. Llamamos a nuestro Hook y él nos da todo ya masticado.
   const { recetasFiltradas, busqueda, setBusqueda, cargando, error, refrescar } = useRecetas();
-  
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
   const [recetaSeleccionada, setRecetaSeleccionada] = useState<Receta | null>(null);
   const [recetaEnEdicion, setRecetaEnEdicion] = useState<Receta | null>(null);
@@ -41,11 +42,11 @@ const RecetasPage = () => {
           <p className="text-gray-500 mt-1">Gestión de elaboraciones</p>
         </div>
         <Button 
-          variant="secundario" 
-          className="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-red-700 shadow-lg transition-all"
+          variant="primario"      
           onClick={openCreateModal}
         >
-          + CREAR RECETA
+          <Plus size={16} color="#ffffff" strokeWidth={3} />
+          NUEVA RECETA
         </Button>
       </div>
 

@@ -64,7 +64,6 @@ export const usePedidos = () => {
     pedido_material: []
   });
 
-
   // Cargar pedidos y proveedores
   useEffect(() => {
     getPedidosService()
@@ -79,7 +78,6 @@ export const usePedidos = () => {
       .catch(console.error);
   }, []);
 
-
   // Cargar inventario según tipoPedido
   useEffect(() => {
     const cargarInventario = async () => {
@@ -92,7 +90,6 @@ export const usePedidos = () => {
     };
     cargarInventario();
   }, [tipoPedido]);
-
 
   // Agregar línea
   const agregarLinea = () => {
@@ -129,7 +126,6 @@ export const usePedidos = () => {
     }
   };
 
-
   // Seleccionar producto/material
   const seleccionarProducto = (index: number, idStr: number) => {
     const id = Number(idStr);
@@ -160,7 +156,6 @@ export const usePedidos = () => {
       });
     }
   };
-
 
   // Actualizar cantidad
   const actualizarLinea = (index: number, cantidad: number) => {
@@ -218,8 +213,7 @@ export const usePedidos = () => {
     }
   };
 
-
-  // Guardar pedido
+  // Guardar pedido (Sin alertas nativas)
   const guardarPedido = async (nuevoEstado: EstadoPedido) => {
     try {
       const payload: Pedido = {
@@ -232,25 +226,27 @@ export const usePedidos = () => {
       };
 
       await guardarPedidoService(payload);
-      alert("Pedido guardado con éxito");
+      
+      // Ya no mostramos alert aquí. Se encarga el componente visual.
       setVista('lista');
 
       const pedidosActualizados = await getPedidosService();
       setPedidos(pedidosActualizados.map(normalizarPedido));
     } catch (e: any) {
-      alert("Error al guardar: " + e.message);
+      console.error("Error al guardar:", e);
+      throw new Error(e.message || "Error al guardar el pedido"); // Lanzamos el error para que la UI lo atrape si quiere
     }
   };
 
-
-  // Eliminar pedido
+  // Eliminar pedido (Sin confirm nativo ni alerts)
   const eliminarPedido = async (id: number) => {
-    if (!confirm("¿Eliminar este pedido?")) return;
+    // El confirm nativo se ha eliminado. Se asume que la UI ya pidió confirmación antes de llamar a esta función.
     try {
       await eliminarPedidoService(id);
       setPedidos(prev => prev.filter(p => p.id_pedido !== id));
-    } catch (e) {
-      alert("Error al eliminar");
+    } catch (e: any) {
+      console.error("Error al eliminar:", e);
+      throw new Error("No se pudo eliminar el pedido."); // Lanzamos el error para la UI
     }
   };
 

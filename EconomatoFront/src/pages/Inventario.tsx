@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Package, Search, Filter,  ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { authFetch } from "../services/auth-service";
 
-// YA NO NECESITAMOS IMPORTAR EL JSON LOCAL
-// import utensiliosData from "../data/utensilios.json"; 
+// IMPORTAMOS NUESTROS COMPONENTES UI
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/select";
 
 interface Producto {
   id: string | number;
@@ -33,7 +34,6 @@ useEffect(() => {
         ? "/api/ingredientes" 
         : "/api/materiales";
 
-    // 2. Hacemos el fetch DIRECTO (Con headers de Authorization gracias a authFetch)
     authFetch(endpoint)
       .then((res) => {
         if (!res.ok) throw new Error("Error en la respuesta del servidor");
@@ -50,7 +50,7 @@ useEffect(() => {
           // 4. Logica de adaptacion de datos
           if (vista === 'utensilios') { // Ojo: vista 'utensilios' llama a API 'materiales'
              const materialesAdaptados = data.map((m: any) => ({
-                 id: m.id_material,          // Adaptamos ID
+                 id: m.id_material,
                  nombre: m.nombre,
                  codigo: 'MAT-' + m.id_material,
                  stock: 0,                   // Materiales no tienen stock en tu DB aun
@@ -64,8 +64,8 @@ useEffect(() => {
              const ingredientesAdaptados = data.map((i: any) => ({
                  id: i.id_ingrediente,
                  nombre: i.nombre,
-                 codigo: i.codigo || 'ING-' + i.id_ingrediente,
-                 stock: i.stock_actual || i.stock || 0, // ensure we fallback to stock
+                 codigo: i.codigo || i.id_ingrediente.toString(), // 👇 Eliminado 'ING-'
+                 stock: i.stock_actual || i.stock || 0,
                  id_categoria: i.id_categoria,
                  tipo: 'ingrediente',
                  alergenos: i.alergenos || []
@@ -88,9 +88,8 @@ useEffect(() => {
     // --- LOGICA DE FILTRADO Y ORDENACION ---
   const productosFiltrados = productos.filter((producto) => {
     const texto = busqueda.toLowerCase();
-    // Validamos que producto.nombre y codigo existan antes de usar includes (por seguridad)
     const nombreMatch = producto.nombre ? producto.nombre.toLowerCase().includes(texto) : false;
-    const codigoMatch = producto.codigo ? producto.codigo.includes(texto) : false;
+    const codigoMatch = producto.codigo ? producto.codigo.toLowerCase().includes(texto) : false;
     
     const coincideTexto = nombreMatch || codigoMatch;
 
@@ -151,18 +150,36 @@ useEffect(() => {
     }
   };
 
+  // --- OPCIONES PARA EL SELECT DE FILTRO ---
+  const opcionesFiltro = vista === 'ingredientes' ? [
+    { value: "todos", label: "Todas las categorías" },
+    { value: "1", label: "Aceites y Grasas" },
+    { value: "2", label: "Granos y Harinas" },
+    { value: "3", label: "Conservas" },
+    { value: "4", label: "Lácteos y Huevos" },
+    { value: "5", label: "Condimentos" }
+  ] : [
+    { value: "todos", label: "Todas las categorías" },
+    { value: "Menaje", label: "Menaje General" },
+    { value: "Cuchillos", label: "Cuchillería" },
+    { value: "Sartenes", label: "Sartenes y Ollas" },
+    { value: "Electrico", label: "Pequeño Electrodoméstico" },
+    { value: "Limpieza", label: "Material de Limpieza" },
+    { value: "Textil", label: "Textil / Uniformes" }
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-0 animate-fade-in flex flex-col h-full">
       
       {/* CABECERA */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Inventario General</h1>
-          <p className="text-gray-500">Gestion de stock y existencias en tiempo real.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Inventario General</h1>
+          <p className="text-gray-500 mt-1 font-medium text-sm">Gestión de stock y existencias en tiempo real.</p>
         </div>
         
         <div className="flex gap-2">
-            <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center border ${
+            <span className={`text-xs font-bold px-4 py-2 rounded-full flex items-center border ${
                 vista === 'utensilios' 
                 ? 'bg-red-50 text-red-700 border-red-100' 
                 : 'bg-blue-50 text-blue-700 border-blue-100'
@@ -172,184 +189,141 @@ useEffect(() => {
         </div>
       </div>
 
-    {/* --- ZONA DE PESTANAS --- */}
-      <div className="flex gap-2 border-b border-gray-200 items-end pl-2">
-        
-        {/* PESTANA PRODUCTOS */}
+      {/* --- ZONA DE PESTAÑAS ESTILO INGRESO --- */}
+      <div className="flex gap-2 mt-2 pl-2 relative items-end shrink-0">
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
         <button
           onClick={() => setVista('ingredientes')}
-          className={`
-            relative px-8 py-3 rounded-t-[2rem] font-bold text-sm transition-all duration-200 border-t border-l border-r
-            ${vista === 'ingredientes'
-              ? 'bg-white text-red-600 border-red-500 border-b-white -mb-px z-10 shadow-[0_-4px_10px_-2px_rgba(255,0,0,0.1)] pt-4'
-              : 'bg-gray-100 text-gray-400 border-transparent hover:bg-red-50 hover:text-red-500 mb-1 scale-95 origin-bottom'
-            }
-          `}
+          className={`px-10 py-3 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${vista === 'ingredientes' ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-3 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-2'}`}
         >
           PRODUCTOS
         </button>
-
-        {/* PESTANA UTENSILIOS */}
         <button
           onClick={() => setVista('utensilios')}
-          className={`
-            relative px-8 py-3 rounded-t-[2rem] font-bold text-sm transition-all duration-200 border-t border-l border-r
-            ${vista === 'utensilios'
-              ? 'bg-white text-red-600 border-red-500 border-b-white -mb-px z-10 shadow-[0_-4px_10px_-2px_rgba(255,0,0,0.1)] pt-4'
-              : 'bg-gray-100 text-gray-400 border-transparent hover:bg-red-50 hover:text-red-500 mb-1 scale-95 origin-bottom'
-            }
-          `}
+          className={`px-10 py-3 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${vista === 'utensilios' ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-3 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-2'}`}
         >
           UTENSILIOS
         </button>
-
       </div>
 
-      {/* BARRA DE HERRAMIENTAS */}
-      <div className="bg-white p-4 rounded-b-xl rounded-tr-[2rem] shadow-sm border border-gray-100 border-t-0 flex flex-col md:flex-row gap-4">
+      {/* BARRA DE HERRAMIENTAS UNIFICADA */}
+      <div className="bg-white p-5 rounded-b-2xl rounded-tr-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 shrink-0 mb-4">
         
-        {/* Buscador */}
+        {/* Buscador personalizado */}
         <div className="flex-1 relative">
-            <span className="absolute left-3 top-3 text-gray-400"><Search size={18} /></span>
-            <input 
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={18} />
+            <Input 
                 type="text" 
-                placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'}...`}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'} por nombre o ID...`}
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={(val) => setBusqueda(val)}
+                className="pl-12 !bg-gray-50/50"
             />
         </div>
 
-        {/* Filtro Categoria */}
-        <div className="relative">
-             <span className="absolute left-3 top-3 text-gray-500"><Filter size={16} /></span>
-            <select 
-                className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+        {/* Filtro Categoría con Select UI */}
+        <div className="w-full md:w-72">
+             <Select 
+                options={opcionesFiltro}
                 value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-            >
-                <option value="todos">Todas las categorias</option>
-                {vista === 'ingredientes' ? (
-                    <>
-                        <option value="1">Aceites y Grasas</option>
-                        <option value="2">Granos y Harinas</option>
-                        <option value="3">Conservas</option>
-                        <option value="4">Lacteos y Huevos</option>
-                        <option value="5">Condimentos</option>
-                    </>
-                ) : (
-                    <>
-                        <option value="Menaje">Menaje General</option>
-                        <option value="Cuchillos">Cuchilleria</option>
-                        <option value="Sartenes">Sartenes y Ollas</option>
-                        <option value="Electrico">Pequeno Electrodomestico</option>
-                        <option value="Limpieza">Material de Limpieza</option>
-                        <option value="Textil">Textil / Uniformes</option>
-                    </>
-                )}
-            </select>
+                onChange={(val) => setFiltroCategoria(val)}
+            />
         </div>
       </div>
 
       {/* TABLA */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
-                <tr>
-                    <th className="p-4">Codigo</th>
-                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('nombre')}>
-                        <div className="flex items-center gap-2">
-                            {vista === 'ingredientes' ? 'Producto' : 'Utensilio'} <IconoOrden campo="nombre" />
-                        </div>
-                    </th>
-                    <th className="p-4 cursor-pointer" onClick={() => cambiarOrden('categoria')}>
-                        <div className="flex items-center gap-2">
-                            Categoria <IconoOrden campo="categoria" />
-                        </div>
-                    </th>
-                    <th className="p-4">Alergenos</th>
-                    <th className="p-4 text-center cursor-pointer" onClick={() => cambiarOrden('stock')}>
-                        <div className="flex items-center justify-center gap-2">
-                            Stock <IconoOrden campo="stock" />
-                        </div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-                {productosFinales.length > 0 ? (
-                    productosFinales.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="p-4">
-                                {item.codigo ? (
-                                    <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-200">{item.codigo}</span>
-                                ) : (
-                                    <span className="text-xs text-gray-300 italic">Sin codigo</span>
-                                )}
-                            </td>
-                            <td className="p-4 font-medium text-gray-900">{item.nombre}</td>
-                            <td className="p-4 text-sm text-gray-500">{renderizarCategoria(item)}</td>
-                            <td className="p-4">
-                                {item.alergenos && item.alergenos.length > 0 ? (
-                                    <div className="flex flex-wrap items-center">
-                                        {item.alergenos.map((al: any, idx: number) => {
-                                            const imgName = al.icono ? al.icono : `${al.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}.png`;
-                                            
-                                            return (
-                                                <div 
-                                                    key={al.id_alergeno} 
-                                                    className={`relative group flex items-center transition-all duration-300 hover:z-10 hover:-translate-y-1 hover:scale-110 ${idx > 0 ? '-ml-2' : ''}`}
-                                                >
-                                                    {/* Tooltip personalizado suave */}
-                                                    <div className="absolute bottom-full left-1/2 min-w-max -translate-x-1/2 -translate-y-2 px-2 py-1 bg-gray-900 border border-gray-700 text-white text-[10px] uppercase font-bold rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg z-20">
-                                                        {al.nombre}
-                                                        {/* Flechita del tooltip */}
-                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900"></div>
-                                                    </div>
-
-                                                    {/* Imagen del icono (estilo premium) */}
-                                                    <img 
-                                                        src={`/alergenos/${imgName}`}
-                                                        alt={al.nombre}
-                                                        className="w-8 h-8 rounded-full bg-white object-cover border-2 border-white shadow-sm"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none';
-                                                            const spanFallback = e.currentTarget.nextElementSibling as HTMLElement;
-                                                            if (spanFallback) spanFallback.style.display = 'flex';
-                                                        }}
-                                                    />
-                                                    
-                                                    {/* Fallback de error mas estetico */}
-                                                    <span 
-                                                        className="hidden w-8 h-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 text-[9px] uppercase font-bold border-2 border-white shadow-sm tracking-tighter"
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1 mb-6">
+        <div className="overflow-x-auto h-full">
+            <table className="w-full text-left border-collapse">
+                <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold sticky top-0 z-10">
+                    <tr>
+                        <th className="p-4 border-b border-gray-200">ID</th>
+                        <th className="p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => cambiarOrden('nombre')}>
+                            <div className="flex items-center gap-2">
+                                {vista === 'ingredientes' ? 'Producto' : 'Utensilio'} <IconoOrden campo="nombre" />
+                            </div>
+                        </th>
+                        <th className="p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => cambiarOrden('categoria')}>
+                            <div className="flex items-center gap-2">
+                                Categoría <IconoOrden campo="categoria" />
+                            </div>
+                        </th>
+                        <th className="p-4 border-b border-gray-200">Alérgenos</th>
+                        <th className="p-4 border-b border-gray-200 text-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => cambiarOrden('stock')}>
+                            <div className="flex items-center justify-center gap-2">
+                                Stock <IconoOrden campo="stock" />
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                    {productosFinales.length > 0 ? (
+                        productosFinales.map((item) => (
+                            <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="p-4">
+                                    {item.codigo ? (
+                                        <span className="text-sm font-medium text-gray-900">{item.codigo}</span>
+                                    ) : (
+                                        <span className="text-xs text-gray-300 italic">Sin ID</span>
+                                    )}
+                                </td>
+                                <td className="p-4 font-bold text-gray-900 text-sm">{item.nombre}</td>
+                                <td className="p-4 text-sm text-gray-500 font-medium">{renderizarCategoria(item)}</td>
+                                <td className="p-4">
+                                    {item.alergenos && item.alergenos.length > 0 ? (
+                                        <div className="flex flex-wrap items-center">
+                                            {item.alergenos.map((al: any, idx: number) => {
+                                                const imgName = al.icono ? al.icono : `${al.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}.png`;
+                                                return (
+                                                    <div 
+                                                        key={al.id_alergeno} 
+                                                        className={`relative group flex items-center transition-all duration-300 hover:z-10 hover:-translate-y-1 hover:scale-110 ${idx > 0 ? '-ml-2' : ''}`}
                                                     >
-                                                        {al.nombre.substring(0, 3)}
-                                                    </span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <span className="text-xs font-medium text-gray-300 px-2 py-1 bg-gray-50 rounded-full border border-gray-100">Sin Alergenos</span>
-                                )}
-                            </td>
-                            <td className="p-4 text-center">
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    item.stock < 10 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'
-                                }`}>
-                                    {item.stock} u.
-                                </span>
+                                                        <div className="absolute bottom-full left-1/2 min-w-max -translate-x-1/2 -translate-y-2 px-2 py-1 bg-gray-900 border border-gray-700 text-white text-[10px] uppercase font-bold rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-lg z-20">
+                                                            {al.nombre}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900"></div>
+                                                        </div>
+                                                        <img 
+                                                            src={`/alergenos/${imgName}`}
+                                                            alt={al.nombre}
+                                                            className="w-8 h-8 rounded-full bg-white object-cover border-2 border-white shadow-sm"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                                const spanFallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                                                if (spanFallback) spanFallback.style.display = 'flex';
+                                                            }}
+                                                        />
+                                                        <span className="hidden w-8 h-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 text-[9px] uppercase font-bold border-2 border-white shadow-sm tracking-tighter">
+                                                            {al.nombre.substring(0, 3)}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <span className="text-[10px] font-black text-gray-300 px-2 py-1 bg-gray-50 rounded-full border border-gray-100 uppercase tracking-widest">Sin Alérgenos</span>
+                                    )}
+                                </td>
+                                <td className="p-4 text-center">
+                                    <span className={`px-3 py-1 rounded-full text-xs font-black tracking-widest ${
+                                        item.stock < 10 ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'
+                                    }`}>
+                                        {item.stock} {vista === 'ingredientes' ? 'Uds.' : ''}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={5} className="p-12 text-center text-gray-400">
+                                <Search size={32} className="mx-auto mb-3 opacity-20" />
+                                <p className="text-sm font-bold uppercase tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
                             </td>
                         </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan={4} className="p-8 text-center text-gray-400">
-                            No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}.
-                        </td>
-                    </tr>
-                )}
-            </tbody>
-        </table>
+                    )}
+                </tbody>
+            </table>
+        </div>
       </div>
     </div>
   );
