@@ -192,8 +192,8 @@ model pedido_material {
 
 model receta {
   id_receta          Int                  @id @default(autoincrement())
-  nombre             String               @db.VarChar(150)
-  descripcion        String?              @db.VarChar(255)
+  nombre             String               @db.VarChar(255)
+  descripcion        String?              @db.Text
   fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
   cantidad_platos    Int?
   receta_ingrediente receta_ingrediente[]

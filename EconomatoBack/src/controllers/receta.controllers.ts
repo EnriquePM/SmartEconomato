@@ -15,6 +15,8 @@ type IngredientePayload = {
   rendimiento: number;
 };
 
+const RECETA_NOMBRE_MAX = 255;
+
 const parseRecetaId = (id: unknown): number | null => {
   if (Array.isArray(id) || typeof id !== 'string') {
     return null;
@@ -95,11 +97,31 @@ export const getRecetas = async (req: Request, res: Response): Promise<void> => 
 
 export const createReceta = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { nombre, descripcion, cantidad_platos } = req.body;
+    const rawNombre = req.body.nombre;
+    const rawDescripcion = req.body.descripcion;
+    const { cantidad_platos } = req.body;
     const normalizedIngredientes = normalizeIngredientesPayload(req.body);
 
-    if (!nombre || typeof nombre !== 'string' || !nombre.trim()) {
+    const nombre = typeof rawNombre === 'string' ? rawNombre.trim() : '';
+    const descripcion =
+      rawDescripcion === undefined || rawDescripcion === null
+        ? null
+        : typeof rawDescripcion === 'string'
+          ? rawDescripcion.trim()
+          : null;
+
+    if (!nombre) {
       res.status(400).json({ error: 'El nombre y al menos un ingrediente son obligatorios' });
+      return;
+    }
+
+    if (nombre.length > RECETA_NOMBRE_MAX) {
+      res.status(400).json({ error: `El nombre no puede superar ${RECETA_NOMBRE_MAX} caracteres` });
+      return;
+    }
+
+    if (rawDescripcion !== undefined && rawDescripcion !== null && typeof rawDescripcion !== 'string') {
+      res.status(400).json({ error: 'La descripcion debe ser un texto valido' });
       return;
     }
 
@@ -240,11 +262,20 @@ export const updateReceta = async (req: Request, res: Response): Promise<void> =
         res.status(400).json({ error: 'El nombre no puede estar vacio' });
         return;
       }
-      dataToUpdate.nombre = req.body.nombre;
+      const trimmedNombre = req.body.nombre.trim();
+      if (trimmedNombre.length > RECETA_NOMBRE_MAX) {
+        res.status(400).json({ error: `El nombre no puede superar ${RECETA_NOMBRE_MAX} caracteres` });
+        return;
+      }
+      dataToUpdate.nombre = trimmedNombre;
     }
 
     if (req.body.descripcion !== undefined) {
-      dataToUpdate.descripcion = req.body.descripcion;
+      if (req.body.descripcion !== null && typeof req.body.descripcion !== 'string') {
+        res.status(400).json({ error: 'La descripcion debe ser un texto valido' });
+        return;
+      }
+      dataToUpdate.descripcion = req.body.descripcion === null ? null : req.body.descripcion.trim();
     }
 
     if (req.body.cantidad_platos !== undefined) {
