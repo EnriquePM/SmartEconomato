@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ChevronUp, User, Settings, LogOut } from 'lucide-react';
 import type { Usuario } from '../models/user.model';
+import { useAuth } from '../context/AuthContext';
 
 
 import defaultAvatar from '../assets/Avatares/chef.png';
 
 export const UserProfile = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { usuario, logout } = useAuth();
-  const navigate = useNavigate();
+  const { logout } = useAuth();
   
 
   const [avatarActual, setAvatarActual] = useState(() => {

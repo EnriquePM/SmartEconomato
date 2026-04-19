@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { X, ChefHat, Users, ClipboardList, CheckCircle2, Circle, CircleAlert, Pencil, FileText } from "lucide-react";
 import type { Receta } from "../models/Receta";
-import { recetaService } from "../services/recetaService";
 import { useAuth } from "../context/AuthContext";
+import { useRecetaDetail } from "../hooks/useRecetaDetail";
 
 // IMPORTAMOS LOS COMPONENTES UI UNIFICADOS
 import { Button } from "../components/ui/Button";
@@ -15,44 +15,20 @@ interface ModalDetalleProps {
   onRecetaHecha: () => void;
 }
 
-type ConsumoIngrediente = {
-  id_ingrediente: number;
-  nombre: string;
-  unidad: string;
-  necesaria: number;
-  disponible: number;
-};
-
 export const ModalDetalleReceta = ({ receta, onClose, onEdit, onRecetaHecha }: ModalDetalleProps) => {
   const { hasRole } = useAuth();
-  const [racionesDeseadas, setRacionesDeseadas] = useState<number>(Math.max(1, Number(receta.cantidad_platos || 1)));
   const [ingredientesCheck, setIngredientesCheck] = useState<number[]>([]);
-  const [elaborando, setElaborando] = useState(false);
+  const {
+    racionesDeseadas,
+    onChangeRaciones,
+    elaborando,
+    consumos,
+    faltantes,
+    canMake,
+    handleHacerReceta,
+  } = useRecetaDetail(receta);
 
   const listaIngredientes = receta.receta_ingrediente || [];
-
-  const consumos = useMemo<ConsumoIngrediente[]>(() => {
-    const platosOriginales = Math.max(1, Number(receta.cantidad_platos || 1));
-    const factor = racionesDeseadas / platosOriginales;
-
-    return listaIngredientes.map((ri) => {
-      const rendimiento = Number(ri.rendimiento || 100);
-      const rendimientoFactor = rendimiento > 0 ? rendimiento / 100 : 1;
-      const cantidadBase = Number(ri.cantidad || 0);
-      const necesaria = cantidadBase * factor / rendimientoFactor;
-
-      return {
-        id_ingrediente: ri.id_ingrediente,
-        nombre: ri.ingrediente?.nombre || "Ingrediente desconocido",
-        unidad: ri.ingrediente?.unidad_medida || "ud",
-        necesaria,
-        disponible: Number(ri.ingrediente?.stock || 0)
-      };
-    });
-  }, [listaIngredientes, receta.cantidad_platos, racionesDeseadas]);
-
-  const faltantes = consumos.filter((item) => item.disponible < item.necesaria);
-  const canMake = listaIngredientes.length > 0 && faltantes.length === 0;
   const canUseMakeAction = hasRole(["Profesor", "Jefe_Economato", "Jefe Economato", "Administrador"]);
 
   const formatCantidad = (value: number) => (Number.isInteger(value) ? String(value) : value.toFixed(2));
@@ -61,31 +37,13 @@ export const ModalDetalleReceta = ({ receta, onClose, onEdit, onRecetaHecha }: M
     setIngredientesCheck((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
-  const onChangeRaciones = (rawValue: string) => {
-    if (!rawValue) {
-      setRacionesDeseadas(1);
-      return;
-    }
-    const parsed = Number(rawValue);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      setRacionesDeseadas(1);
-      return;
-    }
-    setRacionesDeseadas(parsed);
-  };
-
-  const handleHacerReceta = async () => {
-    if (!receta.id_receta) return;
-
+  const handleMakeClick = async () => {
     try {
-      setElaborando(true);
-      await recetaService.makeReceta(receta.id_receta, racionesDeseadas);
+      await handleHacerReceta();
       alert("Receta elaborada correctamente. El inventario ya se ha descontado.");
       onRecetaHecha();
     } catch (error: any) {
       alert(error?.message || "No se pudo elaborar la receta");
-    } finally {
-      setElaborando(false);
     }
   };
 
@@ -149,8 +107,8 @@ export const ModalDetalleReceta = ({ receta, onClose, onEdit, onRecetaHecha }: M
                 <div className="w-24">
                   <Input
                     type="number"
-                    min="1"
-                    step="1"
+                    min={1}
+                    placeholder="1"
                     value={racionesDeseadas.toString()}
                     onChange={(val) => onChangeRaciones(val)}
                     className="text-center text-xl font-black !py-3"
@@ -259,7 +217,7 @@ export const ModalDetalleReceta = ({ receta, onClose, onEdit, onRecetaHecha }: M
           </Button>
           <Button 
             variant="primario" 
-            onClick={handleHacerReceta} 
+            onClick={handleMakeClick}
             disabled={!canMake || !canUseMakeAction || elaborando}
             className="px-10 font-black uppercase tracking-widest shadow-lg flex items-center gap-2"
           >

@@ -1,105 +1,9 @@
-import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
 import { Users, UserPlus, GraduationCap, Briefcase } from "lucide-react";
-import { authFetch } from "../services/auth-service";
-
-// ... (imports are already correct)
-
-// 1. ACTUALIZAMOS LA INTERFAZ (Anadimos username)
-interface Usuario {
-  id_usuario: number;
-  username: string;
-  nombre: string;
-  apellido1: string;
-  apellido2: string | null;
-  email: string | null;
-  rol: {
-    nombre: string; 
-  };
-}
+import { useAdminUsuarios } from "../hooks/useAdminUsuarios";
 
 const AdminUsuarios = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  
-  // ESTADOS DEL FORMULARIO
-  const [nombre, setNombre] = useState("");
-  const [apellido1, setApellido1] = useState(""); 
-  const [apellido2, setApellido2] = useState(""); 
-  const [email, setEmail] = useState("");
-  const [rol, setRol] = useState("alumno"); 
-  const [curso, setCurso] = useState("");   
-  
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    cargarUsuarios();
-  }, []);
-
-  const cargarUsuarios = async () => {
-    try {
-      const res = await authFetch("/api/usuarios");
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setUsuarios(data);
-      } else {
-        console.error("La API no devolvió un array válido:", data);
-      }
-    } catch (error) {
-      console.error("Error de conexión o de red:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!nombre || !apellido1) {
-        alert("El nombre y el primer apellido son obligatorios.");
-        return; 
-    }
-
-    setLoading(true);
-
-    const endpoint = rol === "alumno" 
-        ? "/api/auth/register/alumno"
-        : "/api/auth/register/profesor";
-
-    const body = {
-        nombre,
-        apellido1, 
-        apellido2: apellido2 || undefined, 
-        email: email || undefined,
-        curso: rol === "alumno" ? (curso || "1º Curso") : undefined,
-        asignaturas: rol === "profe" ? "General" : undefined 
-    };
-
-    try {
-        const res = await authFetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-            alert(`Usuario creado con exito.\n\nUsuario: ${data.username}\nContrasena temporal: Economato123`);
-            cargarUsuarios(); 
-            
-            setNombre("");
-            setApellido1("");
-            setApellido2("");
-            setEmail("");
-            setCurso("");
-        } else {
-            alert(data.error || "Error al crear usuario");
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Error de conexion con el servidor");
-    } finally {
-        setLoading(false);
-    }
-  };
+    const { usuarios, loading, form, handleSubmit } = useAdminUsuarios();
 
 
 
@@ -130,8 +34,8 @@ const AdminUsuarios = () => {
                     type="text" 
                     placeholder="Ej: Juan" 
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
-                    value={nombre}
-                    onChange={e => setNombre(e.target.value)}
+                    value={form.nombre}
+                    onChange={e => form.setNombre(e.target.value)}
                 />
             </div>
             <div>
@@ -140,8 +44,8 @@ const AdminUsuarios = () => {
                     type="text" 
                     placeholder="Ej: Garcia" 
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
-                    value={apellido1}
-                    onChange={e => setApellido1(e.target.value)}
+                    value={form.apellido1}
+                    onChange={e => form.setApellido1(e.target.value)}
                 />
             </div>
             <div>
@@ -150,8 +54,8 @@ const AdminUsuarios = () => {
                     type="text" 
                     placeholder="Ej: Perez" 
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
-                    value={apellido2}
-                    onChange={e => setApellido2(e.target.value)}
+                    value={form.apellido2}
+                    onChange={e => form.setApellido2(e.target.value)}
                 />
             </div>
           </div>
@@ -163,8 +67,8 @@ const AdminUsuarios = () => {
                     type="email" 
                     placeholder="alumno@escuela.com" 
                     className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    value={form.email}
+                    onChange={e => form.setEmail(e.target.value)}
                 />
             </div>
             
@@ -173,22 +77,22 @@ const AdminUsuarios = () => {
                     <label className="block text-sm font-bold text-gray-700 mb-2">Rol</label>
                     <select 
                         className="w-full p-3 border border-gray-300 rounded-lg bg-white outline-none focus:border-gray-900 transition-all"
-                        value={rol}
-                        onChange={e => setRol(e.target.value)}
+                        value={form.rol}
+                        onChange={e => form.setRol(e.target.value as "alumno" | "profe")}
                     >
                         <option value="alumno">Alumno</option>
                         <option value="profe">Profesor</option>
                     </select>
                 </div>
-                {rol === "alumno" && (
+                {form.rol === "alumno" && (
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-2">Curso</label>
                         <input 
                             type="text" 
                             placeholder="Ej: 1º Cocina" 
                             className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-gray-900 transition-all" 
-                            value={curso}
-                            onChange={e => setCurso(e.target.value)}
+                            value={form.curso}
+                            onChange={e => form.setCurso(e.target.value)}
                         />
                     </div>
                 )}
@@ -222,7 +126,7 @@ const AdminUsuarios = () => {
             </thead>
             <tbody className="divide-y divide-gray-50">
                 {usuarios.map((u) => (
-                    <tr key={u.id_usuario} className="hover:bg-gray-50 transition-colors">
+                    <tr key={u.id_usuario || u.id} className="hover:bg-gray-50 transition-colors">
                         <td className="p-4 font-medium text-gray-900">
                             {u.nombre} {u.apellido1} {u.apellido2 || ''}
                         </td>
@@ -237,18 +141,18 @@ const AdminUsuarios = () => {
                             {u.email || <span className="text-xs italic">Sin email</span>}
                         </td>
                         <td className="p-4">
-                            {u.rol?.nombre.toLowerCase().includes("alumno") ? (
+                            {String(u.rol).toLowerCase().includes("alumno") ? (
                                 <div className="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
                                     <GraduationCap size={16} />
                                     <span className="text-xs font-bold uppercase">Alumno</span>
                                 </div>
-                            ) : u.rol?.nombre.toLowerCase().includes("profesor") ? (
+                            ) : String(u.rol).toLowerCase().includes("profesor") ? (
                                 <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full w-fit">
                                     <Briefcase size={16} />
                                     <span className="text-xs font-bold uppercase">Profe</span>
                                 </div>
                             ) : (
-                                <span className="text-xs font-bold bg-gray-100 px-2 py-1 rounded">{u.rol?.nombre}</span>
+                                <span className="text-xs font-bold bg-gray-100 px-2 py-1 rounded">{String(u.rol)}</span>
                             )}
                         </td>
                     </tr>

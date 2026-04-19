@@ -1,24 +1,10 @@
 // src/services/recursos.service.ts
 
 import { authFetch } from './auth-service';
+import type { Alergeno, Categoria, Proveedor } from '../models/resources.model';
 
 const API_URL = "/api";
-// Definimos que forma tienen los datos que vienen del backend
-export interface Categoria {
-    id_categoria: number;
-    nombre: string;
-}
-
-export interface Proveedor {
-    id_proveedor: number;
-    nombre: string;
-}
-
-export interface Alergeno {
-    id_alergeno: number;
-    nombre: string;
-    icono: string | null;
-}
+export type { Alergeno, Categoria, Proveedor };
 
 export const getCategorias = async (): Promise<Categoria[]> => {
     try {

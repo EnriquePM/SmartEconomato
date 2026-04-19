@@ -180,9 +180,10 @@ const RegistrarUtensilio = () => {
           <div className="pt-4">
              <div className="w-full"> 
                <Button 
-                 text={guardando ? "Guardando..." : "Registrar Utensilio"} 
                  onClick={handleSubmit} 
-               />
+               >
+                 {guardando ? "Guardando..." : "Registrar Utensilio"}
+               </Button>
             </div>
           </div>
 

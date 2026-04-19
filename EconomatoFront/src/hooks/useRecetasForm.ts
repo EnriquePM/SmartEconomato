@@ -196,6 +196,23 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
         }
     };
 
+    const handleEliminar = async () => {
+        if (!modoEdicion || !recetaInicial?.id_receta) {
+            return;
+        }
+
+        try {
+            setGuardando(true);
+            await recetaService.delete(recetaInicial.id_receta);
+            onSuccess();
+        } catch (error: any) {
+            console.error("Error eliminando receta:", error);
+            throw new Error(error?.message || "No se pudo eliminar la receta");
+        } finally {
+            setGuardando(false);
+        }
+    };
+
     return {
         form: { nombre, setNombre, descripcion, setDescripcion, raciones, setRaciones: handleRacionesChange },
         lista: { ingredientes, agregarIngrediente, actualizarIngrediente, eliminarIngrediente },
@@ -203,6 +220,7 @@ export const useRecetaForm = ({ onSuccess, recetaInicial }: UseRecetaFormOptions
         alergenos: { lista: listaAlergenos, seleccionados: alergenosSeleccionados, toggle: toggleAlergeno },
         acciones: {
             handleGuardar,
+            handleEliminar,
             guardando,
             textoBoton: modoEdicion ? "GUARDAR CAMBIOS" : "CREAR RECETA",
             titulo: modoEdicion ? "Editar Elaboracion" : "Nueva Elaboracion"

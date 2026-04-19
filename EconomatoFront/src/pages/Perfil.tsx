@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { User, Mail, CheckCircle2, Save, UtensilsCrossed } from "lucide-react";
+import { useState } from "react";
+import { Mail, CheckCircle2, Save, UtensilsCrossed } from "lucide-react";
 
 // --- IMPORTAMOS TUS 8 IMÁGENES LOCALES ---
 // Asegúrate de que los nombres coinciden con tus archivos en la carpeta assets/Avatares

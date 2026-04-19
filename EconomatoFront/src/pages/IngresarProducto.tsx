@@ -1,138 +1,27 @@
-import { useState, useEffect } from "react";
 import { Button } from "../components/ui/Button";
-// 1. IMPORTAMOS LOS NUEVOS ICONOS
-import { Globe, Search, Loader2 } from "lucide-react";
-// 1. IMPORTAMOS EL SERVICIO
-import { getCategorias, getProveedores, type Categoria, type Proveedor } from "../services/recursos.service";
-import { authFetch } from "../services/auth-service";
-
-type Movimiento = {
-  id: number;
-  nombre: string;
-  stock: number;
-  hora: string;
-};
+import { Globe, Loader2 } from "lucide-react";
+import { useIngresarProductoForm } from "../hooks/useIngresarProductoForm";
 
 const IngresarProducto = () => {
-  // 1. ESTADOS DEL FORMULARIO
-  const [codigoBarras, setCodigoBarras] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [stock, setStock] = useState<number | "">(""); 
-  
-  // 2. ESTADOS DE SELECCION (Iniciamos vacios para obligar a elegir)
-  const [categoria, setCategoria] = useState(""); 
-  const [proveedor, setProveedor] = useState("");
-
-  // 3. ESTADOS PARA LAS LISTAS QUE VIENEN DEL BACKEND
-  const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
-  const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
-
-
-  const [buscando, setBuscando] = useState(false);
-  const [mensaje, setMensaje] = useState<{texto: string, tipo: 'exito' | 'error'} | null>(null);
-  const [historial, setHistorial] = useState<Movimiento[]>([]);
-
-  // 4. USE EFFECT: CARGAR DATOS AL ENTRAR EN LA PAGINA
-  useEffect(() => {
-    const cargarDatos = async () => {
-      const [cats, provs] = await Promise.all([
-        getCategorias(),
-        getProveedores()
-      ]);
-      setListaCategorias(cats);
-      setListaProveedores(provs);
-    };
-    cargarDatos();
-  }, []);
-
-  // --- BUSCAR EN OPEN FOOD FACTS ---
-  const buscarProductoOFF = async () => {
-    if (!codigoBarras) return;
-    setBuscando(true);
-    setMensaje(null);
-    setMensaje(null);
-
-    try {
-        const respuesta = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigoBarras}.json`);
-        const data = await respuesta.json();
-
-        if (data.status === 1) {
-            const productoOFF = data.product;
-            const nombreEncontrado = productoOFF.product_name_es || productoOFF.product_name;
-            setNombre(nombreEncontrado);
-            setMensaje({ texto: "!Producto encontrado en la base de datos mundial!", tipo: 'exito' });
-        } else {
-            setMensaje({ texto: "No encontrado en Open Food Facts. Introducelo manual.", tipo: 'error' });
-            setNombre("");
-            setNombre("");
-        }
-    } catch (error) {
-        console.error(error);
-        setMensaje({ texto: "Error al conectar con Open Food Facts", tipo: 'error' });
-    } finally {
-        setBuscando(false);
-    }
-  };
-
-  // 5. LOGICA DE ENVIO
-  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
-    if (e) e.preventDefault();
-
-    // Validamos que se haya seleccionado categoria y proveedor
-    if (!nombre || stock === "" || !categoria || !proveedor) {
-        setMensaje({ texto: "Por favor, rellena todos los campos (incluyendo categoria y proveedor).", tipo: 'error' });
-        return;
-    }
-
-    const nuevoProducto = {
-      codigo: codigoBarras, 
-      nombre: nombre,
-      stock: Number(stock),
-      id_categoria: Number(categoria),
-      id_proveedor: Number(proveedor)
-    };
-
-    try {
-      // 2. ENVIAR AL BACKEND (POST /api/ingredientes)
-      /* 
-       * NOTA: Usamos authFetch para que lleve el token.
-       * Si no, el servidor nos rechazaria (401/403).
-       */
-      const respuesta = await authFetch("/api/ingredientes", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoProducto),
-      });
-
-      const data = await respuesta.json();
-
-      if (respuesta.ok) {
-        setMensaje({ texto: "Producto guardado correctamente en la Base de Datos.", tipo: 'exito' });
-        
-        const horaActual = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        const nuevoMovimiento: Movimiento = {
-            id: Date.now(),
-            nombre: nombre,
-            stock: Number(stock),
-            hora: horaActual
-        };
-        setHistorial(prev => [nuevoMovimiento, ...prev].slice(0, 3));
-
-        // Limpiamos formulario
-        setNombre("");
-        setStock("");
-        setCodigoBarras("");
-        // Opcional: reiniciar los selects
-        setCategoria(""); 
-        setProveedor("");
-      } else {
-        throw new Error(data.error || "Error al guardar en el servidor");
-      }
-    } catch (error: any) {
-      console.error(error);
-      setMensaje({ texto: error.message || "Error de conexion con el servidor.", tipo: 'error' });
-    }
-  };
+  const {
+    codigoBarras,
+    setCodigoBarras,
+    nombre,
+    setNombre,
+    stock,
+    setStock,
+    categoria,
+    setCategoria,
+    proveedor,
+    setProveedor,
+    listaCategorias,
+    listaProveedores,
+    buscando,
+    mensaje,
+    historial,
+    buscarProductoOFF,
+    handleSubmit,
+  } = useIngresarProductoForm();
 
   return (
     <main className="w-full space-y-8"> 
@@ -252,9 +141,10 @@ const IngresarProducto = () => {
           <div className="pt-4">
              <div className="w-full"> 
                <Button 
-                 text="Guardar en Base de Datos" 
                  onClick={handleSubmit} 
-               />
+               >
+                 Guardar en Base de Datos
+               </Button>
             </div>
           </div>
 

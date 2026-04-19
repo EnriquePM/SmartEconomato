@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { X, Search, Trash2, ChefHat, ShoppingCart, Plus, FileText, AlertTriangle } from "lucide-react";
+import { X, Search, Trash2, ChefHat, ShoppingCart, Plus, FileText, AlertTriangle, Loader2 } from "lucide-react";
 import { useRecetaForm } from "../hooks/useRecetasForm";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input"; 
 import type { Receta } from "../models/Receta";
-
-import { recetaService } from "../services/recetaService";
 
 interface ModalRecetaProps {
   onClose: () => void;
@@ -33,8 +31,7 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
     
     try {
       setEliminando(true);
-      await recetaService.deleteReceta(recetaInicial.id_receta); 
-      onRecetaCreada(); 
+      await acciones.handleEliminar();
     } catch (error) {
       console.error("Error al eliminar:", error);
       // Si falla, mostramos el error en nuestra UI y cerramos el pop-up
@@ -221,7 +218,6 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
                         <div className="w-24">
                           <Input 
                             type="text"
-                            inputMode="decimal"
                             placeholder="0.00"
                             value={ing.cantidad}
                             onChange={(val) => {

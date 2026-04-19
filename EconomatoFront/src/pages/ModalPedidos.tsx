@@ -25,6 +25,10 @@ export const ModalPedido = ({
     value: p.nombre,
     label: p.nombre
   }));
+  const opcionesProveedorConPlaceholder = [
+    { value: "", label: "Seleccionar..." },
+    ...opcionesProveedores,
+  ];
 
   const productosFiltrados = catalogoProductos.filter((p: any) => 
     p.nombre.toLowerCase().includes(terminoBusqueda.toLowerCase())
@@ -60,9 +64,7 @@ export const ModalPedido = ({
           <div className="grid grid-cols-12 gap-6 shrink-0 items-end px-2">
             <div className="col-span-5">
               <Select 
-                label="Proveedor"
-                placeholder="Seleccionar..."
-                options={opcionesProveedores}
+                options={opcionesProveedorConPlaceholder}
                 value={pedidoActual.proveedor || ""}
                 onChange={(val) => setPedidoActual({ ...pedidoActual, proveedor: val })}
                 className={esSoloLectura ? "opacity-50 pointer-events-none" : ""}

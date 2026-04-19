@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export const useRecetaModal = (onSave: (receta: any) => void) => {
+export const useRecetaModal = () => {
   const [nombre, setNombre] = useState("");
   const [platos, setPlatos] = useState<number>(1);
   const [ingredientesElegidos, setIngredientesElegidos] = useState<any[]>([]);

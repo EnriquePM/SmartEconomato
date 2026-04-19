@@ -1,82 +1,26 @@
-import { useState } from "react";
 import { ModalRecepcion } from "./ModalRecepcion"; 
-import { getPedidoByIdService, getPedidosService } from "../services/pedidoService";
-import { useEffect } from "react";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/select";
 import { PackageCheck, Loader2 } from "lucide-react";
+import { useRecepcion } from "../hooks/useRecepcion";
 
 const RecepcionPage = () => {
-  const [pedidos, setPedidos] = useState<any[]>([]); 
-  const [cargando, setCargando] = useState(true);    
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
-  const [abriendoPedidoId, setAbriendoPedidoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("todos");
-
-  const pedidosFiltrados = pedidos.filter(p => {
-  const proveedor = (p.proveedor ?? "").toLowerCase();
-  const coincideBusqueda =
-    proveedor.includes(busqueda.toLowerCase()) ||
-    p.id_pedido?.toString().includes(busqueda);
-
-  const coincideEstado =
-    filtroEstado === "todos" || p.estado === filtroEstado;
-
-  return coincideBusqueda && coincideEstado;
-});
-
-const refrescarLista = async () => {
-  try {
-    setCargando(true); 
-    const data = await getPedidosService();
-    setPedidos(data);
-    setPedidoSeleccionado((prev: any) => {
-      if (!prev?.id_pedido) {
-        return prev;
-      }
-
-      return data.find((pedido) => pedido.id_pedido === prev.id_pedido) ?? prev;
-    });
-
-    return data;
-  } catch (error) {
-    console.error("Error al refrescar:", error);
-    setPedidos([]);
-    return [];
-  } finally {
-    setCargando(false); 
-  }
-};
-
-const abrirPedido = async (idPedido: number) => {
-  try {
-    setAbriendoPedidoId(idPedido);
-    const pedidoDetalle = await getPedidoByIdService(idPedido);
-    setPedidoSeleccionado(pedidoDetalle);
-  } catch (error) {
-    console.error("Error al abrir pedido:", error);
-    alert("No se pudo cargar el detalle del pedido.");
-  } finally {
-    setAbriendoPedidoId(null);
-  }
-};
-
-
-
-  useEffect(() => {
-    refrescarLista()  
-  }, []); 
+  const {
+    pedidosFiltrados,
+    cargando,
+    pedidoSeleccionado,
+    abriendoPedidoId,
+    busqueda,
+    setBusqueda,
+    filtroEstado,
+    setFiltroEstado,
+    abrirPedido,
+    refrescarLista,
+    guardarCambiosLocal,
+    cerrarModal,
+  } = useRecepcion();
 
   if (cargando) return <p>Cargando pedidos...</p>;
-
-  const guardarCambiosHardcodeados = (pedidoActualizado: any) => {
-    setPedidos(prev => prev.map(p => 
-      p.id_pedido === pedidoActualizado.id_pedido ? pedidoActualizado : p
-    ));
-
-    setPedidoSeleccionado(pedidoActualizado);
-  };
 
   return (
   
@@ -154,7 +98,10 @@ const abrirPedido = async (idPedido: number) => {
 
               <td className="p-5 text-center">
               <button
-    onClick={() => abrirPedido(pedido.id_pedido)}
+    onClick={() => {
+      if (!pedido.id_pedido) return;
+      abrirPedido(pedido.id_pedido);
+    }}
     disabled={abriendoPedidoId === pedido.id_pedido}
     className="
     /* 1. ESTRUCTURA Y TIPOGRAFÍA */
@@ -200,9 +147,9 @@ const abrirPedido = async (idPedido: number) => {
       {pedidoSeleccionado && (
         <ModalRecepcion 
           pedido={pedidoSeleccionado} 
-          onClose={() => setPedidoSeleccionado(null)} 
+          onClose={cerrarModal} 
           onRefresh={refrescarLista}
-          onSaveLocal={guardarCambiosHardcodeados}
+          onSaveLocal={guardarCambiosLocal}
         />
       )}
     </div>

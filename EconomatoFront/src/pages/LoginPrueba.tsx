@@ -52,7 +52,7 @@ const LoginPage = () => {
     <div className="space-y-4">
       <Input type="text" placeholder="Usuario" value={user} id='u' onChange={setUser} />
       <Input type="password" placeholder="Contraseña temporal" value={password} id='p' onChange={setPassword} />
-      <Button text="Acceder" onClick={handleInitialLogin} />
+      <Button onClick={handleInitialLogin}>Acceder</Button>
     </div>
   );
 
@@ -61,7 +61,7 @@ const LoginPage = () => {
       <p className="text-blue-600 font-medium text-sm">Debes actualizar tu contraseña</p>
       <Input type="password" placeholder="Nueva Contraseña" value={newPassword} id='np' onChange={setNewPassword} />
       <Input type="password" placeholder="Repetir Contraseña" value={confirmPassword} id='cp' onChange={setConfirmPassword} />
-      <Button text="Actualizar y Entrar" onClick={handleChangePassword} />
+      <Button onClick={handleChangePassword}>Actualizar y Entrar</Button>
     </div>
   );
 

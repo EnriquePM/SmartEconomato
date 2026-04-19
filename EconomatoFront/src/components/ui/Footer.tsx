@@ -1,6 +1,3 @@
-
-import React from "react";
-
 export function FooterBar() {
     return (
         <footer className="w-full mt-auto py-2">

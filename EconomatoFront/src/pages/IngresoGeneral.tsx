@@ -1,186 +1,65 @@
-import { useState, useEffect } from "react";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Select } from "../components/ui/select"; 
-import { Globe, Loader2, Camera, Eraser } from "lucide-react";
-import { ModalScanner } from "../components/ModalScanner";
-
-import { getCategorias, getProveedores, type Categoria, type Proveedor } from "../services/recursos.service";
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/select';
+import { Globe, Loader2, Camera, Eraser } from 'lucide-react';
+import { ModalScanner } from '../components/ModalScanner';
+import { useIngresoGeneralForm } from '../hooks/useIngresoGeneralForm';
 
 const IngresoGeneral = () => {
-  const [activeTab, setActiveTab] = useState<'ingredientes' | 'utensilios'>('ingredientes');
-
-  const [listaCategorias, setListaCategorias] = useState<Categoria[]>([]);
-  const [listaProveedores, setListaProveedores] = useState<Proveedor[]>([]);
-  const [cargandoListas, setCargandoListas] = useState(true);
-
-  const formInicial = {
-    codigo: "",
-    nombre: "",
-    stock: "" as number | "",
-    unidad_medida: "",
-    precio_unidad: "" as number | "", 
-    id_categoria: "",
-    id_proveedor: ""
-  };
-
-  const [form, setForm] = useState(formInicial);
-
-  const [buscandoOFF, setBuscandoOFF] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const [mensaje, setMensaje] = useState<{ texto: string, tipo: 'exito' | 'error' } | null>(null);
-  
-  // Estado para controlar la camara
-  const [mostrarScanner, setMostrarScanner] = useState(false);
-
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const [cats, provs] = await Promise.all([getCategorias(), getProveedores()]);
-        setListaCategorias(cats);
-        setListaProveedores(provs);
-      } catch (error) {
-        console.error("Error al cargar recursos", error);
-      } finally {
-        setCargandoListas(false);
-      }
-    };
-    cargarDatos();
-  }, []);
-
-  const opcionesCategorias = listaCategorias.map(c => ({ value: c.id_categoria.toString(), label: c.nombre }));
-  const opcionesProveedores = listaProveedores.map(p => ({ value: p.id_proveedor.toString(), label: p.nombre }));
-  const opcionesUnidad = [
-    { value: "kg", label: "Kilos (kg)" },
-    { value: "g", label: "Gramos (g)" },
-    { value: "l", label: "Litros (L)" },
-    { value: "ml", label: "Mililitros (ml)" },
-    { value: "ud", label: "Unidades (ud)" }
-  ];
-
-  const buscarProductoOFF = async (codigoDesdeScanner?: string | React.MouseEvent) => {
-    // Si viene del escaner (string), usamos ese. Si no, usamos el del estado del formulario.
-    const codigoABuscar = typeof codigoDesdeScanner === 'string' ? codigoDesdeScanner : form.codigo;
-    if (!codigoABuscar) return;
-    
-    setBuscandoOFF(true);
-    setMensaje(null);
-    try {
-      const respuesta = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigoABuscar}.json`);
-      const data = await respuesta.json();
-      if (data.status === 1) {
-        const productoOFF = data.product;
-        // Rellenamos el formulario automaticamente si lo encuentra
-        setForm(prev => ({ 
-          ...prev, 
-          codigo: codigoABuscar, 
-          nombre: productoOFF.product_name_es || productoOFF.product_name || ""
-        }));
-        setMensaje({ texto: "!Producto encontrado!", tipo: 'exito' });
-      } else {
-        // Si no lo encuentra, dejamos el codigo escrito de todas formas
-        setForm(prev => ({ ...prev, codigo: codigoABuscar }));
-        setMensaje({ texto: "No encontrado en la base de datos mundial.", tipo: 'error' });
-      }
-    } catch (error) {
-      setMensaje({ texto: "Error de conexion.", tipo: 'error' });
-    } finally {
-      setBuscandoOFF(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // --- LOGICA DE VALIDACION DINAMICA ---
-    const faltaUnidad = activeTab === 'ingredientes' && !form.unidad_medida;
-    const faltaCategoria = activeTab === 'ingredientes' && !form.id_categoria;
-
-    if (!form.nombre || form.stock === "" || faltaUnidad || faltaCategoria || form.precio_unidad === "" || !form.id_proveedor) {
-      setMensaje({ texto: "Rellena todos los campos obligatorios.", tipo: 'error' });
-      return;
-    }
-
-    setGuardando(true);
-    const endpoint = activeTab === 'ingredientes' ? 'ingredientes' : 'materiales';
-    
-    const payload = {
-      nombre: form.nombre,
-      stock: Number(form.stock),
-      id_categoria: activeTab === 'utensilios' ? 3 : Number(form.id_categoria),
-      id_proveedor: Number(form.id_proveedor),
-      precio_unidad: Number(form.precio_unidad), 
-      unidad_medida: activeTab === 'utensilios' ? 'ud' : form.unidad_medida 
-    };
-
-    try {
-      const res = await fetch(`/api/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error("Error en el guardado");
-
-      setMensaje({ texto: `${activeTab === 'ingredientes' ? 'Producto' : 'Utensilio'} registrado con exito.`, tipo: 'exito' });
-      
-      // Limpiar formulario
-      setForm({ codigo: "", nombre: "", stock: "", unidad_medida: "", precio_unidad: "", id_categoria: "", id_proveedor: "" });
-
-    } catch (error) {
-      setMensaje({ texto: "Error al conectar con el servidor.", tipo: 'error' });
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const limpiarFormulario = () => {
-    setForm(formInicial);
-    setMensaje(null);
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    form,
+    setCampo,
+    cargandoListas,
+    buscandoOFF,
+    guardando,
+    mensaje,
+    mostrarScanner,
+    setMostrarScanner,
+    opcionesCategorias,
+    opcionesProveedores,
+    opcionesUnidad,
+    buscarProductoOFF,
+    handleSubmit,
+    limpiarFormulario
+  } = useIngresoGeneralForm();
 
   return (
-    // 👇 Dejamos de forzar la altura. Dejamos que el bloque fluya naturalmente.
     <div className="animate-fade-in-up pb-10">
-      
-      {/* HEADER */}
       <div className="pb-6">
         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
         <p className="text-gray-500 mt-1 font-medium text-sm">Añade nuevos elementos al inventario general</p>
       </div>
 
-      {/* TABS SELECTOR */}
       <div className="flex gap-2 pl-2 relative items-end">
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
-        <button 
-            onClick={() => { setActiveTab('ingredientes'); setMensaje(null); }}
-            className={`px-10 py-3 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${activeTab === 'ingredientes' ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-3 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-2'}`}
+        <button
+          onClick={() => setActiveTab('ingredientes')}
+          className={`px-10 py-3 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${activeTab === 'ingredientes' ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-3 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-2'}`}
         >
-            PRODUCTOS
+          PRODUCTOS
         </button>
-        <button 
-            onClick={() => { setActiveTab('utensilios'); setMensaje(null); }}
-            className={`px-10 py-3 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${activeTab === 'utensilios' ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-3 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-2'}`}
+        <button
+          onClick={() => setActiveTab('utensilios')}
+          className={`px-10 py-3 rounded-t-[1.5rem] text-sm font-bold transition-all relative z-10 border-t border-l border-r ${activeTab === 'utensilios' ? 'bg-white text-red-600 border-gray-200 border-b-white -mb-px pt-3 shadow-[0_-2px_3px_rgba(0,0,0,0.02)]' : 'bg-gray-100 text-gray-500 border-transparent hover:bg-gray-200 py-2'}`}
         >
-            UTENSILIOS
+          UTENSILIOS
         </button>
       </div>
 
-      {/* 👇 FORMULARIO CONTENEDOR: Espaciado interno generoso (p-8 sm:p-10) */}
       <div className="w-full bg-white p-8 sm:p-10 rounded-b-3xl rounded-tr-3xl shadow-sm border border-gray-100">
-        {/* Usamos gap-10 para separar claramente las 3 zonas (Buscador, Grid, Footer) */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-          
-          {/* 1. BUSCADOR (Más padding interno para darle cuerpo) */}
           <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Referencia / Código de Barras</label>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex gap-2">
-                <Input 
-                  id="ean" 
-                  placeholder="Escribe el código para buscar o escanéalo..." 
-                  value={form.codigo} 
-                  onChange={(val) => setForm({...form, codigo: val})} 
+                <Input
+                  type="text"
+                  id="ean"
+                  placeholder="Escribe el código para buscar o escanéalo..."
+                  value={form.codigo}
+                  onChange={(val) => setCampo('codigo', val)}
                 />
                 <button
                   type="button"
@@ -191,7 +70,7 @@ const IngresoGeneral = () => {
                   <Camera size={20} />
                 </button>
               </div>
-              
+
               <Button
                 variant="primario"
                 onClick={buscarProductoOFF}
@@ -204,80 +83,73 @@ const IngresoGeneral = () => {
             </div>
           </div>
 
-          {/* 2. GRID DE DATOS (Más separación entre filas: gap-y-8) */}
           <div className="grid grid-cols-12 gap-x-6 gap-y-8">
-            
             <div className="col-span-12">
-              <Input 
+              <Input
+                type="text"
                 label="Nombre"
-                id="nombre" 
-                placeholder={`Ej: ${activeTab === 'ingredientes' ? 'Azúcar Glass' : 'Pinzas de cocina'}`} 
-                value={form.nombre} 
-                onChange={(val) => setForm({...form, nombre: val})} 
+                id="nombre"
+                placeholder={`Ej: ${activeTab === 'ingredientes' ? 'Azúcar Glass' : 'Pinzas de cocina'}`}
+                value={form.nombre}
+                onChange={(val) => setCampo('nombre', val)}
               />
             </div>
 
-            <div className={activeTab === 'ingredientes' ? "col-span-12 md:col-span-4" : "col-span-12 md:col-span-6"}>
-              <Input 
+            <div className={activeTab === 'ingredientes' ? 'col-span-12 md:col-span-4' : 'col-span-12 md:col-span-6'}>
+              <Input
                 label="Stock Inicial"
-                id="stock" 
-                type="number" 
-                placeholder="0" 
-                value={form.stock.toString()} 
-                onChange={(val) => setForm({...form, stock: val === "" ? "" : Number(val)})} 
+                id="stock"
+                type="number"
+                placeholder="0"
+                value={String(form.stock)}
+                onChange={(val) => setCampo('stock', val === '' ? '' : Number(val))}
               />
             </div>
 
             {activeTab === 'ingredientes' && (
               <div className="col-span-12 md:col-span-4">
                 <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Unidad</label>
-                <Select 
-                  placeholder="Selecciona..."
+                <Select
                   options={opcionesUnidad}
                   value={form.unidad_medida}
-                  onChange={(val) => setForm({...form, unidad_medida: val})}
+                  onChange={(val) => setCampo('unidad_medida', val)}
                 />
               </div>
             )}
 
-            <div className={activeTab === 'ingredientes' ? "col-span-12 md:col-span-4" : "col-span-12 md:col-span-6"}>
-              <Input 
+            <div className={activeTab === 'ingredientes' ? 'col-span-12 md:col-span-4' : 'col-span-12 md:col-span-6'}>
+              <Input
                 label={activeTab === 'ingredientes' ? 'Precio x Ud (€)' : 'Coste (€)'}
-                id="precio" 
-                type="number" 
-                step="0.01" 
-                placeholder="0.00" 
-                value={form.precio_unidad.toString()} 
-                onChange={(val) => setForm({...form, precio_unidad: val === "" ? "" : Number(val)})} 
+                id="precio"
+                type="number"
+                placeholder="0.00"
+                value={String(form.precio_unidad)}
+                onChange={(val) => setCampo('precio_unidad', val === '' ? '' : Number(val))}
+              />
+            </div>
+
+            <div className="col-span-12 md:col-span-6">
+              <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Categoría</label>
+              <Select
+                options={opcionesCategorias}
+                value={form.id_categoria}
+                onChange={(val) => setCampo('id_categoria', val)}
               />
             </div>
 
             {activeTab === 'ingredientes' && (
               <div className="col-span-12 md:col-span-6">
-                <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Categoría</label>
-                <Select 
-                  placeholder="Selecciona categoría..."
-                  options={opcionesCategorias}
-                  value={form.id_categoria}
-                  onChange={(val) => setForm({...form, id_categoria: val})}
+                <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Proveedor</label>
+                <Select
+                  options={opcionesProveedores}
+                  value={form.id_proveedor}
+                  onChange={(val) => setCampo('id_proveedor', val)}
                 />
               </div>
             )}
-
-            <div className={activeTab === 'ingredientes' ? "col-span-12 md:col-span-6" : "col-span-12"}>
-              <label className="block text-[13px] font-bold text-gray-700 mb-2 ml-1">Proveedor</label>
-              <Select 
-                placeholder="Selecciona proveedor..."
-                options={opcionesProveedores}
-                value={form.id_proveedor}
-                onChange={(val) => setForm({...form, id_proveedor: val})}
-              />
-            </div>
           </div>
 
-          {/* 3. ZONA INFERIOR (Separada de forma natural) */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100">
-            
             <div className="w-full sm:w-1/2">
               {mensaje && (
                 <div className={`py-3 px-4 rounded-xl text-sm font-bold text-center transition-all ${mensaje.tipo === 'exito' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
@@ -287,41 +159,38 @@ const IngresoGeneral = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button 
-                  type="button"
-                  variant="gris"
-                  onClick={limpiarFormulario}
-                  className="px-6 py-3 text-xs tracking-widest flex items-center justify-center gap-2 font-bold"
+              <Button
+                type="button"
+                variant="gris"
+                onClick={limpiarFormulario}
+                className="px-6 py-3 text-xs tracking-widest flex items-center justify-center gap-2 font-bold"
               >
-                  <Eraser size={16} /> LIMPIAR
+                <Eraser size={16} /> LIMPIAR
               </Button>
 
-              <Button 
-                  variant="primario"
-                  onClick={handleSubmit}
-                  disabled={guardando}
-                  className="px-10 py-3 text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg font-black"
+              <Button
+                variant="primario"
+                type="submit"
+                disabled={guardando || cargandoListas}
+                className="px-10 py-3 text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg font-black"
               >
-                  {guardando && <Loader2 size={16} className="animate-spin" />}
-                  {guardando ? "PROCESANDO..." : `REGISTRAR ${activeTab === 'ingredientes' ? 'PRODUCTO' : 'UTENSILIO'}`}
+                {guardando && <Loader2 size={16} className="animate-spin" />}
+                {guardando ? 'PROCESANDO...' : `REGISTRAR ${activeTab === 'ingredientes' ? 'PRODUCTO' : 'UTENSILIO'}`}
               </Button>
             </div>
           </div>
-
         </form>
       </div>
 
-      {/* MODAL DEL ESCANER AUTOMATIZADO */}
       {mostrarScanner && (
-        <ModalScanner 
+        <ModalScanner
           onClose={() => setMostrarScanner(false)}
           onScan={(codigoLeido) => {
-            setMostrarScanner(false); // Cerramos el modal de la camara
-            buscarProductoOFF(codigoLeido); // Lanzamos la busqueda de forma automatica
+            setMostrarScanner(false);
+            void buscarProductoOFF(codigoLeido);
           }}
         />
       )}
-
     </div>
   );
 };

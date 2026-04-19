@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PackageOpen, Search, X } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useRecepcionModal } from "../hooks/useModalRecepcion";
@@ -135,6 +136,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal }: any)
                   Guardar y continuar
                 </Button>
               </div>
+            </div>
             </div>
           ) : (
             /* VISTA LISTADO */

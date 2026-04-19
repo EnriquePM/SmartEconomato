@@ -1,82 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
 import logoSmart from '../assets/logoSmart.png';
 import fondo from '../assets/fondo.png';
+import { useLogin } from '../hooks/useLogin';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const { setUsuario } = useAuth();
-
-  // Estados
-  const [user, setUser] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e?: React.FormEvent) => {
-    // Si viene de un formulario (Enter), prevenimos la recarga
-    if (e) e.preventDefault(); 
-    
-    // 1. Validacion basica
-    if (!user || !password) {
-      alert("Por favor, rellena todos los campos.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // 2. Llamada al Backend
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: user,
-          contrasenya: password, 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Ocurrio un error al iniciar sesion");
-        setLoading(false);
-        return;
-      }
-
-      console.log("Respuesta del servidor:", data);
-
-      // 3. Logica de Redireccion (Sin alertas molestas)
-      if (data.requiereCambioPass) {
-        // CASO: PRIMER LOGIN
-        navigate("/cambiar-password", {
-            state: {
-                username: user,       
-                oldPassword: password 
-            }
-        });
-        return;
-      } 
-      
-      // CASO: LOGIN NORMAL
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
-      setUsuario(data.usuario); // Actualiza el contexto (y el localStorage internamente)
-      navigate("/");
-
-    } catch (error) {
-      console.error("Error de conexion:", error);
-      alert("No se pudo conectar con el servidor. ?Esta encendido el Backend?");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { user, setUser, password, setPassword, loading, handleLogin } = useLogin();
 
   return (
     <div className="min-h-screen bg-white flex flex-col px-4 py-4">
