@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users, ChefHat } from "lucide-react";import { NavLink, Link } from 'react-router-dom';
-import logoSmart from '../assets/logoSmart.png';
+import logoSmart from '../assets/logoTransparet.png';
 import { UserProfile } from './UserProfile';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,10 +10,10 @@ export default function SideBar() {
   const [adminOpen, setAdminOpen] = useState(false);
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center px-2 py-2 rounded-base group transition-colors ${
+    `flex items-center px-4 py-3 rounded-full transition-all duration-300 group ${
       isActive
-        ? "bg-neutral-tertiary text-fg-brand font-semibold shadow-sm"
-        : "text-body hover:bg-neutral-tertiary hover:text-fg-brand"
+        ? "bg-acento/10 text-acento font-bold shadow-sm"
+        : "text-gray-500 hover:bg-acento/5 hover:text-acento font-medium"
     }`;
 
   return (
@@ -30,12 +30,11 @@ export default function SideBar() {
       </button>
 
       <aside id="logo-sidebar" className="fixed top-0 left-0 z-40 w-60 h-full transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
-        <div className="flex flex-col h-full px-3 py-4 bg-neutral-primary-soft border-default">
+        <div className="flex flex-col h-full px-3 py-4 pt-6 bg-neutral-primary-soft border-default">
           
           <div className="flex-grow overflow-y-auto">
             <Link to="/" className="flex items-center ps-2.5 mb-8">
-              <img src={logoSmart} className="h-8 me-3" alt="Logo Smart Economato" />
-              <span className="self-center text-lg text-heading font-bold tracking-tight">Smart Economato</span>
+              <img src={logoSmart} className="h-9 me-4" alt="Logo Smart Economato" />
             </Link>
 
             <ul className="space-y-1.5 font-medium">

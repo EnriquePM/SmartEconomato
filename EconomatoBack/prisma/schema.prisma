@@ -79,6 +79,24 @@ model proveedor {
   ingrediente  ingrediente[]
 }
 
+model alergeno {
+  id_alergeno          Int                    @id @default(autoincrement())
+  nombre               String                 @db.VarChar(100)
+  icono                String?                @db.VarChar(255)
+  receta_alergeno receta_alergeno[]
+  ingredientes         ingrediente[]
+}
+
+model receta_alergeno {
+  id_receta   Int
+  id_alergeno Int
+
+  receta   receta   @relation(fields: [id_receta], references: [id_receta], onDelete: Cascade, onUpdate: NoAction)
+  alergeno alergeno @relation(fields: [id_alergeno], references: [id_alergeno], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([id_receta, id_alergeno])
+}
+
 model material {
   id_material    Int         @id @default(autoincrement())
   nombre         String      @db.VarChar(150)
@@ -105,10 +123,11 @@ model ingrediente {
   categoria          categoria?           @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_categoria")
   proveedor          proveedor?           @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_proveedor")
   // Relaciones inversas
-  escandallo_detalle escandallo_detalle[]
-  movimiento         movimiento[]
-  pedido_ingrediente pedido_ingrediente[]
-  receta_ingrediente receta_ingrediente[]
+  escandallo_detalle   escandallo_detalle[]
+  movimiento           movimiento[]
+  pedido_ingrediente   pedido_ingrediente[]
+  receta_ingrediente   receta_ingrediente[]
+  alergenos            alergeno[]
 }
 
 // OPERATIVA (Movimientos, Pedidos, Recetas)
@@ -173,12 +192,13 @@ model pedido_material {
 
 model receta {
   id_receta          Int                  @id @default(autoincrement())
-  nombre             String               @db.VarChar(150)
-  descripcion        String?              @db.VarChar(255)
+  nombre             String               @db.VarChar(255)
+  descripcion        String?              @db.Text
   fecha_creacion     DateTime?            @default(now()) @db.Timestamp(6)
   cantidad_platos    Int?
   receta_ingrediente receta_ingrediente[]
   escandallo         escandallo[]
+  receta_alergeno    receta_alergeno[]
 }
 
 model receta_ingrediente {

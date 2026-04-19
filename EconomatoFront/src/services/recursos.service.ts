@@ -1,32 +1,37 @@
 // src/services/recursos.service.ts
 
-const API_URL = "http://localhost:3000/api";
-// Definimos qué forma tienen los datos que vienen del backend
-export interface Categoria {
-    id_categoria: number;
-    nombre: string;
-}
+import { authFetch } from './auth-service';
+import type { Alergeno, Categoria, Proveedor } from '../models/resources.model';
 
-export interface Proveedor {
-    id_proveedor: number;
-    nombre: string;
-}
+const API_URL = "/api";
+export type { Alergeno, Categoria, Proveedor };
 
 export const getCategorias = async (): Promise<Categoria[]> => {
     try {
-        const res = await fetch(`${API_URL}/categorias`);
-        if (!res.ok) throw new Error("Error cargando categorías");
+        const res = await authFetch(`${API_URL}/categorias`);
+        if (!res.ok) throw new Error("Error cargando categorias");
         return await res.json();
     } catch (error) {
         console.error(error);
-        return []; // Si falla, devolvemos lista vacía
+        return []; // Si falla, devolvemos lista vacia
     }
 };
 
 export const getProveedores = async (): Promise<Proveedor[]> => {
     try {
-        const res = await fetch(`${API_URL}/proveedores`);
+        const res = await authFetch(`${API_URL}/proveedores`);
         if (!res.ok) throw new Error("Error cargando proveedores");
+        return await res.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+export const getAlergenos = async (): Promise<Alergeno[]> => {
+    try {
+        const res = await authFetch(`${API_URL}/alergenos`);
+        if (!res.ok) throw new Error("Error cargando alergenos");
         return await res.json();
     } catch (error) {
         console.error(error);

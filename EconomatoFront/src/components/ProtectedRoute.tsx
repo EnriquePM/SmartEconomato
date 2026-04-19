@@ -2,8 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export const ProtectedRoute = () => {
-  const { usuario } = useAuth();
-  const isAuth = !!usuario || localStorage.getItem("isAuthenticated") === "true";
+  const isAuth = localStorage.getItem("isAuthenticated") === "true";
 
   // Si no está logueado, lo mandamos al login
   if (!isAuth) {
@@ -21,6 +20,7 @@ interface RoleProtectedRouteProps {
 export const RoleProtectedRoute = ({ allowedRoles }: RoleProtectedRouteProps) => {
   const { hasRole } = useAuth();
 
+  // Si el usuario no tiene el rol necesario, lo mandamos al inicio
   if (!hasRole(allowedRoles)) {
     return <Navigate to="/" replace />;
   }

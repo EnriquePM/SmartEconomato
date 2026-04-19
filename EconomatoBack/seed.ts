@@ -30,6 +30,7 @@ async function main() {
   await prisma.proveedor.deleteMany();
   await prisma.categoria.deleteMany();
   await prisma.rol.deleteMany();
+  await prisma.alergeno.deleteMany();
 
   console.log('🌱 Sembrando datos nuevos...');
 
@@ -191,6 +192,29 @@ async function main() {
 
   console.log(`👤 Usuarios creados: ${userAdmin.username}, ${userProfesor.username}, ${userAlumno.username}`);
   console.log(`📦 Importados ${productosAImportar.length} ingredientes y ${materialesAImportar.length} materiales.`);
+
+  console.log('🥜 Sembrando alérgenos...');
+  const alergenosData = [
+    { nombre: 'Altramuces', icono: 'altramuces.png' },
+    { nombre: 'Apio', icono: 'apio.png' },
+    { nombre: 'Cacahuetes', icono: 'cacahuetes.png' },
+    { nombre: 'Crustáceos', icono: 'crustaceos.png' },
+    { nombre: 'Frutos de cáscara', icono: 'frutosecos.png' },
+    { nombre: 'Gluten', icono: 'gluten.png' },
+    { nombre: 'Huevos', icono: 'huevos.png' },
+    { nombre: 'Lácteos', icono: 'lactosa.png' },
+    { nombre: 'Moluscos', icono: 'moluscos.png' },
+    { nombre: 'Mostaza', icono: 'mostaza.png' },
+    { nombre: 'Pescado', icono: 'pescado.png' },
+    { nombre: 'Sésamo', icono: 'sesamo.png' },
+    { nombre: 'Soja', icono: 'soja.png' },
+    { nombre: 'Sulfitos', icono: 'sulfito.png' }
+  ];
+
+  for (const alg of alergenosData) {
+    await prisma.alergeno.create({ data: alg });
+  }
+
   console.log('✅ Base de Datos reseteada y cargada con éxito.');
 }
 

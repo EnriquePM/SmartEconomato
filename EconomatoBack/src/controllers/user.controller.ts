@@ -117,11 +117,11 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.json({ mensaje: `Usuario ${existe.username} eliminado correctamente` });
     } catch (error: any) {
         console.error(error);
-
+        
         // Manejo específico del error de base de datos cuando hay restricciones de clave foránea (P2003 en Prisma)
         if (error.code === 'P2003') {
-            res.status(400).json({ error: 'No se puede eliminar el usuario porque tiene pedidos, movimientos o escandallos asociados. Considere desactivarlo en lugar de borrarlo.' });
-            return;
+           res.status(400).json({ error: 'No se puede eliminar el usuario porque tiene pedidos, movimientos o escandallos asociados. Considere desactivarlo en lugar de borrarlo.' });
+           return;
         }
 
         res.status(500).json({ error: 'Error eliminando el usuario' });

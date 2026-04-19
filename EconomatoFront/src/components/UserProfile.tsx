@@ -1,44 +1,45 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ChevronUp, User, Settings, LogOut } from 'lucide-react';
+import type { Usuario } from '../models/user.model';
 import { useAuth } from '../context/AuthContext';
 
-// Importamos la imagen por defecto por si es la primera vez que entran
+
 import defaultAvatar from '../assets/Avatares/chef.png';
 
 export const UserProfile = () => {
-  const { usuario, logout } = useAuth();
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const { logout } = useAuth();
   
-  // ESTADO: Iniciamos con lo que haya en memoria O con el chef por defecto
+
   const [avatarActual, setAvatarActual] = useState(() => {
     return localStorage.getItem("avatarUsuario") || defaultAvatar;
   });
 
-  // EFECTO MÁGICO: Escuchamos cuando alguien grita "avatar-actualizado"
-  useEffect(() => {
-    const actualizarFoto = () => {
-      const nuevaFoto = localStorage.getItem("avatarUsuario");
-      if (nuevaFoto) {
-        setAvatarActual(nuevaFoto);
+    const [user, setUser] = useState<Usuario | null>(null);
+
+    useEffect(() => {
+
+      const dataUser = localStorage.getItem('usuario'); 
+      if (dataUser) {
+        setUser(JSON.parse(dataUser));
       }
+
+      const actualizarFoto = () => {
+        const nuevaFoto = localStorage.getItem("avatarUsuario");
+        if (nuevaFoto) {
+          setAvatarActual(nuevaFoto);
+        }
     };
 
-    // Nos suscribimos al evento
+ 
     window.addEventListener("avatar-actualizado", actualizarFoto);
 
-    // Limpieza (muy importante en React)
+
     return () => {
       window.removeEventListener("avatar-actualizado", actualizarFoto);
     };
   }, []);
-
-  const handleLogout = () => {
-    setIsOpen(false);
-    logout();
-    navigate("/login");
-  };
 
   return (
     <div className="relative border-t border-gray-200 pt-4 mt-2">
@@ -47,15 +48,14 @@ export const UserProfile = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center w-full p-2 rounded-lg hover:bg-gray-100 transition-colors group outline-none"
       >
-        {/* Usamos el estado 'avatarActual' en vez de la variable fija */}
         <img
           className="w-9 h-9 rounded-full border border-gray-200 shadow-sm bg-white p-0.5 object-contain"
           src={avatarActual} 
           alt="Avatar"
         />
         <div className="flex-1 ms-3 text-left overflow-hidden">
-          <p className="text-sm font-bold text-gray-700 truncate">{usuario?.nombre} {usuario?.apellido1}</p>
-          <p className="text-xs text-gray-500 truncate">{usuario?.rol ?? 'Invitado'}</p>
+          <p className="text-sm font-bold text-gray-700 truncate">{user?.username || "Cargando..."}</p>
+          <p className="text-xs text-gray-500 truncate">{user?.rol|| "Cargando..."}</p>
         </div>
         <ChevronUp 
             size={16} 
@@ -89,8 +89,11 @@ export const UserProfile = () => {
             </li>
             <li className="border-t border-gray-100 mt-1 pt-1">
               <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-4 py-2 text-red-500 hover:bg-red-50 font-medium transition-colors"
+                onClick={() => {
+                  setIsOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 font-medium transition-colors text-left"
               >
                 <LogOut size={16} /> 
                 <span>Cerrar Sesión</span>

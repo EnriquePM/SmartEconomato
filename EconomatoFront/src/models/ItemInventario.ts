@@ -1,11 +1,14 @@
 export interface ItemInventario {
   id: number;
   nombre: string;
+  precio: number;
   stock: number;
   stock_minimo: number;
-  unidad: string;
-  precio: number;
-  id_categoria: number;
-  id_proveedor: number;
-  tipo: 'ingrediente' | 'material';
+  unidad_medida?: string;
+}
+
+export interface AvisoStock {
+  nombre: string;
+  badge: 'Stock Crítico' | 'Bajo Stock';
+  color: 'orange' | 'yellow';
 }

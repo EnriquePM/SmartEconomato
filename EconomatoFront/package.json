@@ -6,14 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:docker": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "html5-qrcode": "^2.3.8",
+    "@react-pdf/renderer": "^4.4.0",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
+    "react-calendar": "^6.0.1",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.13.0"
+    "react-router-dom": "^7.13.0",
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,6 +1,6 @@
 import type { LineaPedidoDTO, LineaUI } from "../models/Recepcion";
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 const extraerMensajeError = async (response: Response) => {
   const contentType = response.headers.get('content-type') || '';
@@ -41,5 +41,6 @@ export const confirmarPedidoService = async (idPedido: number, lineas: LineaUI[]
 
   return response.json();
 };
+
 
 

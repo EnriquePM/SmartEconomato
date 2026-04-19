@@ -1,81 +1,26 @@
-import { useState } from "react";
 import { ModalRecepcion } from "./ModalRecepcion"; 
-import { getPedidoByIdService, getPedidosService } from "../services/pedidoService";
-import { useEffect } from "react";
 import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/select";
+import { PackageCheck, Loader2 } from "lucide-react";
+import { useRecepcion } from "../hooks/useRecepcion";
 
 const RecepcionPage = () => {
-  const [pedidos, setPedidos] = useState<any[]>([]); 
-  const [cargando, setCargando] = useState(true);    
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState<any>(null);
-  const [abriendoPedidoId, setAbriendoPedidoId] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("todos");
-
-  const pedidosFiltrados = pedidos.filter(p => {
-  const proveedor = (p.proveedor ?? "").toLowerCase();
-  const coincideBusqueda =
-    proveedor.includes(busqueda.toLowerCase()) ||
-    p.id_pedido?.toString().includes(busqueda);
-
-  const coincideEstado =
-    filtroEstado === "todos" || p.estado === filtroEstado;
-
-  return coincideBusqueda && coincideEstado;
-});
-
-const refrescarLista = async () => {
-  try {
-    setCargando(true); 
-    const data = await getPedidosService();
-    setPedidos(data);
-    setPedidoSeleccionado((prev: any) => {
-      if (!prev?.id_pedido) {
-        return prev;
-      }
-
-      return data.find((pedido) => pedido.id_pedido === prev.id_pedido) ?? prev;
-    });
-
-    return data;
-  } catch (error) {
-    console.error("Error al refrescar:", error);
-    setPedidos([]);
-    return [];
-  } finally {
-    setCargando(false); 
-  }
-};
-
-const abrirPedido = async (idPedido: number) => {
-  try {
-    setAbriendoPedidoId(idPedido);
-    const pedidoDetalle = await getPedidoByIdService(idPedido);
-    setPedidoSeleccionado(pedidoDetalle);
-  } catch (error) {
-    console.error("Error al abrir pedido:", error);
-    alert("No se pudo cargar el detalle del pedido.");
-  } finally {
-    setAbriendoPedidoId(null);
-  }
-};
-
-
-
-  useEffect(() => {
-    refrescarLista()  
-  }, []); 
+  const {
+    pedidosFiltrados,
+    cargando,
+    pedidoSeleccionado,
+    abriendoPedidoId,
+    busqueda,
+    setBusqueda,
+    filtroEstado,
+    setFiltroEstado,
+    abrirPedido,
+    refrescarLista,
+    guardarCambiosLocal,
+    cerrarModal,
+  } = useRecepcion();
 
   if (cargando) return <p>Cargando pedidos...</p>;
-
-  const guardarCambiosHardcodeados = (pedidoActualizado: any) => {
-    setPedidos(prev => prev.map(p => 
-      p.id_pedido === pedidoActualizado.id_pedido ? pedidoActualizado : p
-    ));
-
-    setPedidoSeleccionado(pedidoActualizado);
-  };
 
   return (
   
@@ -120,16 +65,16 @@ const abrirPedido = async (idPedido: number) => {
 
 </div>
 
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
   <div className="overflow-auto scrollbar-global">
-    <table className="w-full text-left">
+    <table className="w-full text-left border-collapse table-fixed">
       
       <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold sticky top-0 z-10">
         <tr>
-          <th className="p-5 bg-gray-50">ID</th>
-          <th className="p-5 bg-gray-50">Proveedor</th>
-          <th className="p-5 bg-gray-50">Fecha</th>
-          <th className="p-5 text-right bg-gray-50">Acción</th>
+          <th className="p-5 bg-gray-50 w-1/4">ID</th>
+          <th className="p-5 bg-gray-50 w-1/4">Proveedor</th>
+          <th className="p-5 bg-gray-50 w-1/4 text-center">Fecha</th>
+          <th className="p-5 bg-gray-50 w-1/4 text-center" >Acción</th>
         </tr>
       </thead>
 
@@ -141,24 +86,54 @@ const abrirPedido = async (idPedido: number) => {
               {pedido.id_pedido}
             </td>
 
-            <td className="p-5 font-medium text-gray-900">
+            <td className="p-5 font-medium text-gray-900 truncate">
               {pedido.proveedor}
             </td>
 
-            <td className="p-5 text-gray-600">
+            <td className="p-5 text-gray-600 text-center">
               {pedido.fecha_pedido
                 ? new Date(pedido.fecha_pedido).toLocaleDateString()
                 : "-"}
             </td>
 
-              <td className="p-5 text-right">
+              <td className="p-5 text-center">
               <button
-                onClick={() => abrirPedido(pedido.id_pedido)}
-                disabled={abriendoPedidoId === pedido.id_pedido}
-                className="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:text-gray-400 disabled:cursor-wait"
-              >
-                {abriendoPedidoId === pedido.id_pedido ? "Abriendo..." : "Recepcionar"}
-              </button>
+    onClick={() => {
+      if (!pedido.id_pedido) return;
+      abrirPedido(pedido.id_pedido);
+    }}
+    disabled={abriendoPedidoId === pedido.id_pedido}
+    className="
+    /* 1. ESTRUCTURA Y TIPOGRAFÍA */
+    inline-flex items-center gap-2.5 
+    px-5 py-2.5 rounded-xl 
+    font-bold text-xs tracking-tight 
+    transition-all duration-200
+    
+    bg-blue-50 text-blue-600 border border-blue-100/50
+ 
+    hover:bg-blue-600 hover:text-white 
+    hover:border-blue-600
+    hover:shadow-lg hover:shadow-blue-600/20
+    hover:-translate-y-0.5
+  
+    active:scale-95
+    
+    disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
+  "
+  >
+    {abriendoPedidoId === pedido.id_pedido ? (
+      <>
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Abriendo...
+      </>
+    ) : (
+      <>
+        <PackageCheck className="w-4 h-4" />
+        Recepcionar
+      </>
+    )}
+  </button>
             </td>
 
           </tr>
@@ -172,9 +147,9 @@ const abrirPedido = async (idPedido: number) => {
       {pedidoSeleccionado && (
         <ModalRecepcion 
           pedido={pedidoSeleccionado} 
-          onClose={() => setPedidoSeleccionado(null)} 
+          onClose={cerrarModal} 
           onRefresh={refrescarLista}
-          onSaveLocal={guardarCambiosHardcodeados}
+          onSaveLocal={guardarCambiosLocal}
         />
       )}
     </div>

@@ -1,80 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import FooterBar from '../components/ui/Footer';
 import logoSmart from '../assets/logoSmart.png';
 import fondo from '../assets/fondo.png';
+import { useChangePassword } from '../hooks/useChangePassword';
 
 const CambiarPassword = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Recuperamos los datos que nos pasó el Login
-  const { username, oldPassword } = location.state || {};
-
-  // Estados
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Protección de ruta
-  useEffect(() => {
-    if (!username || !oldPassword) {
-      navigate('/login');
-    }
-  }, [username, oldPassword, navigate]);
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
-    // 1. Validaciones
-    if (!newPassword || !confirmPassword) {
-      alert("Por favor, rellena ambos campos.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      alert("Las contraseñas no coinciden.");
-      return;
-    }
-
-    
-    setLoading(true);
-
-    try {
-      // 2. Llamada al Backend
-      const response = await fetch('http://localhost:3000/api/auth/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          oldPassword: oldPassword, 
-          newPassword: newPassword      
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "Error al cambiar la contraseña");
-        setLoading(false);
-        return;
-      }
-
-      // 3. Éxito
-      alert("¡Contraseña actualizada con éxito! Por favor, inicia sesión con tu nueva clave.");
-      navigate('/login'); 
-
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error de conexión con el servidor.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    loading,
+    handleSubmit,
+  } = useChangePassword();
 
   return (
     <div className="min-h-screen bg-white flex flex-col px-4 py-4">
@@ -104,7 +43,7 @@ const CambiarPassword = () => {
             Por motivos de seguridad, detectamos que es tu primer acceso.
           </p>
           <p className="text-lg text-gray-800 font-medium mt-2">
-            Debes configurar una nueva contraseña personal para continuar.
+            Debes configurar una nueva contrasena personal para continuar.
           </p>
         </div>
 
@@ -113,7 +52,7 @@ const CambiarPassword = () => {
           
           <div className="space-y-4">
              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Nueva Contraseña</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Nueva Contrasena</label>
                 <Input 
                     type="password" 
                     placeholder="Escribe tu nueva clave" 
@@ -124,7 +63,7 @@ const CambiarPassword = () => {
              </div>
 
              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Confirmar Contraseña</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Confirmar Contrasena</label>
                 <Input 
                     type="password" 
                     placeholder="Repite la clave" 

@@ -21,8 +21,19 @@ export const recetaMapper = {
             nombre: ri.ingrediente.nombre || "Desconocido",
             unidad_medida: ri.ingrediente.unidad_medida || "ud",
             stock: ri.ingrediente.stock !== undefined ? Number(ri.ingrediente.stock) : undefined,
-            // Cuidado aquí: mapeamos 'precio_unidad' de la base de datos a 'precio_unitario' del front
+            // Mapeamos 'precio_unidad' de la base de datos a 'precio_unitario' del front
             precio_unitario: ri.ingrediente.precio_unidad ? Number(ri.ingrediente.precio_unidad) : undefined
+          } : undefined
+        }))
+        : [],
+      receta_alergeno: Array.isArray(json.receta_alergeno)
+        ? json.receta_alergeno.map((ra: any) => ({
+          id_receta: ra.id_receta,
+          id_alergeno: ra.id_alergeno,
+          alergeno: ra.alergeno ? {
+            id_alergeno: ra.alergeno.id_alergeno,
+            nombre: ra.alergeno.nombre,
+            icono: ra.alergeno.icono
           } : undefined
         }))
         : []

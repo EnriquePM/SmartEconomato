@@ -1,47 +1,40 @@
 import { recetaMapper } from "./mappers/recetaMapper";
 import type { Receta } from "../models/Receta";
+import { authFetch } from "./auth-service";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "/api";
 
 const getErrorMessage = async (res: Response, fallback: string): Promise<string> => {
   const payload = await res.json().catch(() => null);
   return payload?.error || payload?.mensaje || fallback;
 };
 
-// Función de ayuda para no repetir los headers y el token en cada petición
-const getHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  };
-};
-
 export const recetaService = {
   // 1. Obtener todas las recetas
   async getAll(): Promise<Receta[]> {
-    const res = await fetch(`${API_URL}/recetas`, { headers: getHeaders() });
+    const res = await authFetch(`${API_URL}/recetas`);
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al obtener recetas"));
 
     const data = await res.json();
-    // Aquí usamos el Traductor (Mapper) del Paso 1 para limpiar los datos
+    // Aqui usamos el Traductor (Mapper) del Paso 1 para limpiar los datos
     return data.map((item: any) => recetaMapper.fromJson(item));
   },
 
   // 2. Obtener una receta concreta por ID
   async getById(id: number): Promise<Receta> {
-    const res = await fetch(`${API_URL}/recetas/${id}`, { headers: getHeaders() });
+    const res = await authFetch(`${API_URL}/recetas/${id}`);
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al obtener el detalle de la receta"));
 
     const data = await res.json();
     return recetaMapper.fromJson(data);
   },
 
+
   // 3. Crear una nueva receta
   async create(receta: Partial<Receta>): Promise<Receta> {
-    const res = await fetch(`${API_URL}/recetas`, {
+    const res = await authFetch(`${API_URL}/recetas`, {
       method: "POST",
-      headers: getHeaders(),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(receta),
     });
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al crear la receta"));
@@ -52,9 +45,9 @@ export const recetaService = {
 
   // 4. Actualizar una receta
   async update(id: number, receta: Partial<Receta>): Promise<Receta> {
-    const res = await fetch(`${API_URL}/recetas/${id}`, {
+    const res = await authFetch(`${API_URL}/recetas/${id}`, {
       method: "PUT",
-      headers: getHeaders(),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(receta),
     });
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al actualizar la receta"));
@@ -65,18 +58,17 @@ export const recetaService = {
 
   // 5. Eliminar receta
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${API_URL}/recetas/${id}`, {
-      method: "DELETE",
-      headers: getHeaders()
+    const res = await authFetch(`${API_URL}/recetas/${id}`, {
+      method: "DELETE"
     });
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al eliminar la receta"));
   },
 
   // 6. Elaborar una receta y descontar inventario
   async makeReceta(id: number, raciones: number): Promise<void> {
-    const res = await fetch(`${API_URL}/recetas/${id}/hacer`, {
+    const res = await authFetch(`${API_URL}/recetas/${id}/hacer`, {
       method: "POST",
-      headers: getHeaders(),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ raciones })
     });
 
@@ -85,8 +77,9 @@ export const recetaService = {
 
   // 7. Obtener ingredientes para el buscador del modal
   async getIngredientesDisponibles() {
-    const res = await fetch(`${API_URL}/ingredientes`, { headers: getHeaders() });
+    const res = await authFetch(`${API_URL}/ingredientes`);
     if (!res.ok) throw new Error(await getErrorMessage(res, "Error al obtener ingredientes"));
     return await res.json();
   }
 };
+

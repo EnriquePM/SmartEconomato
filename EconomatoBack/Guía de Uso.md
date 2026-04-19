@@ -25,6 +25,59 @@ npm run db:setup
 npm run dev
 
 
+# Trabajo con Docker y con npm local
+
+El proyecto admite ambos flujos de trabajo. Docker no sustituye al desarrollo local: simplemente añade una forma estandarizada de levantar el entorno completo.
+
+## Opción 1: trabajo completo con Docker
+
+Si quieres ejecutar toda la aplicación mediante contenedores, sitúate en la raíz del proyecto y ejecuta:
+
+```bash
+docker compose up -d --build
+```
+
+Con este modo:
+
+- El frontend queda servido detrás de Nginx.
+- El backend queda accesible a través de `/api`.
+- La aplicación se abre desde `https://localhost`.
+- Es normal que el navegador muestre una advertencia de certificado, porque el certificado local es autofirmado.
+
+## Opción 2: trabajo local con npm
+
+Tus compañeros pueden seguir trabajando sin Docker para frontend y backend, igual que antes. El flujo recomendado en local es:
+
+```bash
+# Base de datos en Docker
+docker compose up -d db
+
+# Backend
+cd EconomatoBack
+npm install
+npx prisma generate
+npm run db:setup
+npm run dev
+
+# Frontend
+cd ../EconomatoFront
+npm install
+npm run dev
+```
+
+Con este modo:
+
+- El backend corre en `http://localhost:3000`.
+- El frontend corre en `http://localhost:5173`.
+- El frontend ya está preparado para llamar al backend usando `/api`, porque Vite redirige esas peticiones automáticamente a `http://localhost:3000` en desarrollo.
+
+## Qué opción usar
+
+- Usa Docker si quieres reproducir el entorno integrado completo con Nginx y HTTPS.
+- Usa `npm` local si estás desarrollando funcionalidades y quieres iterar más rápido.
+- Ambos modos pueden convivir en el mismo proyecto sin cambiar código.
+
+
 
 # Rutas
 ## Usuario

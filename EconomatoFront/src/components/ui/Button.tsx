@@ -2,9 +2,9 @@ import type { ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 
 interface ButtonProps {
-  children: ReactNode; // Cambiamos text por children para admitir iconos + texto
+  children: ReactNode;
   onClick?: () => void;
-  variant?: 'primario' | 'secundario' | 'peligro' | 'gris'; //para cambiar la apariencia del botón
+  variant?: 'primario' | 'secundario' | 'peligro' | 'gris';
   disabled?: boolean;
   loading?: boolean;
   className?: string; 
@@ -21,10 +21,18 @@ export const Button = ({
   type = "button"
 }: ButtonProps) => {
   
-  // Mapeo de estilos según la variante
   const variants = {
-    primario: "bg-primario text-white hover:opacity-90",
-    secundario: "bg-red-600 text-white hover:bg-red-700 shadow-lg",
+    // Cambiamos opacity-90 por un color sólido más oscuro para un hover profesional
+   primario: `
+  bg-acento text-white 
+  hover:bg-[#F13838] 
+  hover:brightness-110 
+  shadow-sm hover:shadow-md
+`,
+    
+    // Un secundario más limpio: Rojo suave que se vuelve sólido
+    secundario: "bg-acento/10 text-acento hover:bg-acento hover:text-white",
+    
     peligro: "bg-red-500 text-white hover:bg-red-600",
     gris: "bg-gray-100 text-gray-500 hover:bg-gray-200"
   };
@@ -33,19 +41,24 @@ export const Button = ({
     <button 
       type={type}
       onClick={onClick}
-      // Para evitar que el usuario mande muchas veces el form: El botón se bloquea si tú lo decides (disabled={true})
-      // El botón se deshabilita si está en estado de carga o si se pasa la prop disabled
       disabled={disabled || loading}
       className={`
-        py-4 rounded-pill font-bold transition-all active:scale-[0.98] 
-        uppercase text-[10px] tracking-widest flex items-center justify-center gap-2
+        /* Mantenemos tus py-4 y rounded-pill originales */
+        py-4 px-8 rounded-pill flex items-center justify-center gap-3
+        
+        /* Ajuste de letra: Subimos a 12px, negrita real y quitamos el uppercase agresivo */
+        /* Si quieres mantener uppercase, usa text-[11px] para que no sea tan diminuta */
+        font-bold text-[12px] uppercase tracking-[0.1em]
+        
+        /* Animación suave estilo Apple/Google */
+        transition-all duration-300 active:scale-[0.96]
+        
         disabled:opacity-50 disabled:cursor-not-allowed
         ${variants[variant]} 
         ${className}
       `}
     >
-      {loading ? <Loader2 size={16} className="animate-spin" /> : children}
+      {loading ? <Loader2 size={18} className="animate-spin" /> : children}
     </button>
-    // Si está cargando, mostramos el spinner; si no, mostramos el contenido normal del botón (texto, iconos, etc.)
   );
 };

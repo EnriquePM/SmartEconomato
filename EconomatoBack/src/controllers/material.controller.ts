@@ -20,20 +20,32 @@ export const getMateriales = async (req: Request, res: Response) => {
 export const createMaterial = async (req: Request, res: Response) => {
     try {
         const { nombre, unidad_medida, precio_unidad, id_categoria, stock, stock_minimo } = req.body;
+        const nombreNormalizado = typeof nombre === 'string' ? nombre.trim() : '';
+        const categoriaId = Number(id_categoria);
 
-        if (!nombre || !id_categoria) {
+        if (!nombreNormalizado || !Number.isInteger(categoriaId) || categoriaId <= 0) {
             res.status(400).json({ error: 'Nombre y Categoría son obligatorios' });
+            return;
+        }
+
+        const categoriaExiste = await prisma.categoria.findUnique({
+            where: { id_categoria: categoriaId },
+            select: { id_categoria: true }
+        });
+
+        if (!categoriaExiste) {
+            res.status(400).json({ error: 'La categoría seleccionada no existe' });
             return;
         }
 
         const nuevoMaterial = await prisma.material.create({
             data: {
-                nombre,
+                nombre: nombreNormalizado,
                 unidad_medida,
                 precio_unidad: precio_unidad || 0,
-                id_categoria: Number(id_categoria),
-                stock: stock ? Number(stock) : 0,
-                stock_minimo: stock_minimo ? Number(stock_minimo) : 0
+                stock: Number(stock) || 0,
+                stock_minimo: Number(stock_minimo) || 0,
+                id_categoria: categoriaId
             }
         });
 
