@@ -38,18 +38,20 @@ export const Input = ({
     <input
       id={id}
       type={type}
-      // 4. IMPORTANTE: Si el value llega vacío, ponemos "" para que no sea 'undefined'
       value={value ?? ""} 
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled} 
       min={type === 'number' ? min : undefined}
       className={`
-        w-full bg-gray-100 border-none rounded-full py-3 px-6 
+        w-full bg-input rounded-full py-3 px-6 
         text-sm font-semibold text-gray-800 
         placeholder:text-gray-400 
-        focus:ring-2 focus:ring-gray-200 outline-none 
-        transition-all 
+        border border-gray-300
+        focus:border-acento focus:bg-white 
+    
+    outline-none transition-all duration-200
+    ${className}
         ${className}
       `}
     />

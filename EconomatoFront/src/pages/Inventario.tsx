@@ -28,8 +28,8 @@ const Inventario = () => {
     <div className="space-y-0 animate-fade-in flex flex-col h-full gap-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 pb-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Inventario General</h1>
-          <p className="text-gray-500 mt-1 font-medium text-sm">Gestión de stock y existencias en tiempo real.</p>
+          <h1>Inventario General</h1>
+          <h2>Gestión de stock y existencias en tiempo real.</h2>
         </div>
 
         <div className="flex gap-2">

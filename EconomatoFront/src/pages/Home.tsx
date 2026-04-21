@@ -6,9 +6,8 @@ import {
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useHome } from "../hooks/usoHome";
-import { RecetaCard } from "../components/recetas/RecetaCard";
+import { RecetaCardHome } from "../components/recetas/RecetaCardHome";
 import { useNavigate } from 'react-router-dom';
-
 
 const HomePage = () => {
   const [fecha, setFecha] = useState(new Date());
@@ -16,22 +15,18 @@ const HomePage = () => {
   const navigate = useNavigate();
   const sinRecetas = !loadingRecetas && recetas.length === 0;
 
-
   useEffect(() => {
     const timer = setInterval(() => setFecha(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="h-full flex flex-col animate-fade-in-up overflow-hidden px-4 relative">
-   
 
-      {/* HEADER */}
-      <header className="flex justify-between items-center px-7 mb-3 md:mb-6 shrink-0 flex-wrap gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-600 tracking-tight">
+    <div className="h-full flex flex-col overflow-hidden px-4 pt-2 pb-4 animate-fade-in-up">
+      <header className="shrink-0 flex justify-between items-center px-4 mb-4 flex-wrap gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-primario tracking-tight">
           ¡Hola, {user?.username || "Cargando..."}!
         </h1>
-
         <div className="flex items-center gap-5 md:gap-10">
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Clima</span>
@@ -42,7 +37,7 @@ const HomePage = () => {
               </span>
             </div>
           </div>
-          <div className="flex flex-col items-end border-l border-white/60 pl-5 md:pl-10">
+          <div className="flex flex-col items-end border-l border-300 pl-5 md:pl-10">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Reloj</span>
             <div className="flex items-center gap-2">
               <Clock size={17} className="text-gray-400" strokeWidth={2.5} />
@@ -54,76 +49,62 @@ const HomePage = () => {
         </div>
       </header>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-5 min-h-0 mb-2 md:mb-3 mt-5">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-        {/* COLUMNA IZQUIERDA */}
-        <div className="lg:col-span-4 flex flex-col gap-5 md:gap-5 min-h-0 h-full">
+        <div className="lg:col-span-4 flex flex-col gap-4 min-h-0">
 
-          {/* CALENDARIO */}
-          <section className="bg-white/70 backdrop-blur-md rounded-pill shadow-sm  p-5 md:p-6 shadow-sm flex flex-col shrink-0 overflow-hidden">
-            <div className="w-full flex flex-col justify-center">
-              <Calendar
-                onChange={() => {}}
-                value={fecha}
-                locale="es-ES"
-                navigationLabel={({ date, locale }) =>
-                  date.toLocaleDateString(locale, { month: 'long' })
-                }
-                className="border-none w-full"
-              />
-            </div>
+          {/* Calendario: altura natural, no crece */}
+          <section className="shrink-0 bg-white/30 backdrop-blur-md rounded-pill shadow-sm p-4 md:p-5">
+            <Calendar
+              onChange={() => {}}
+              value={fecha}
+              locale="es-ES"
+              navigationLabel={({ date, locale }) =>
+                date.toLocaleDateString(locale, { month: 'long' })
+              }
+              className="border-none w-full"
+            />
           </section>
 
-          {/* AVISOS URGENTES */}
-          <section onClick={() => navigate('/inventario')} className="bg-white/70 backdrop-blur-md rounded-pill shadow-sm border-gray-100 p-4 flex flex-col lg:h-48 shadow-sm overflow-hidden">
-        
-            <div className="flex items-center gap-2 mb-3 shrink-0">
+          {/* Avisos: ocupa el resto de la columna izquierda */}
+          <section
+            onClick={() => navigate('/inventario')}
+            className="cursor-pointer flex-1 min-h-0 bg-white/70 backdrop-blur-md rounded-pill shadow-sm p-4 flex flex-col"
+          >
+            <div className="shrink-0 flex items-center gap-2 mb-3">
               <AlertCircle size={12} className="text-acento" />
-              <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Avisos urgentes</span>
+              <span className="text-[15px] font-medium text-primario">Avisos urgentes</span>
             </div>
-            <div className="flex flex-col gap-2 lg:flex-1 lg:justify-between overflow-y-auto scrollbar-hide">
-
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col gap-2">
               {loadingAvisos ? (
                 <span className="text-[10px] text-gray-300">Cargando...</span>
               ) : avisos.length === 0 ? (
                 <span className="text-[10px] text-gray-300 italic">Sin avisos urgentes</span>
-              ) : (
-                avisos.map((item, i) => (
-                  <div
-                      key={i}
-                      className="flex items-center justify-between px-3 py-2 rounded-[1rem] bg-white shadow-sm"
-                    >
-                      <span className="text-[11px] font-bold text-gray-700">
-                        {item.nombre}
-                      </span>
-                      <span className={`border border-gray-100 text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter
-                        ${item.color === "orange" ? "text-orange-500" : "text-yellow-600"}`}
-                      >
-                        {item.badge}
-                      </span>
-                    </div>
-                ))
-              )}
+              ) : avisos.map((item, i) => (
+                <div key={i} className="shrink-0 flex items-center justify-between px-3 py-2 rounded-[1rem] bg-white shadow-sm">
+                  <span className="text-[11px] font-bold text-gray-700">{item.nombre}</span>
+                  <span className={`border border-gray-100 text-acento text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter`}>
+                    {item.badge}
+                  </span>
+                </div>
+              ))}
             </div>
           </section>
 
         </div>
 
-        {/* COLUMNA DERECHA */}
-        <div className="lg:col-span-8 flex flex-col gap-5 md:gap-5 min-h-0 h-full">
+        {/* ── COLUMNA DERECHA (8/12) ── */}
+        <div className="lg:col-span-8 flex flex-col gap-4 min-h-0">
 
-          {/* RECETAS */}
-        <section
+          {/* Recetas: flex-[3] = 60% de la columna derecha */}
+          <section
             onClick={() => navigate('/recetas')}
-            className={`cursor-pointer bg-white/70 backdrop-blur-md rounded-pill shadow-sm  border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
-              sinRecetas ? 'shrink-0 h-24' : 'flex-1 min-h-0'
-            }`}
+            className="cursor-pointer flex-[3] min-h-0 bg-white/70 backdrop-blur-md rounded-pill shadow-sm p-5 md:p-6 flex flex-col"
           >
-            <div className="flex justify-between items-center mb-4 md:mb-5 shrink-0">
+            <div className="shrink-0 flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <Utensils size={14} className="text-acento" />
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recetario Destacado</span>
+                <span className="text-[15px] font-medium text-primario">Últimas Recetas</span>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); navigate('/recetas'); }}
@@ -134,40 +115,27 @@ const HomePage = () => {
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
-              {loadingRecetas ? (
-                <span className="text-[10px] text-gray-300">Cargando...</span>
-              ) : sinRecetas ? (
-                <span className="text-[10px] text-gray-300 italic">No hay recetas disponibles</span>
-              ) : (
-                <>
-                  {/* Desktop */}
-                  <div className="hidden lg:grid lg:grid-cols-2 gap-5 h-full">
-                    {recetas.slice(0, 2).map((r) => <RecetaCard key={r.id_receta} receta={r} />)}
-                  </div>
-                  {/* Tablet */}
-                  <div className="hidden md:grid lg:hidden grid-cols-2 gap-4">
-                    {recetas.slice(0, 4).map((r) => <RecetaCard key={r.id_receta} receta={r} />)}
-                  </div>
-                  {/* Mobile */}
-                  <div className="grid md:hidden grid-cols-1 gap-3">
-                    {recetas.slice(0, 2).map((r) => <RecetaCard key={r.id_receta} receta={r} />)}
-                  </div>
-                </>
+              {loadingRecetas && <span className="text-[10px] text-gray-300">Cargando...</span>}
+              {sinRecetas && <span className="text-[10px] text-gray-300 italic">No hay recetas disponibles</span>}
+              {!loadingRecetas && !sinRecetas && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                  {recetas.slice(0, 4).map((r) => (
+                    <RecetaCardHome key={r.id_receta} receta={r} />
+                  ))}
+                </div>
               )}
             </div>
           </section>
-          {/* PEDIDOS PENDIENTES */}
-          <section
 
+          {/* Pedidos: flex-[2] = 40% de la columna derecha */}
+          <section
             onClick={() => navigate('/pedidos')}
-            className={`cursor-pointer bg-white/70 backdrop-blur-md rounded-pill shadow-sm border-gray-100 p-5 md:p-8 flex flex-col overflow-hidden transition-all duration-300 ${
-              sinRecetas ? 'flex-1' : 'shrink-0 lg:h-36'
-            }`}
+            className="cursor-pointer flex-[2] min-h-0 bg-white/70 backdrop-blur-md rounded-pill shadow-sm p-5 md:p-6 flex flex-col"
           >
-            <div className="flex justify-between items-center shrink-0">
+            <div className="shrink-0 flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <ShoppingBasket size={14} className="text-acento" />
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pedidos Pendientes</span>
+                <span className="text-[15px] font-medium text-primario">Pedidos Pendientes</span>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); navigate('/pedidos'); }}
@@ -177,52 +145,42 @@ const HomePage = () => {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto scrollbar-hide mt-4">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col gap-2">
               {loadingPedidos ? (
                 <span className="text-[10px] text-gray-300">Cargando...</span>
               ) : pedidos.length === 0 ? (
                 <span className="text-[10px] text-gray-300 italic">Sin pedidos pendientes</span>
-              ) : (
-                pedidos.map((pedido) => (
-                  <div
-                    key={pedido.id_pedido}
-                    className="w-full flex items-center justify-between p-3 md:p-4 bg-white/40 shadow-sm backdrop-blur-sm border border-white/60 rounded-[1rem] hover:bg-white/60 transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter">
-                        {pedido.id_pedido}
+              ) : pedidos.map((pedido) => (
+                <div
+                  key={pedido.id_pedido}
+                  className="shrink-0 w-full flex items-center justify-between p-3 md:p-4 bg-white/40 backdrop-blur-sm border border-white/60 rounded-[1rem] hover:bg-white/60 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter hidden xl:block">
+                      {pedido.id_pedido}
+                    </span>
+                    <div>
+                      <span className="text-sm font-black text-gray-700 tracking-tight block leading-none">
+                        {pedido.proveedor ?? 'Sin proveedor'}
                       </span>
-                      <div>
-                        <span className="text-sm font-black text-gray-700 tracking-tight block leading-none">
-                          {pedido.proveedor ?? 'Sin proveedor'}
-                        </span>
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mt-1 block">
-                          {pedido.fecha_pedido
-                            ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-                            : '—'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 md:gap-6">
-                      <span className="font-black text-gray-900 tabular-nums text-sm md:text-base">
-                        {pedido.total_estimado != null ? `${Number(pedido.total_estimado).toFixed(2)}€` : '—'}
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mt-1 block">
+                        {pedido.fecha_pedido
+                          ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+                          : '—'}
                       </span>
-                      <div className="flex items-center gap-2 md:gap-3">
-                        <span className={`text-[9px] font-black px-2 md:px-3 py-1 rounded-full tracking-widest uppercase
-                          ${pedido.estado === 'CONFIRMADO' ? 'bg-green-100/80 text-green-700' :
-                            pedido.estado === 'VALIDADO'   ? 'bg-blue-100/80 text-blue-700' :
-                                                            'bg-yellow-100/80 text-yellow-700'}`}>
-                          {pedido.estado}
-                        </span>
-                        <div className="bg-white/70 backdrop-blur-sm p-2 rounded-lg shadow-sm group-hover:bg-acento transition-colors border border-white/60">
-                          <ChevronRight size={12} className="text-acento group-hover:text-white" strokeWidth={3} />
-                        </div>
-                      </div>
                     </div>
                   </div>
-                ))
-              )}
+                  <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                    <span className="font-black text-gray-900 tabular-nums text-sm md:text-base">
+                      {pedido.total_estimado != null ? `${Number(pedido.total_estimado).toFixed(2)}€` : '—'}
+                    </span>
+                
+                    <div className="bg-white/70 backdrop-blur-sm p-2 rounded-full shadow-sm group-hover:bg-acento transition-colors border border-white/60">
+                      <ChevronRight size={12} className="text-acento group-hover:text-white" strokeWidth={3} />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 

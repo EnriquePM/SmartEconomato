@@ -14,28 +14,31 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
   return (
     <div 
       onClick={() => onClick(receta)}
-      className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
+      className="bg-gray-100 p-6 rounded-[2.5rem] border border-gray-300 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
     >
-      <div className="flex justify-between mb-4">
-        <span className="text-[10px] font-black bg-acento/10 text-acento px-3 py-1 rounded-full uppercase">
-          {receta.receta_ingrediente?.length || 0} Ingredientes
-        </span>
-        <button
-          onClick={(e) => {
-            e.stopPropagation(); 
-            onEdit(receta);
-          }}
-          className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-200"
-        >
-          <Pencil size={12} /> Editar
-        </button>
-      </div>
+      <div className="flex mb-2 justify-end"> 
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onEdit(receta);
+    }}
+    className="group/edit inline-flex items-center gap-0 hover:gap-2 rounded-full bg-gray-100 px-2 py-2 transition-all duration-300 hover:bg-gray-200 hover:px-3 text-gray-600"
+  >
+ 
+    <Pencil size={14} className="shrink-0" />
 
-      <h3 className="text-2xl font-black text-gray-800 group-hover:text-acento transition-colors">
+
+    <span className="max-w-0 overflow-hidden opacity-0 group-hover/edit:max-w-[50px] group-hover/edit:opacity-100 transition-all duration-300 text-xs font-bold whitespace-nowrap">
+      Editar
+    </span>
+  </button>
+</div>
+
+      <h3 className="text-2xl font-black text-primario group-hover:text-white/90 transition-colors">
         {receta.nombre}
       </h3>
       
-      <p className="text-gray-400 text-sm mt-2 mr-5 line-clamp-4">
+      <p className="text-secundario text-sm mt-2 mr-5 line-clamp-3">
         {receta.descripcion}
       </p>
 
@@ -65,8 +68,8 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
         </div>
       )}
 
-      <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-        <span className="text-xs font-bold text-gray-400">
+      <div className="mt-6 pt-4 border-t border-gray-300 flex justify-between items-center">
+        <span className="text-xs font-bold text-secundario">
           Raciones: {receta.cantidad_platos}
         </span>
         <div onClick={(e) => e.stopPropagation()}>
@@ -76,11 +79,16 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
             style={{ textDecoration: 'none' }}
           >
             {({ loading }) => (
-              <div className="flex items-center gap-2 group/print cursor-pointer">
-                <p className="text-acento font-bold text-xs opacity-0 group-hover/print:opacity-100 transition-opacity duration-300 uppercase">
+              <div className="flex items-center gap-0 hover:gap-2 group/print cursor-pointer bg-white hover:bg-white px-2 py-2 rounded-full transition-all duration-300">
+                <span className={`
+                  text-acento font-bold text-xs whitespace-nowrap
+                  max-w-0 opacity-0 overflow-hidden
+                  group-hover/print:max-w-[100px] group-hover/print:opacity-100 
+                  transition-all duration-300
+                `}>
                   {loading ? 'Generando...' : 'Imprimir'}
-                </p>
-                <div className="text-acento">
+                </span>
+                <div className="text-acento shrink-0">
                   <Printer 
                     size={20} 
                     className={loading ? "animate-pulse" : ""} 

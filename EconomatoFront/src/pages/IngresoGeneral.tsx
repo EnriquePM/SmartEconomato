@@ -28,11 +28,11 @@ const IngresoGeneral = () => {
   return (
     <div className="animate-fade-in-up pb-10">
       <div className="pb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registrar Prodcucto</h1>
-        <p className="text-gray-500 mt-1 font-medium text-sm">Añade nuevos elementos al inventario general</p>
+        <h1>Registrar Producto</h1>
+        <h2>Añade nuevos elementos al inventario general</h2>
       </div>
 
-      <div className="flex gap-2 pl-2 relative items-end">
+      <div className="flex gap-2 pl-2 relative items-end mb-5">
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gray-200 z-0"></div>
         <button
           onClick={() => setActiveTab('ingredientes')}
@@ -48,7 +48,7 @@ const IngresoGeneral = () => {
         </button>
       </div>
 
-      <div className="w-full bg-white p-8 sm:p-10 rounded-b-3xl rounded-tr-3xl shadow-sm border border-gray-100">
+      <div className="w-full bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-gray-100">
         <form onSubmit={handleSubmit} className="flex flex-col gap-10">
           <div className="bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Referencia / Código de Barras</label>

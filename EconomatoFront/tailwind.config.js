@@ -8,23 +8,29 @@ export default {
       fontSize: {
         'caption': ['0.7rem', { lineHeight: '1rem', fontWeight: '400' }],
       },
+      fontFamily: {
+       sans: ['Poppins', 'system-ui', 'sans-serif'],
+     },
+
       colors: {
+        // Esto le dice a Tailwind: "cuando veas 'text-principal', 
+        // usa el valor de la variable CSS --text-principal"
+        primario: 'var(--text-principal)',
+        secundario: 'var(--text-secundario)',
+        terciario: 'var(--text-terciario)',
+        acento: 'var(--color-acento)',
+        fondo: 'var(--bg-pagina)',
+        input: '#F1F5F9', 
         DEFAULT: '#DC2626',
-        primario: colors.black,      
-        secundario: colors.gray[500], // El gris de tus subtítulos, placeholder y footer
+      
+
         acento: '#DC2626', 
         'acento': '#DC2626',
         // Superficies
-        fondo: '#f4f7fa', 
-        surface:'#f4f7fa',         
+        fondo: '#f4f7fa',        
         tarjeta: colors.white,        // Blanco Contenedor
-        input: colors.gray[100],      // El fondo de tus inputs y filas de tabla
+   
       },
-      content: {
-          title: '#111827', // Casi negro para h1, h2
-          body: '#4B5563',  // Gris oscuro para lectura
-          sub: '#9CA3AF',   // Gris claro para detalles
-        },
       borderRadius: {
         'panel': '2rem',              
         'pill': '30px',              

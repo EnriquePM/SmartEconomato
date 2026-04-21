@@ -36,8 +36,8 @@ const RecetasPage = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Libro de Recetas</h1>
-          <p className="text-gray-500 mt-1">Gestión de elaboraciones</p>
+          <h1>Libro de Recetas</h1>
+          <h2>Gestión de elaboraciones</h2>
         </div>
         <Button 
           variant="primario"      
@@ -57,6 +57,8 @@ const RecetasPage = () => {
                  />
       </div>
 
+<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+  <div className="overflow-auto scrollbar-global">
       {/* ESTADO DE CARGA */}
       {cargando && (
         <div className="text-center py-10 text-gray-500 font-bold animate-pulse">
@@ -72,7 +74,7 @@ const RecetasPage = () => {
 
       {/* LISTADO DE TARJETAS */}
       {!cargando && (
-        <div className="flex-1 overflow-y-auto pr-2 scrollbar-global">
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-global">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {recetasFiltradas.map((receta) => (
           <RecetaCard 
@@ -85,6 +87,8 @@ const RecetasPage = () => {
       </div>
       </div>
     )}
+    </div>
+    </div>
 
       {/* --- MODALES --- */}
 

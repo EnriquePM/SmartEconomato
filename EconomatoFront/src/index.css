@@ -2,22 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-acento: #DC2626;
+  --text-principal: #334155;
+  --text-secundario: #64748B;;
+  --text-terciario: #94A3B8;
+  --bg-pagina: #F8FAFC;
+}
+
 @layer base {
   body {
-    /* bg-fondo viene de tu config */
     @apply bg-fondo text-gray-900 antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
   }
 
-  /* H1: Ahora exactamente como en tu página de Gestión de Usuarios */
   h1 {
-    @apply text-3xl font-bold text-gray-900;
+    @apply text-xl font-extrabold text-primario tracking-tight mb-1;
   }
 
-  /* Subtítulos (párrafos de apoyo debajo de títulos) */
-  .subtitle {
-    @apply text-lg text-secundario mt-1;
+  h2{
+     @apply  text-sm font-medium text-secundario mb-3;
   }
+
 
   /* Estilo base para todas tus tablas */
   table {
