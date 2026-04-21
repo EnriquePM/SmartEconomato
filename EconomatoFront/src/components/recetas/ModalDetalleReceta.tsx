@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { X, ChefHat, Users, ClipboardList, CheckCircle2, Circle, CircleAlert, Pencil, FileText } from "lucide-react";
-import type { Receta } from "../models/Receta";
-import { useAuth } from "../context/AuthContext";
-import { useRecetaDetail } from "../hooks/useRecetaDetail";
+import type { Receta } from "../../models/Receta";
+import { useAuth } from "../../context/AuthContext";
+import { useRecetaDetail } from "../../hooks/useRecetaDetail";
 
 // IMPORTAMOS LOS COMPONENTES UI UNIFICADOS
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
+import { Button } from "../ui/Button";
+import { Input } from "..//ui/Input";
 
 interface ModalDetalleProps {
   receta: Receta;

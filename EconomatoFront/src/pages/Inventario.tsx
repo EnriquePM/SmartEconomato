@@ -1,5 +1,5 @@
 import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { Input } from '../components/ui/Input';
+import { Buscador } from '../components/ui/Buscador';
 import { Select } from '../components/ui/select';
 import { useInventarioManager } from '../hooks/useInventarioManager';
 
@@ -25,7 +25,7 @@ const Inventario = () => {
   };
 
   return (
-    <div className="space-y-0 animate-fade-in flex flex-col h-full">
+    <div className="space-y-0 animate-fade-in flex flex-col h-full gap-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 pb-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Inventario General</h1>
@@ -61,19 +61,14 @@ const Inventario = () => {
         </button>
       </div>
 
-      <div className="bg-white p-5 rounded-b-2xl rounded-tr-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 shrink-0 mb-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={18} />
-          <Input
-            type="text"
-            placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'} por nombre o ID...`}
-            value={busqueda}
-            onChange={(val) => setBusqueda(val)}
-            className="pl-12 !bg-gray-50/50"
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 shrink-0 mb-4">
+        <Buscador 
+          value={busqueda} 
+            onChange={setBusqueda} 
+            placeholder="Buscar por nombre del producto o ID..." 
           />
-        </div>
 
-        <div className="w-full md:w-72">
+        <div className="w-full md:w-80">
           <Select options={opcionesFiltro} value={filtroCategoria} onChange={(val) => setFiltroCategoria(val)} />
         </div>
       </div>

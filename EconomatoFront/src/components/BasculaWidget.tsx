@@ -1,6 +1,6 @@
-import { useBascula } from '../../hooks/useBascula';
+import { useBascula } from '../hooks/useBascula';
 import { Scale } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from '../components/ui/Button';
 
 type BasculaWidgetProps = {
     onCapturarPeso?: (peso: string) => void;

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronUp, User, Settings, LogOut } from 'lucide-react';
-import type { Usuario } from '../models/user.model';
-import { useAuth } from '../context/AuthContext';
+import type { Usuario } from '../../models/user.model';
+import { useAuth } from '../../context/AuthContext';
 
 
-import defaultAvatar from '../assets/Avatares/chef.png';
+import defaultAvatar from '../../assets/Avatares/chef.png';
 
 export const UserProfile = () => {
   const [isOpen, setIsOpen] = useState(false);

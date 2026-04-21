@@ -1,10 +1,10 @@
 import { X, Send, Trash2, Search, ShoppingCart, ShoppingBasket } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../components/ui/Button"; 
-import { Input } from "../components/ui/Input";  
-import { Select } from "../components/ui/select"; 
+import { Button } from "../ui/Button"; 
+import { Input } from "../ui/Input";  
+import { Select } from "../ui/select"; 
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import { PedidoPDF } from "./PedidoPDF"; 
+import { PedidoPDF } from "../pdf/PedidoPDF"; 
 import { Printer } from "lucide-react";
 
 export const ModalPedido = ({

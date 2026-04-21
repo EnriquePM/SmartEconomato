@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { Pencil } from "lucide-react";
 import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { ModalReceta } from "./ModalRecetas"; 
-import { ModalDetalleReceta } from "../components/ModalDetalleReceta";
+import { Buscador } from '../components/ui/Buscador';
+import { ModalReceta } from "../components/recetas/ModalRecetas"; 
+import { ModalDetalleReceta } from "../components/recetas/ModalDetalleReceta";
 import { useRecetas } from "../hooks/useRecetas";
 import { Plus } from "lucide-react";
-
-
+import { RecetaCard } from '..//components/recetas/RecetaCard';
 import type { Receta } from "../models/Receta";
 
 const RecetasPage = () => {
@@ -33,7 +31,7 @@ const RecetasPage = () => {
   };
 
   return (
-    <div className="p-8 min-h-screen font-sans bg-gray-50/50">
+    <div className="p-8 min-h-screen font-sans">
       
       {/* HEADER */}
       <div className="flex justify-between items-center mb-10">
@@ -52,13 +50,11 @@ const RecetasPage = () => {
 
       {/* BUSCADOR */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8">
-        <Input 
-          type="text"
-          placeholder="Buscar por nombre de receta..." 
-          value={busqueda}
-          onChange={(v: string) => setBusqueda(v)}
-          className="pl-4"
-        />
+       <Buscador 
+                 value={busqueda} 
+                   onChange={setBusqueda} 
+                   placeholder="Buscar por nombre de la receta..." 
+                 />
       </div>
 
       {/* ESTADO DE CARGA */}
@@ -76,75 +72,17 @@ const RecetasPage = () => {
 
       {/* LISTADO DE TARJETAS */}
       {!cargando && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {recetasFiltradas.map((receta) => (
-            <div 
-              key={receta.id_receta}
-              onClick={() => setRecetaSeleccionada(receta)}
-              className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
-            >
-              <div className="flex justify-between mb-4">
-                <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase">
-                  {receta.receta_ingrediente?.length || 0} Ingredientes
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openEditModal(receta);
-                  }}
-                  className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-200"
-                >
-                  <Pencil size={12} /> Editar
-                </button>
-              </div>
-              <h3 className="text-2xl font-black text-gray-800 group-hover:text-blue-600 transition-colors">
-                  {receta.nombre}
-              </h3>
-              <p className="text-gray-400 text-sm mt-2 line-clamp-2">
-                  {receta.descripcion}
-              </p>
-
-              {/* Allergen icons strip */}
-              {receta.receta_alergeno && receta.receta_alergeno.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {receta.receta_alergeno.map((ra) => (
-                    ra.alergeno.icono ? (
-                      <img
-                        key={ra.id_alergeno}
-                        src={ra.alergeno.icono}
-                        alt={ra.alergeno.nombre}
-                        title={ra.alergeno.nombre}
-                        className="w-7 h-7 object-contain rounded-md bg-amber-50 p-0.5 border border-amber-100"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    ) : (
-                      <span
-                        key={ra.id_alergeno}
-                        title={ra.alergeno.nombre}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold"
-                      >
-                        {ra.alergeno.nombre}
-                      </span>
-                    )
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-400">Raciones: {receta.cantidad_platos}</span>
-                  <span className="text-blue-600 font-bold text-xs">VER DETALLES →</span>
-              </div>
-            </div>
-          ))}
-
-          {/* Mensaje si no hay recetas */}
-          {recetasFiltradas.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-400 font-medium">
-              No se han encontrado recetas.
-            </div>
-          )}
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {recetasFiltradas.map((receta) => (
+          <RecetaCard 
+            key={receta.id_receta}
+            receta={receta}
+            onClick={(r) => setRecetaSeleccionada(r)}
+            onEdit={(r) => openEditModal(r)}
+          />
+        ))}
+      </div>
+    )}
 
       {/* --- MODALES --- */}
 

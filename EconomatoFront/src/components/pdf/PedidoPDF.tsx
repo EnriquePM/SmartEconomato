@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import logoSmart from '../assets/logoTransparet.png';
+import logoSmart from '../../assets/logoTransparet.png';
 
 const styles = StyleSheet.create({
   page: {

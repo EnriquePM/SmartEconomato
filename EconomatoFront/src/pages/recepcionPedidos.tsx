@@ -1,8 +1,12 @@
-import { ModalRecepcion } from "./ModalRecepcion"; 
-import { Input } from "../components/ui/Input";
+import { ModalRecepcion } from "../components/recepcion/ModalRecepcion"; 
+import { Buscador } from '../components/ui/Buscador';
 import { Select } from "../components/ui/select";
 import { PackageCheck, Loader2 } from "lucide-react";
 import { useRecepcion } from "../hooks/useRecepcion";
+import { AlertModal } from "../components/ui/AlertModal";
+import { useState } from "react";
+
+
 
 const RecepcionPage = () => {
   const {
@@ -18,7 +22,15 @@ const RecepcionPage = () => {
     refrescarLista,
     guardarCambiosLocal,
     cerrarModal,
+    errorUI,
+    setErrorUI,
+    exitoUI,
+    setExitoUI,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
   } = useRecepcion();
+
+  const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
 
   if (cargando) return <p>Cargando pedidos...</p>;
 
@@ -35,21 +47,14 @@ const RecepcionPage = () => {
                 {/* BARRA DE HERRAMIENTAS */}
 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
 
-  {/* Buscador */}
-  <div className="flex-1 relative">
-  
-    <Input
-      id="search-orders"
-      type="text"
-      placeholder="Buscar por proveedor o ID..."
-      value={busqueda}
-      onChange={(val) => setBusqueda(val)}
-      className="pl-12"
-    />
-  </div>
+  <Buscador 
+            value={busqueda} 
+              onChange={setBusqueda} 
+              placeholder="Buscar por proveedor o ID..." 
+            />
 
-  {/* Select de estado */}
-  <div className="min-w-[200px]">
+
+  <div className="w-full md:w-80">
     <Select
       id="estado-filter"
       value={filtroEstado}
@@ -150,8 +155,40 @@ const RecepcionPage = () => {
           onClose={cerrarModal} 
           onRefresh={refrescarLista}
           onSaveLocal={guardarCambiosLocal}
+          onSolicitarFinalizar={() => setMostrarConfirmar(true)}
         />
       )}
+      {/* ALERTAS CENTRALIZADAS */}
+      <AlertModal
+        isOpen={!!errorUI}
+        type="error"
+        title="Error"
+        message={errorUI}
+        onConfirm={() => setErrorUI(null)}
+      />
+
+      <AlertModal
+        isOpen={!!exitoUI}
+        type="success"
+        title="¡Éxito!"
+        message={exitoUI}
+        onConfirm={() => setExitoUI(null)}
+      />
+
+      <AlertModal
+  isOpen={mostrarConfirmar}
+  type="confirm"
+  title="¿Finalizar Recepción?"
+  message="¿Estás seguro de que quieres cerrar este pedido? El stock se actualizará automáticamente."
+  confirmText="SÍ, FINALIZAR"
+  cancelText="REVISAR"
+  onConfirm={() => {
+    setMostrarConfirmar(false);
+    // Aquí es donde llamarás a la función de guardado real
+    console.log("Guardando en la base de datos...");
+  }}
+  onCancel={() => setMostrarConfirmar(false)}
+/>
     </div>
   );
 };

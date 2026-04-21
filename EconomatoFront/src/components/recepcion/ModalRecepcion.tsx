@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { PackageOpen, Search, X } from "lucide-react";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { useRecepcionModal } from "../hooks/useModalRecepcion";
-import { BasculaWidget } from "../components/ui/BasculaWidget";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { useRecepcionModal } from "../../hooks/useModalRecepcion";
+import { BasculaWidget } from "../BasculaWidget";
 
 export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal }: any) => {
   const {
@@ -53,19 +53,6 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal }: any)
           </button>
         </div>
 
-        {/*BUSCADOR*/}
-        {!lineaEnFoco && (
-          <div className="px-8 py-3 bg-white border-b border-gray-50 shrink-0 animate-fade-in">
-            <Input 
-              id="search-recepcion"
-              type="text"
-              placeholder="Buscar ingrediente o material..."
-              value={busqueda}
-              onChange={(val) => manejarBusqueda(val)}
-              className="!bg-gray-50 shadow-inner"
-            />
-          </div>
-        )}
 
         {/*FORM*/}
         <div className={`px-8 py-4 bg-white ${lineaEnFoco ? 'flex-1 overflow-y-auto' : 'shrink-0'}`}>

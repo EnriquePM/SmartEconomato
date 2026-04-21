@@ -1,7 +1,7 @@
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/select';
-import { Globe, Loader2, Camera, Eraser } from 'lucide-react';
+import { Globe, Loader2, Camera, Eraser, Search } from 'lucide-react';
 import { ModalScanner } from '../components/ModalScanner';
 import { useIngresoGeneralForm } from '../hooks/useIngresoGeneralForm';
 
@@ -28,7 +28,7 @@ const IngresoGeneral = () => {
   return (
     <div className="animate-fade-in-up pb-10">
       <div className="pb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registro de Entradas</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Registrar Prodcucto</h1>
         <p className="text-gray-500 mt-1 font-medium text-sm">Añade nuevos elementos al inventario general</p>
       </div>
 
@@ -54,13 +54,21 @@ const IngresoGeneral = () => {
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Referencia / Código de Barras</label>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex gap-2">
-                <Input
-                  type="text"
-                  id="ean"
-                  placeholder="Escribe el código para buscar o escanéalo..."
-                  value={form.codigo}
-                  onChange={(val) => setCampo('codigo', val)}
-                />
+                 <div className="relative flex-1">
+                  <Search 
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none" 
+                    size={18} 
+                  />
+                  
+                  <Input
+                    type="text"
+                    id="ean"
+                    placeholder="Escribe el código para buscar o escanéalo..."
+                    value={form.codigo}
+                    onChange={(val) => setCampo('codigo', val)}
+                    className="pl-12 w-full" 
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setMostrarScanner(true)}

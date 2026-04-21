@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { X, Search, Trash2, ChefHat, ShoppingCart, Plus, FileText, AlertTriangle, Loader2 } from "lucide-react";
-import { useRecetaForm } from "../hooks/useRecetasForm";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input"; 
-import type { Receta } from "../models/Receta";
+import { useRecetaForm } from "../../hooks/useRecetasForm";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input"; 
+import type { Receta } from "../../models/Receta";
 
 interface ModalRecetaProps {
   onClose: () => void;

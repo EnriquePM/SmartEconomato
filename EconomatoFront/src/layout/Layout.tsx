@@ -1,5 +1,5 @@
-import { FooterBar } from "../components/ui/Footer";
-import SideBar from "../components/SideBar";
+import { FooterBar } from "../components/layout/Footer";
+import SideBar from "../components/layout/SideBar";
 import { Outlet, useLocation } from "react-router-dom";
 import fondo from "../assets/fondoHome.png"; 
 

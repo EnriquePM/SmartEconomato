@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users, ChefHat } from "lucide-react";import { NavLink, Link } from 'react-router-dom';
-import logoSmart from '../assets/logoTransparet.png';
+import logoSmart from '../../assets/logoTransparet.png';
 import { UserProfile } from './UserProfile';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 
 export default function SideBar() {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import FooterBar from '../components/ui/Footer';
+import FooterBar from '../components/layout/Footer';
 import logoSmart from '../assets/logoSmart.png';
 import fondo from '../assets/fondo.png';
 
