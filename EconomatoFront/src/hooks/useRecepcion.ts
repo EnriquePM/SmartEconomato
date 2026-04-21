@@ -21,7 +21,7 @@ export const useRecepcion = () => {
 
 			setPedidoSeleccionado((prev) => {
 				if (!prev?.id_pedido) {
-					return prev;
+					return null;
 				}
 
 				return data.find((pedido) => pedido.id_pedido === prev.id_pedido) ?? prev;
@@ -91,6 +91,8 @@ export const useRecepcion = () => {
 		setExitoUI,
 		confirmarFinalizar,
 		setConfirmarFinalizar,
-		cerrarModal: () => setPedidoSeleccionado(null),
+		cerrarModal: () => {
+  			setPedidoSeleccionado(null);
+		}
 	};
 };

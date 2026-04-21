@@ -5,7 +5,7 @@ import { Input } from "../ui/Input";
 import { useRecepcionModal } from "../../hooks/useModalRecepcion";
 import { BasculaWidget } from "../BasculaWidget";
 
-export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal }: any) => {
+export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal, onSolicitarFinalizar }: any) => {
   const {
     lineasMostradas,
     lineaEnFoco,
@@ -15,9 +15,9 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal }: any)
     actualizarValor,
     seleccionarLinea,
     enviarDatos,
-    finalizarRecepcion,
+    solicitarFinalizar,
     guardando
-  } = useRecepcionModal(pedido, onSaveLocal, onRefresh, onClose);
+  } = useRecepcionModal(pedido, onSaveLocal, onRefresh, onClose, onSolicitarFinalizar);
 
   const [usarBascula, setUsarBascula] = useState(false);
 
@@ -189,7 +189,7 @@ export const ModalRecepcion = ({ pedido, onClose, onRefresh, onSaveLocal }: any)
 
               <div className="px-8 py-6 border-t border-gray-100 bg-white flex justify-end gap-3 shrink-0">
                 <Button variant="gris" onClick={onClose} className="px-8">CERRAR</Button>
-                <Button variant="primario" onClick={finalizarRecepcion} disabled={guardando} className="px-10 font-black uppercase tracking-widest shadow-lg shadow-gray-200">
+                <Button variant="primario" onClick={solicitarFinalizar} disabled={guardando} className="px-10 font-black uppercase tracking-widest shadow-lg shadow-gray-200">
                   {guardando ? "GUARDANDO..." : "FINALIZAR RECEPCIÓN"}
                 </Button>
               </div>

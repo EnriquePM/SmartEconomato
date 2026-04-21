@@ -77,16 +77,6 @@ export const UserProfile = () => {
                 <span>Mi Perfil</span>
               </Link>
             </li>
-            <li>
-              <Link 
-                to="/ajustes" 
-                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <Settings size={16} /> 
-                <span>Ajustes de cuenta</span>
-              </Link>
-            </li>
             <li className="border-t border-gray-100 mt-1 pt-1">
               <button 
                 onClick={() => {

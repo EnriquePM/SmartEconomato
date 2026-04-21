@@ -29,7 +29,7 @@ export default function SideBar() {
         </svg>
       </button>
 
-      <aside id="logo-sidebar" className="fixed top-0 left-0 z-40 w-60 h-full transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+      <aside id="logo-sidebar" className="fixed top-0 left-0 z-20 w-60 h-full transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
         <div className="flex flex-col h-full px-3 py-4 pt-6 bg-neutral-primary-soft border-default">
           
           <div className="flex-grow overflow-y-auto">

@@ -27,7 +27,8 @@ export const useRecepcionModal = (
   pedido: Pedido,
   onSaveLocal: (p: Pedido) => void,
   onRefresh: () => Promise<void> | void,
-  onClose: () => void
+  onClose: () => void,
+ onSolicitarFinalizar: (ejecutar: () => Promise<void>) => void
 ) => {
   const [lineas, setLineas] = useState<LineaRecepcion[]>(() => {
     const esProductos = pedido.tipo_pedido === 'productos';
@@ -172,7 +173,7 @@ export const useRecepcionModal = (
     limpiarFoco();
   };
 
-  const finalizarRecepcion = async () => {
+  const ejecutarFinalizar= async () => {
     if (!pedido.id_pedido) {
       alert('El pedido no tiene identificador válido.');
       return;
@@ -198,15 +199,21 @@ export const useRecepcionModal = (
 
       await confirmarPedidoService(pedido.id_pedido, lineasParaEnviar);
       await onRefresh();
-      alert('Recepción guardada correctamente.');
       onClose();
+    
+    
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error al finalizar la recepción';
-      alert(message);
+      console.log(message)
+      throw error;
     } finally {
       setGuardando(false);
     }
   };
+  const solicitarFinalizar = () => {
+     if (!pedido.id_pedido) return;
+      onSolicitarFinalizar(ejecutarFinalizar); 
+    };
 
   const limpiarFoco = () => {
     setLineaEnFoco(null);
@@ -224,7 +231,8 @@ export const useRecepcionModal = (
     limpiarFoco,
     enviarDatos,
     seleccionarLinea,
-    finalizarRecepcion,
+    ejecutarFinalizar,
+    solicitarFinalizar,
     guardando
   };
 };

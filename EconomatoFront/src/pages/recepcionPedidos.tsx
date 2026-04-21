@@ -1,10 +1,10 @@
 import { ModalRecepcion } from "../components/recepcion/ModalRecepcion"; 
 import { Buscador } from '../components/ui/Buscador';
 import { Select } from "../components/ui/select";
-import { PackageCheck, Loader2 } from "lucide-react";
+import { PackageCheck, PackageOpen, Loader2 } from "lucide-react";
 import { useRecepcion } from "../hooks/useRecepcion";
 import { AlertModal } from "../components/ui/AlertModal";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 
 
@@ -22,15 +22,12 @@ const RecepcionPage = () => {
     refrescarLista,
     guardarCambiosLocal,
     cerrarModal,
-    errorUI,
-    setErrorUI,
     exitoUI,
     setExitoUI,
-    confirmarFinalizar,
-    setConfirmarFinalizar,
   } = useRecepcion();
 
   const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
+  const ejecutarFinalizarRef = useRef<(() => Promise<void>) | null>(null);
 
   if (cargando) return <p>Cargando pedidos...</p>;
 
@@ -103,42 +100,45 @@ const RecepcionPage = () => {
 
               <td className="p-5 text-center">
               <button
-    onClick={() => {
-      if (!pedido.id_pedido) return;
-      abrirPedido(pedido.id_pedido);
-    }}
-    disabled={abriendoPedidoId === pedido.id_pedido}
-    className="
-    /* 1. ESTRUCTURA Y TIPOGRAFÍA */
-    inline-flex items-center gap-2.5 
-    px-5 py-2.5 rounded-xl 
-    font-bold text-xs tracking-tight 
-    transition-all duration-200
-    
-    bg-blue-50 text-blue-600 border border-blue-100/50
- 
-    hover:bg-blue-600 hover:text-white 
-    hover:border-blue-600
-    hover:shadow-lg hover:shadow-blue-600/20
-    hover:-translate-y-0.5
-  
-    active:scale-95
-    
-    disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
-  "
-  >
-    {abriendoPedidoId === pedido.id_pedido ? (
-      <>
-        <Loader2 className="w-4 h-4 animate-spin" />
-        Abriendo...
-      </>
-    ) : (
-      <>
-        <PackageCheck className="w-4 h-4" />
-        Recepcionar
-      </>
-    )}
-  </button>
+                onClick={() => {
+                  if (!pedido.id_pedido) return;
+                  if (pedido.estado === 'CONFIRMADO') return; 
+                  abrirPedido(pedido.id_pedido);
+                }}
+                disabled={abriendoPedidoId === pedido.id_pedido}
+                  className={`
+                    inline-flex items-center gap-2.5 
+                    px-5 py-2.5 rounded-xl 
+                    font-bold text-xs tracking-tight 
+                    transition-all duration-200
+
+                    ${pedido.estado === 'CONFIRMADO'
+                      ? 'bg-emerald-50 text-emerald-600  cursor-default'
+                      : `bg-acento/20 text-acento border border-acento
+                        hover:bg-acento hover:text-white 
+                        hover:-translate-y-0.5
+                        active:scale-95
+                        disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`
+                    }
+                  `}
+              >
+                 {pedido.estado === 'CONFIRMADO' ? (
+                  <>
+                    <PackageOpen className="w-4 h-4" /> 
+                    Recepcionado
+                  </>
+                ) : abriendoPedidoId === pedido.id_pedido ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Abriendo...
+                  </>
+                ) : (
+                  <>
+                    <PackageCheck className="w-4 h-4" />
+                    Recepcionar
+                  </>
+                )}
+               </button>
             </td>
 
           </tr>
@@ -150,45 +150,43 @@ const RecepcionPage = () => {
 </div>
 
       {pedidoSeleccionado && (
+       
         <ModalRecepcion 
           pedido={pedidoSeleccionado} 
-          onClose={cerrarModal} 
+          onClose={() => {
+          cerrarModal();
+    }}
           onRefresh={refrescarLista}
           onSaveLocal={guardarCambiosLocal}
-          onSolicitarFinalizar={() => setMostrarConfirmar(true)}
+          onSolicitarFinalizar={(ejecutar: () => Promise<void>) => {  
+            ejecutarFinalizarRef.current = ejecutar;             
+            setMostrarConfirmar(true);                              
+          }}
         />
       )}
       {/* ALERTAS CENTRALIZADAS */}
       <AlertModal
-        isOpen={!!errorUI}
-        type="error"
-        title="Error"
-        message={errorUI}
-        onConfirm={() => setErrorUI(null)}
+        isOpen={mostrarConfirmar}
+        type="confirm"
+        title="¿Finalizar Recepción?"
+        message="¿Estás seguro de que quieres cerrar este pedido? El stock se actualizará automáticamente."
+        confirmText="SÍ, FINALIZAR"
+        cancelText="REVISAR"
+        onConfirm={() => {
+          setMostrarConfirmar(false);
+          ejecutarFinalizarRef.current?.();
+        }}
+        onCancel={() => setMostrarConfirmar(false)}
       />
 
-      <AlertModal
-        isOpen={!!exitoUI}
-        type="success"
-        title="¡Éxito!"
-        message={exitoUI}
-        onConfirm={() => setExitoUI(null)}
-      />
-
-      <AlertModal
-  isOpen={mostrarConfirmar}
-  type="confirm"
-  title="¿Finalizar Recepción?"
-  message="¿Estás seguro de que quieres cerrar este pedido? El stock se actualizará automáticamente."
-  confirmText="SÍ, FINALIZAR"
-  cancelText="REVISAR"
-  onConfirm={() => {
-    setMostrarConfirmar(false);
-    // Aquí es donde llamarás a la función de guardado real
-    console.log("Guardando en la base de datos...");
-  }}
-  onCancel={() => setMostrarConfirmar(false)}
+    <AlertModal
+  isOpen={!!exitoUI}
+  type="success"
+  title="¡Éxito!"
+  message={exitoUI} // Aquí saldrá: "La recepción se ha completado correctamente."
+  onConfirm={() => setExitoUI(null)} // Al darle a ACEPTAR, se cierra
 />
+
     </div>
   );
 };

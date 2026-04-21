@@ -31,10 +31,10 @@ const RecetasPage = () => {
   };
 
   return (
-    <div className="p-8 min-h-screen font-sans">
+    <div className="h-full flex flex-col overflow-hidden animate-fade-in-up">
       
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Libro de Recetas</h1>
           <p className="text-gray-500 mt-1">Gestión de elaboraciones</p>
@@ -72,7 +72,8 @@ const RecetasPage = () => {
 
       {/* LISTADO DE TARJETAS */}
       {!cargando && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="flex-1 overflow-y-auto pr-2 scrollbar-global">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {recetasFiltradas.map((receta) => (
           <RecetaCard 
             key={receta.id_receta}
@@ -81,6 +82,7 @@ const RecetasPage = () => {
             onEdit={(r) => openEditModal(r)}
           />
         ))}
+      </div>
       </div>
     )}
 
