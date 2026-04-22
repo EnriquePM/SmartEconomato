@@ -19,7 +19,7 @@ export const Buscador: React.FC<BuscadorProps> = ({
 }) => {
   return (
     <div className={`relative flex-1 ${className}`}>
-      <div className="absolute left-1 top-[46%] -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-acento text-white rounded-full z-10">
+     <div className="absolute left-1 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-acento text-white rounded-full z-10">
       <Search 
         size={18} 
         strokeWidth={2.5}

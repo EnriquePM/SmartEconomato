@@ -164,7 +164,6 @@ const RecepcionPage = () => {
           }}
         />
       )}
-      {/* ALERTAS CENTRALIZADAS */}
       <AlertModal
         isOpen={mostrarConfirmar}
         type="confirm"
@@ -183,8 +182,8 @@ const RecepcionPage = () => {
   isOpen={!!exitoUI}
   type="success"
   title="¡Éxito!"
-  message={exitoUI} // Aquí saldrá: "La recepción se ha completado correctamente."
-  onConfirm={() => setExitoUI(null)} // Al darle a ACEPTAR, se cierra
+  message={exitoUI} 
+  onConfirm={() => setExitoUI(null)} 
 />
 
     </div>

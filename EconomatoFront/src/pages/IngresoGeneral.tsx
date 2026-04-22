@@ -155,7 +155,7 @@ const IngresoGeneral = () => {
             </div>
           </>
         ) : (
-          <div className="md:col-span-2"></div> /* Espaciador para mantener el grid */
+          <div className="md:col-span-2"></div> 
         )}
       </div>
     </div>

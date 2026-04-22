@@ -33,7 +33,6 @@ const RecetasPage = () => {
   return (
     <div className="h-full flex flex-col overflow-hidden animate-fade-in-up">
       
-      {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1>Libro de Recetas</h1>
@@ -48,7 +47,6 @@ const RecetasPage = () => {
         </Button>
       </div>
 
-      {/* BUSCADOR */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8">
        <Buscador 
                  value={busqueda} 
@@ -57,11 +55,11 @@ const RecetasPage = () => {
                  />
       </div>
 
-<div className="bg-input/50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+<div className="bg-gray-50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
   <div className="overflow-auto scrollbar-global">
-      {/* ESTADO DE CARGA */}
+
       {cargando && (
-        <div className="text-center py-10 text-gray-500 font-bold animate-pulse">
+        <div className="text-center py-6 text-gray-500 font-bold animate-pulse">
           Cargando el recetario...
         </div>
       )}
@@ -72,9 +70,8 @@ const RecetasPage = () => {
         </div>
       )}
 
-      {/* LISTADO DE TARJETAS */}
       {!cargando && (
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-global">
+        <div className="flex-1 overflow-y-auto p-10 scrollbar-global">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {recetasFiltradas.map((receta) => (
           <RecetaCard 
@@ -89,8 +86,6 @@ const RecetasPage = () => {
     )}
     </div>
     </div>
-
-      {/* --- MODALES --- */}
 
       {recetaSeleccionada && (
         <ModalDetalleReceta 

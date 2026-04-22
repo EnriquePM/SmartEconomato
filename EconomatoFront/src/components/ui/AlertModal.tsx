@@ -30,10 +30,10 @@ export const AlertModal: React.FC<AlertModalProps> = ({
 
   const getIcon = () => {
     switch (type) {
-      case 'error': return <AlertTriangle size={32} strokeWidth={2.5} />;
-      case 'success': return <CheckCircle size={32} strokeWidth={2.5} />;
-      case 'confirm': return <Send size={32} strokeWidth={2.5} className="ml-1" />;
-      default: return <AlertTriangle size={32} strokeWidth={2.5} />;
+      case 'error': return <AlertTriangle size={25} strokeWidth={2} />;
+      case 'success': return <CheckCircle size={25} strokeWidth={2} />;
+      case 'confirm': return <Send size={25} strokeWidth={2} className="ml-1" />;
+      default: return <AlertTriangle size={25} strokeWidth={2} />;
     }
   };
 
@@ -47,10 +47,10 @@ export const AlertModal: React.FC<AlertModalProps> = ({
         </div>
 
         {/* Títulos y Mensajes */}
-        <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+        <h3 className="text-xl font-semibold text-primario mb-2 tracking-tight">
           {title}
         </h3>
-        <div className="text-sm text-gray-500 mb-8 leading-relaxed">
+        <div className="text-sm text-secundario mb-8 leading-relaxed">
           {message}
         </div>
 

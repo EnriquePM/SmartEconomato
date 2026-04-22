@@ -21,9 +21,10 @@ const HomePage = () => {
   }, []);
 
   return (
+   <div className="h-screen flex flex-col overflow-hidden px-6 pt-4 pb-5 animate-fade-in-up">
 
-    <div className="h-full flex flex-col overflow-hidden px-4 pt-2 pb-4 animate-fade-in-up">
-      <header className="shrink-0 flex justify-between items-center px-4 mb-4 flex-wrap gap-3">
+      {/* HEADER */}
+      <header className="shrink-0 flex justify-between items-center mb-4 flex-wrap gap-3">
         <h1 className="text-2xl md:text-3xl font-bold text-primario tracking-tight">
           ¡Hola, {user?.username || "Cargando..."}!
         </h1>
@@ -49,12 +50,14 @@ const HomePage = () => {
         </div>
       </header>
 
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* BODY GRID — items-start para que la col izquierda no se estire */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-        <div className="lg:col-span-4 flex flex-col gap-4 min-h-0">
+        {/* COLUMNA IZQUIERDA — altura natural, sin flex-1 */}
+        <div className="lg:col-span-4 flex flex-col gap-3">
 
-          {/* Calendario: altura natural, no crece */}
-          <section className="shrink-0 bg-white/30 backdrop-blur-md rounded-pill shadow-sm p-4 md:p-5">
+          {/* Calendario */}
+          <section className="bg-white/30 backdrop-blur-md rounded-pill shadow-sm px-3 py-2">
             <Calendar
               onChange={() => {}}
               value={fecha}
@@ -66,64 +69,54 @@ const HomePage = () => {
             />
           </section>
 
-          {/* Avisos: ocupa el resto de la columna izquierda */}
-          <div>
-             <div className="shrink-0 flex items-center gap-2 mb-3">
+          {/* Avisos — máximo 2 items, sin scroll */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
               <AlertCircle size={12} className="text-acento" />
               <span className="text-[15px] font-medium text-primario">Avisos urgentes</span>
             </div>
-          
-         <section
-  onClick={() => navigate('/inventario')}
-  className="cursor-pointer flex-1 min-h-0 bg-white rounded-[1rem] shadow-md p-4 flex flex-col"
->
-
-
-  <div className="h-[88px] overflow-y-auto scrollbar-hide flex flex-col gap-2">
-    {loadingAvisos ? (
-      <span className="text-[10px] text-gray-300">Cargando...</span>
-    ) : avisos.length === 0 ? (
-      <span className="text-[10px] text-gray-300 italic">Sin avisos urgentes</span>
-    ) : (
-      avisos.map((item, i) => (
-        /* shrink-0 es vital para que el scroll funcione y no se aplasten */
-        <div 
-          key={i} 
-          className="shrink-0 flex items-center justify-between px-3 py-2 rounded-[1rem] bg-gray-50/50 border border-gray-100 shadow-sm"
-        >
-          <span className="text-[11px] font-bold text-gray-700">{item.nombre}</span>
-          <span className="border border-gray-100 text-acento text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter bg-white">
-            {item.badge}
-          </span>
-        </div>
-      ))
-    )}
-  </div>
-</section>
+            <section
+              onClick={() => navigate('/inventario')}
+              className="cursor-pointer bg-white rounded-[1rem] shadow-md p-3 flex flex-col gap-2"
+            >
+              {loadingAvisos ? (
+                <span className="text-[10px] text-gray-300">Cargando...</span>
+              ) : avisos.length === 0 ? (
+                <span className="text-[10px] text-gray-300 italic">Sin avisos urgentes</span>
+              ) : (
+                avisos.slice(0, 2).map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between px-3 py-2 rounded-[1rem] bg-gray-50/50 border border-gray-100 shadow-sm"
+                  >
+                    <span className="text-[11px] font-bold text-gray-700">{item.nombre}</span>
+                    <span className="border border-gray-100 text-acento text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter bg-white">
+                      {item.badge}
+                    </span>
+                  </div>
+                ))
+              )}
+            </section>
           </div>
-
         </div>
 
-        {/* ── COLUMNA DERECHA (8/12) ── */}
-        <div className="lg:col-span-8 flex flex-col gap-4 min-h-0">
+        {/* COLUMNA DERECHA */}
+        <div className="lg:col-span-8 flex flex-col gap-4">
 
-          {/* Recetas: flex-[3] = 60% de la columna derecha */}
+          {/* Recetas */}
           <section
             onClick={() => navigate('/recetas')}
-            className="cursor-pointer flex-[3] min-h-0 rounded-pill p-5 md:p-6 flex flex-col"
+            className="cursor-pointer rounded-pill px-4 py-3 flex flex-col gap-3"
           >
-            <div className="shrink-0 flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <Utensils size={14} className="text-acento" />
-                <span className="text-[15px] font-medium text-primario">Últimas Recetas</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <Utensils size={14} className="text-acento" />
+              <span className="text-[15px] font-medium text-primario">Últimas Recetas</span>
             </div>
-
-            <div className="flex-1 p-1  min-h-0 overflow-y-auto scrollbar-hide">
+            <div className="px-1">
               {loadingRecetas && <span className="text-[10px] text-gray-300">Cargando...</span>}
               {sinRecetas && <span className="text-[10px] text-gray-300 italic">No hay recetas disponibles</span>}
               {!loadingRecetas && !sinRecetas && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {recetas.slice(0, 2).map((r) => (
                     <RecetaCard key={r.id_receta} receta={r} />
                   ))}
@@ -132,74 +125,79 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* Pedidos: flex-[2] = 40% de la columna derecha */}
-          <div>
-              <div className="px-5 shrink-0 flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <ShoppingBasket size={14} className="text-acento" />
-                <span className="text-[15px] font-medium text-primario">Pedidos Pendientes</span>
-              </div>
+          {/* Pedidos — máximo 3 para no desbordar */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 px-1">
+              <ShoppingBasket size={14} className="text-acento" />
+              <span className="text-[15px] font-medium text-primario">Pedidos Pendientes</span>
             </div>
-          
-          <section
-            onClick={() => navigate('/pedidos')}
-            className="cursor-pointer flex-[2] min-h-0  rounded-pill  px-5 flex flex-col"
-          >
-
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-1 flex flex-col gap-2">
+            <section
+              onClick={() => navigate('/pedidos')}
+              className="cursor-pointer rounded-pill px-1 flex flex-col gap-2"
+            >
               {loadingPedidos ? (
                 <span className="text-[10px] text-gray-300">Cargando...</span>
               ) : pedidos.length === 0 ? (
                 <span className="text-[10px] text-gray-300 italic">Sin pedidos pendientes</span>
-              ) : pedidos.map((pedido) => (
-                <div
-                  key={pedido.id_pedido}
-                  className="shrink-0 w-full flex items-center justify-between p-3 md:p-4  shadow-md bg-white  rounded-[1rem] transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter hidden xl:block">
-                      {pedido.id_pedido}
-                    </span>
-                    <div>
-                      <span className="text-sm font-black text-gray-700 tracking-tight block leading-none">
-                        {pedido.proveedor ?? 'Sin proveedor'}
+              ) : (
+                pedidos.slice(0, 3).map((pedido) => (
+                  <div
+                    key={pedido.id_pedido}
+                    className="w-full flex items-center justify-between p-3 md:p-4 shadow-md bg-white rounded-[1rem] transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter hidden xl:block">
+                        {pedido.id_pedido}
                       </span>
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mt-1 block">
-                        {pedido.fecha_pedido
-                          ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-                          : '—'}
+                      <div>
+                        <span className="text-sm font-black text-gray-700 tracking-tight block leading-none">
+                          {pedido.proveedor ?? 'Sin proveedor'}
+                        </span>
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mt-1 block">
+                          {pedido.fecha_pedido
+                            ? new Date(pedido.fecha_pedido).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+                            : '—'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                      <span className="font-black text-gray-900 tabular-nums text-sm md:text-base">
+                        {pedido.total_estimado != null ? `${Number(pedido.total_estimado).toFixed(2)}€` : '—'}
                       </span>
+                      <div className="bg-white/70 backdrop-blur-sm p-2 rounded-full shadow-sm group-hover:bg-acento transition-colors border border-white/60">
+                        <ChevronRight size={12} className="text-acento group-hover:text-white" strokeWidth={3} />
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                    <span className="font-black text-gray-900 tabular-nums text-sm md:text-base">
-                      {pedido.total_estimado != null ? `${Number(pedido.total_estimado).toFixed(2)}€` : '—'}
-                    </span>
-                
-                    <div className="bg-white/70 backdrop-blur-sm p-2 rounded-full shadow-sm group-hover:bg-acento transition-colors border border-white/60">
-                      <ChevronRight size={12} className="text-acento group-hover:text-white" strokeWidth={3} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))
+              )}
+            </section>
           </div>
-
         </div>
       </div>
 
       <style>{`
-        .react-calendar__navigation__label {
-          pointer-events: none;
-          background: none !important;
-        }
         .react-calendar__navigation__label__textContent {
           color: #cad2e1ff !important;
           font-weight: 800 !important;
           text-transform: lowercase !important;
-          font-size: 18px !important;
+          font-size: 15px !important;
           letter-spacing: -0.02em;
+        }
+        .react-calendar__navigation {
+          margin-bottom: 0.5rem !important;
+        }
+        .react-calendar__navigation button {
+          font-size: 16px !important;
+          min-width: 30px !important;
+        }
+        .react-calendar__tile {
+          padding: 0.5em 0.4em !important;
+          font-size: 11px !important;
+        }
+        .react-calendar__navigation__label {
+          pointer-events: none;
+          background: none !important;
         }
         .react-calendar__navigation__prev2-button,
         .react-calendar__navigation__next2-button {
@@ -212,32 +210,10 @@ const HomePage = () => {
           background: transparent;
         }
         .react-calendar__month-view__weekdays { display: none !important; }
-        .react-calendar__navigation {
-          margin-bottom: 1rem !important;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        .react-calendar__navigation button {
-          color: #7d8187ff !important;
-          min-width: 40px !important;
-          font-size: 18px !important;
-          transition: color 0.2s ease;
-          background: transparent !important;
-        }
         .react-calendar__navigation button:enabled:hover,
         .react-calendar__navigation button:enabled:focus {
           background-color: transparent !important;
           color: #DC2626 !important;
-        }
-        .react-calendar__tile {
-          padding: 0.75em 0.5em !important;
-          font-size: 13px !important;
-          font-weight: 700;
-          color: #6b7280;
-          background: none;
-          border-radius: 12px !important;
-          transition: all 0.2s ease;
         }
         .react-calendar__tile:enabled:hover,
         .react-calendar__tile:enabled:focus {
@@ -247,7 +223,7 @@ const HomePage = () => {
         .react-calendar__tile--active {
           background: #DC2626 !important;
           color: white !important;
-          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+          box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);
         }
         .react-calendar__tile--now {
           background: #DC2626 !important;

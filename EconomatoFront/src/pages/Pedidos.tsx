@@ -24,7 +24,7 @@ const Pedidos = () => {
     const [filtroProveedor, setFiltroProveedor] = useState("todos");
     const [errorUI, setErrorUI] = useState<string | null>(null);
     const [mostrarConfirmacionEnvio, setMostrarConfirmacionEnvio] = useState(false);
-    const [exitoUI, setExitoUI] = useState<string | null>(null); // Nuevo estado para el éxito
+    const [exitoUI, setExitoUI] = useState<string | null>(null); 
 
     const pedidosFiltrados = pedidos.filter(p => {
         const coincideBusqueda =
@@ -51,7 +51,6 @@ const Pedidos = () => {
 
     const cerrarModal = () => setVista('lista');
     
-    // Guardar Borrador 
     const manejarGuardarBorrador = async () => {
         if (!pedidoActual.proveedor?.trim()) {
             setErrorUI("Debes seleccionar un proveedor antes de guardar el borrador.");
@@ -62,7 +61,6 @@ const Pedidos = () => {
         setExitoUI("Borrador guardado con éxito."); 
     };
 
-    // Intentar Enviar Pedido 
     const intentarEnviarPedido = () => {
         if (!pedidoActual.proveedor?.trim()) {
             setErrorUI("Debes seleccionar un proveedor antes de enviar el pedido.");
@@ -71,7 +69,6 @@ const Pedidos = () => {
         setMostrarConfirmacionEnvio(true);
     };
 
-    // Confirmación final de envío
     const confirmarEnvioPedido = async () => {
         await guardarPedido('PENDIENTE');
         setMostrarConfirmacionEnvio(false);
@@ -129,7 +126,6 @@ const Pedidos = () => {
                 </div>
             </div>
 
-            {/* BARRA DE HERRAMIENTAS */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
                <Buscador 
                          value={busqueda} 
@@ -150,7 +146,6 @@ const Pedidos = () => {
                 </div>
             </div>
 
-            {/* TABLA DE PEDIDOS */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
                 <div className="overflow-auto scrollbar-global">
                     <table className="w-full text-left">
@@ -275,7 +270,6 @@ const Pedidos = () => {
                 </div>
             </div>
 
-            {/* POP-UP DE ERROR (Falta Proveedor) */}
             {errorUI && (
                 <AlertModal
                     isOpen={!!errorUI}
@@ -286,7 +280,6 @@ const Pedidos = () => {
                 />
             )}
 
-            {/* POP-UP DE CONFIRMACIÓN DE ENVÍO */}
             {mostrarConfirmacionEnvio && (
                 <AlertModal
                     isOpen={mostrarConfirmacionEnvio}
@@ -304,7 +297,6 @@ const Pedidos = () => {
                 />
             )}
 
-            {/* POP-UP DE ÉXITO */}
             {exitoUI && (
                 <AlertModal
                     isOpen={!!exitoUI}
