@@ -6,7 +6,7 @@ import {
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { useHome } from "../hooks/usoHome";
-import { RecetaCardHome } from "../components/recetas/RecetaCardHome";
+import { RecetaCard } from "../components/recetas/RecetaCard";
 import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
@@ -67,29 +67,40 @@ const HomePage = () => {
           </section>
 
           {/* Avisos: ocupa el resto de la columna izquierda */}
-          <section
-            onClick={() => navigate('/inventario')}
-            className="cursor-pointer flex-1 min-h-0 bg-white/70 backdrop-blur-md rounded-pill shadow-sm p-4 flex flex-col"
-          >
-            <div className="shrink-0 flex items-center gap-2 mb-3">
+          <div>
+             <div className="shrink-0 flex items-center gap-2 mb-3">
               <AlertCircle size={12} className="text-acento" />
               <span className="text-[15px] font-medium text-primario">Avisos urgentes</span>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col gap-2">
-              {loadingAvisos ? (
-                <span className="text-[10px] text-gray-300">Cargando...</span>
-              ) : avisos.length === 0 ? (
-                <span className="text-[10px] text-gray-300 italic">Sin avisos urgentes</span>
-              ) : avisos.map((item, i) => (
-                <div key={i} className="shrink-0 flex items-center justify-between px-3 py-2 rounded-[1rem] bg-white shadow-sm">
-                  <span className="text-[11px] font-bold text-gray-700">{item.nombre}</span>
-                  <span className={`border border-gray-100 text-acento text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter`}>
-                    {item.badge}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
+          
+         <section
+  onClick={() => navigate('/inventario')}
+  className="cursor-pointer flex-1 min-h-0 bg-white rounded-[1rem] shadow-md p-4 flex flex-col"
+>
+
+
+  <div className="h-[88px] overflow-y-auto scrollbar-hide flex flex-col gap-2">
+    {loadingAvisos ? (
+      <span className="text-[10px] text-gray-300">Cargando...</span>
+    ) : avisos.length === 0 ? (
+      <span className="text-[10px] text-gray-300 italic">Sin avisos urgentes</span>
+    ) : (
+      avisos.map((item, i) => (
+        /* shrink-0 es vital para que el scroll funcione y no se aplasten */
+        <div 
+          key={i} 
+          className="shrink-0 flex items-center justify-between px-3 py-2 rounded-[1rem] bg-gray-50/50 border border-gray-100 shadow-sm"
+        >
+          <span className="text-[11px] font-bold text-gray-700">{item.nombre}</span>
+          <span className="border border-gray-100 text-acento text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-tighter bg-white">
+            {item.badge}
+          </span>
+        </div>
+      ))
+    )}
+  </div>
+</section>
+          </div>
 
         </div>
 
@@ -99,28 +110,22 @@ const HomePage = () => {
           {/* Recetas: flex-[3] = 60% de la columna derecha */}
           <section
             onClick={() => navigate('/recetas')}
-            className="cursor-pointer flex-[3] min-h-0 bg-white/70 backdrop-blur-md rounded-pill shadow-sm p-5 md:p-6 flex flex-col"
+            className="cursor-pointer flex-[3] min-h-0 rounded-pill p-5 md:p-6 flex flex-col"
           >
             <div className="shrink-0 flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <Utensils size={14} className="text-acento" />
                 <span className="text-[15px] font-medium text-primario">Últimas Recetas</span>
               </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate('/recetas'); }}
-                className="text-[10px] font-black text-acento uppercase tracking-widest hover:underline"
-              >
-                Ver todo
-              </button>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
+            <div className="flex-1 p-1  min-h-0 overflow-y-auto scrollbar-hide">
               {loadingRecetas && <span className="text-[10px] text-gray-300">Cargando...</span>}
               {sinRecetas && <span className="text-[10px] text-gray-300 italic">No hay recetas disponibles</span>}
               {!loadingRecetas && !sinRecetas && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                  {recetas.slice(0, 4).map((r) => (
-                    <RecetaCardHome key={r.id_receta} receta={r} />
+                  {recetas.slice(0, 2).map((r) => (
+                    <RecetaCard key={r.id_receta} receta={r} />
                   ))}
                 </div>
               )}
@@ -128,24 +133,20 @@ const HomePage = () => {
           </section>
 
           {/* Pedidos: flex-[2] = 40% de la columna derecha */}
-          <section
-            onClick={() => navigate('/pedidos')}
-            className="cursor-pointer flex-[2] min-h-0 bg-white/70 backdrop-blur-md rounded-pill shadow-sm p-5 md:p-6 flex flex-col"
-          >
-            <div className="shrink-0 flex justify-between items-center mb-4">
+          <div>
+              <div className="px-5 shrink-0 flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <ShoppingBasket size={14} className="text-acento" />
                 <span className="text-[15px] font-medium text-primario">Pedidos Pendientes</span>
               </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate('/pedidos'); }}
-                className="text-[10px] font-black text-acento uppercase tracking-widest hover:underline"
-              >
-                Gestionar
-              </button>
             </div>
+          
+          <section
+            onClick={() => navigate('/pedidos')}
+            className="cursor-pointer flex-[2] min-h-0  rounded-pill  px-5 flex flex-col"
+          >
 
-            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col gap-2">
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-1 flex flex-col gap-2">
               {loadingPedidos ? (
                 <span className="text-[10px] text-gray-300">Cargando...</span>
               ) : pedidos.length === 0 ? (
@@ -153,7 +154,7 @@ const HomePage = () => {
               ) : pedidos.map((pedido) => (
                 <div
                   key={pedido.id_pedido}
-                  className="shrink-0 w-full flex items-center justify-between p-3 md:p-4 bg-white/40 backdrop-blur-sm border border-white/60 rounded-[1rem] hover:bg-white/60 transition-all cursor-pointer group"
+                  className="shrink-0 w-full flex items-center justify-between p-3 md:p-4  shadow-md bg-white  rounded-[1rem] transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 md:gap-4">
                     <span className="font-mono text-[10px] text-gray-300 font-bold tracking-tighter hidden xl:block">
@@ -183,6 +184,7 @@ const HomePage = () => {
               ))}
             </div>
           </section>
+          </div>
 
         </div>
       </div>

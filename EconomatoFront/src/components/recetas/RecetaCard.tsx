@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Printer } from 'lucide-react';
+import { Pencil, Printer, Hash, Utensils, NotepadText, CookingPot, EggFried, BookMarked, Croissant, Soup} from 'lucide-react'; // Importamos Utensils
 import type { Receta } from '../../models/Receta';
 import { RecetaPDF } from '../pdf/RecetaPDF';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -14,89 +14,86 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
   return (
     <div 
       onClick={() => onClick(receta)}
-      className="bg-gray-100 p-6 rounded-[2.5rem] border border-gray-300 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group"
+      /* overflow-hidden es CRUCIAL para que el icono gigante se corte */
+      className="relative group overflow-hidden bg-white rounded-[2rem] shadow-md border border-gray-100 hover:shadow-xl transition-all duration-500 cursor-pointer h-[210px] flex flex-col"
     >
-      <div className="flex mb-2 justify-end"> 
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      onEdit(receta);
-    }}
-    className="group/edit inline-flex items-center gap-0 hover:gap-2 rounded-full bg-gray-100 px-2 py-2 transition-all duration-300 hover:bg-gray-200 hover:px-3 text-gray-600"
-  >
- 
-    <Pencil size={14} className="shrink-0" />
-
-
-    <span className="max-w-0 overflow-hidden opacity-0 group-hover/edit:max-w-[50px] group-hover/edit:opacity-100 transition-all duration-300 text-xs font-bold whitespace-nowrap">
-      Editar
-    </span>
-  </button>
-</div>
-
-      <h3 className="text-2xl font-black text-primario group-hover:text-white/90 transition-colors">
-        {receta.nombre}
-      </h3>
       
-      <p className="text-secundario text-sm mt-2 mr-5 line-clamp-3">
-        {receta.descripcion}
-      </p>
+      {/* 1. FONDO DECORATIVO GIGANTE Y CORTADO */}
+      {/* - Usamos coordenadas negativas (bottom-[-50px] right-[-40px]) para "empujar" el icono fuera de la tarjeta.
+         - Al tener overflow-hidden arriba, el icono se corta por la mitad.
+         - La opacidad es extremadamente baja (0.03 o 3%) para que sea una marca de agua sutil.
+      */}
+      <div className="absolute bottom-[-60px] right-[-40px] text-acento/10   group-hover:scale-105 transition-all duration-700 pointer-events-none">
+        <Soup
+          size={180} 
+          strokeWidth={1} 
+        />
+      </div>
 
-      {/* Tira de Alérgenos */}
-      {receta.receta_alergeno && receta.receta_alergeno.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {receta.receta_alergeno.map((ra) => (
-            ra.alergeno.icono ? (
-              <img
-                key={ra.id_alergeno}
-                src={ra.alergeno.icono}
-                alt={ra.alergeno.nombre}
-                title={ra.alergeno.nombre}
-                className="w-7 h-7 object-contain rounded-md bg-amber-50 p-0.5 border border-amber-100"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            ) : (
-              <span
-                key={ra.id_alergeno}
-                title={ra.alergeno.nombre}
-                className="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold"
-              >
-                {ra.alergeno.nombre}
-              </span>
-            )
+     
+      {/* 3. CONTENIDO PRINCIPAL (Por encima, z-10) */}
+      <div className="p-5 flex flex-col h-full relative z-10">
+        
+        {/* TOP: Indicador y Botón Editar */}
+        <div className="flex justify-between items-start mb-2">
+          <span className="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em]">
+            Receta
+          </span>
+          
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(receta); }}
+            className="p-2 rounded-full bg-gray-50 text-gray-400 hover:bg-acento hover:text-white transition-all shadow-sm border border-gray-100"
+          >
+            <Pencil size={11} />
+          </button>
+        </div>
+
+        {/* CONTENIDO CENTRAL */}
+        <div className="flex-1 mt-1">
+          <h3 className="text-lg font-extrabold text-gray-800 leading-tight line-clamp-2 group-hover:text-acento transition-colors">
+            {receta.nombre}
+          </h3>
+          <p className="text-[11px] text-gray-400 mt-1 line-clamp-2 leading-snug font-medium">
+            {receta.descripcion || "Detalles de la receta..."}
+          </p>
+        </div>
+
+        {/* ALÉRGENOS MINI */}
+        <div className="flex gap-1.5 mb-3 items-center">
+          {receta.receta_alergeno?.slice(0, 5).map((ra) => (
+            <div key={ra.id_alergeno} className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 p-1 flex items-center justify-center transition-transform hover:scale-110 shadow-sm">
+              {ra.alergeno.icono ? (
+                <img src={ra.alergeno.icono} className="w-full h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity" alt="" />
+              ) : (
+                <span className="text-[8px] font-bold text-gray-400">{ra.alergeno.nombre[0]}</span>
+              )}
+            </div>
           ))}
         </div>
-      )}
 
-      <div className="mt-6 pt-4 border-t border-gray-300 flex justify-between items-center">
-        <span className="text-xs font-bold text-secundario">
-          Raciones: {receta.cantidad_platos}
-        </span>
-        <div onClick={(e) => e.stopPropagation()}>
-          <PDFDownloadLink
-            document={<RecetaPDF receta={receta} />}
-            fileName={`Receta_${receta.nombre.replace(/\s+/g, '_')}.pdf`}
-            style={{ textDecoration: 'none' }}
-          >
-            {({ loading }) => (
-              <div className="flex items-center gap-0 hover:gap-2 group/print cursor-pointer bg-white hover:bg-white px-2 py-2 rounded-full transition-all duration-300">
-                <span className={`
-                  text-acento font-bold text-xs whitespace-nowrap
-                  max-w-0 opacity-0 overflow-hidden
-                  group-hover/print:max-w-[100px] group-hover/print:opacity-100 
-                  transition-all duration-300
-                `}>
-                  {loading ? 'Generando...' : 'Imprimir'}
-                </span>
-                <div className="text-acento shrink-0">
-                  <Printer 
-                    size={20} 
-                    className={loading ? "animate-pulse" : ""} 
-                  />
+        {/* FOOTER */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+          <div className="flex items-center gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-acento/40 group-hover:bg-acento transition-colors" />
+            <span className="text-[10px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">
+              {receta.cantidad_platos} pers.
+            </span>
+          </div>
+
+          <div onClick={(e) => e.stopPropagation()}>
+            <PDFDownloadLink
+              document={<RecetaPDF receta={receta} />}
+              fileName={`Receta_${receta.nombre.replace(/\s+/g, '_')}.pdf`}
+              style={{ textDecoration: 'none' }}
+            >
+              {({ loading }) => (
+                <div className="flex items-center gap-1 text-acento font-bold text-[10px] uppercase tracking-wider bg-acento/5 px-2 py-1 rounded-lg hover:bg-acento/10 transition-all border border-acento/10">
+                  <Printer size={12} className={loading ? "animate-pulse" : ""} />
+                  {loading ? '...' : 'PDF'}
                 </div>
-              </div>
-            )}
-          </PDFDownloadLink>
+              )}
+            </PDFDownloadLink>
+          </div>
         </div>
       </div>
     </div>

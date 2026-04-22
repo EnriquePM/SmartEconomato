@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { X, ChefHat, Users, ClipboardList, CheckCircle2, Circle, CircleAlert, Pencil, FileText } from "lucide-react";
+import { Printer,X, ChefHat, Users, ClipboardList, CheckCircle2, Circle, CircleAlert, Pencil, FileText } from "lucide-react";
 import type { Receta } from "../../models/Receta";
 import { useAuth } from "../../context/AuthContext";
 import { useDetalleReceta } from "../../hooks/useDetalleReceta";
 import { AlertModal } from "../ui/AlertModal";
+import { RecetaPDF } from '../pdf/RecetaPDF';
+import { PDFDownloadLink } from '@react-pdf/renderer';
 
 // IMPORTAMOS LOS COMPONENTES UI UNIFICADOS
 import { Button } from "../ui/Button";
@@ -213,17 +215,31 @@ export const ModalDetalleReceta = ({ receta, onClose, onEdit, onRecetaHecha }: M
 
         {/* FOOTER */}
         <div className="px-8 py-6 border-t border-gray-100 bg-white flex justify-end gap-3 shrink-0">
-          <Button variant="gris" onClick={() => onEdit(receta)} className="px-8 font-bold flex items-center gap-2">
-            <Pencil size={16} /> EDITAR RECETA
-          </Button>
           <Button 
-            variant="primario" 
-            onClick={alerta.solicitar} 
-            disabled={!canMake || !canUseMakeAction || elaborando}
-          >
-            <ChefHat size={18} />
-            {elaborando ? "ELABORANDO..." : "HACER RECETA"}
-          </Button>
+    variant="gris" 
+    onClick={() => onEdit(receta)} 
+    className="px-8 font-bold flex items-center gap-2"
+  >
+    <Pencil size={16} /> EDITAR
+  </Button>
+
+  {/* BOTÓN IMPRIMIR (Sustituyendo al de Hacer Receta) */}
+  <PDFDownloadLink
+    document={<RecetaPDF receta={receta} />}
+    fileName={`Receta_${receta.nombre.replace(/\s+/g, '_')}.pdf`}
+    style={{ textDecoration: 'none' }}
+  >
+    {({ loading }) => (
+      <Button 
+        variant="primario" 
+        disabled={loading}
+        className="px-8 font-bold flex items-center gap-2"
+      >
+        <Printer size={18} className={loading ? "animate-pulse" : ""} />
+        {loading ? "GENERANDO..." : "IMPRIMIR"}
+      </Button>
+    )}
+  </PDFDownloadLink>
         </div>
       </div>
 

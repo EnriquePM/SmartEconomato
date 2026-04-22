@@ -157,11 +157,6 @@ export const useModalRecetas = ({ onSuccess, recetaInicial }: UseRecetaFormOptio
         setRaciones(valor);
     };
 
-   
-
-   
-        //La nueva lógica de las alertas: 
-        // LÓGICA DE GUARDADO CON CONFIRMACIÓN
 
     const ejecutarGuardado = async () => {
         cerrarAlerta();

@@ -57,7 +57,7 @@ const RecetasPage = () => {
                  />
       </div>
 
-<div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+<div className="bg-input/50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
   <div className="overflow-auto scrollbar-global">
       {/* ESTADO DE CARGA */}
       {cargando && (
