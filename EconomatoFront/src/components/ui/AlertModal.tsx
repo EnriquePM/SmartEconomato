@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, CheckCircle, Send } from 'lucide-react';
 import { Button } from './Button';
 
+
 type AlertType = 'error' | 'success' | 'confirm';
 
 interface AlertModalProps {

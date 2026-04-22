@@ -1,11 +1,12 @@
 import { X, Send, Trash2, Search, ShoppingCart, ShoppingBasket } from "lucide-react";
-import { useState } from "react";
 import { Button } from "../ui/Button"; 
 import { Input } from "../ui/Input";  
 import { Select } from "../ui/select"; 
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { PedidoPDF } from "../pdf/PedidoPDF"; 
 import { Printer } from "lucide-react";
+import { useModalPedidos } from "../../hooks/useModalPedido";
+import { AlertModal } from "../ui/AlertModal";
 
 export const ModalPedido = ({
   onClose, pedidoActual, setPedidoActual, catalogoProveedores,
@@ -13,26 +14,22 @@ export const ModalPedido = ({
   actualizarLinea, borrarLinea, agregarLinea, guardarBorrador, enviarPedido
 }: any) => {
 
-  const [terminoBusqueda, setTermoBusqueda] = useState("");
-  const [mostrarResultados, setMostrarResultados] = useState(false);
+  const {
+    terminoBusqueda, setTermoBusqueda,
+    mostrarResultados, setMostrarResultados,
+    procesando, alerta
+  } = useModalPedidos(pedidoActual, enviarPedido, guardarBorrador, tipoPedido);
 
   const esSoloLectura = pedidoActual.estado !== 'BORRADOR' && pedidoActual.id_pedido !== undefined;
   const lineas = tipoPedido === 'productos' 
     ? pedidoActual.pedido_ingrediente || [] 
     : pedidoActual.pedido_material || [];
 
-  const opcionesProveedores = catalogoProveedores.map((p: any) => ({
-    value: p.nombre,
-    label: p.nombre
-  }));
-  const opcionesProveedorConPlaceholder = [
-    { value: "", label: "Seleccionar..." },
-    ...opcionesProveedores,
-  ];
-
   const productosFiltrados = catalogoProductos.filter((p: any) => 
     p.nombre.toLowerCase().includes(terminoBusqueda.toLowerCase())
   ).slice(0, 6);
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -63,8 +60,11 @@ export const ModalPedido = ({
           {/* SECCIÓN CONFIGURACIÓN */}
           <div className="grid grid-cols-12 gap-6 shrink-0 items-end px-2">
             <div className="col-span-5">
-              <Select 
-                options={opcionesProveedorConPlaceholder}
+             <Select 
+                options={[
+                  { value: "", label: "Seleccionar Proveedor..." },
+                  ...catalogoProveedores.map((p: any) => ({ value: p.nombre, label: p.nombre }))
+                ]}
                 value={pedidoActual.proveedor || ""}
                 onChange={(val) => setPedidoActual({ ...pedidoActual, proveedor: val })}
                 className={esSoloLectura ? "opacity-50 pointer-events-none" : ""}
@@ -220,12 +220,17 @@ export const ModalPedido = ({
           
           {!esSoloLectura ? (
             <>
-              <Button variant="gris" onClick={guardarBorrador} className="px-8">
+              <Button variant="gris" onClick={alerta.guardarBorrador} disabled={procesando}>
                 BORRADOR
               </Button>
-              <Button variant="primario" onClick={enviarPedido} className="px-10">
-                <Send size={16} color="#ffffff" strokeWidth={3} /> 
-                CONFIRMAR Y ENVIAR
+              <Button 
+                variant="primario" 
+                onClick={alerta.solicitar} 
+                disabled={procesando} 
+                className="px-10"
+              >
+                <Send size={16} color="#ffffff" strokeWidth={3} className="mr-2" /> 
+                {procesando ? "ENVIANDO..." : "ENVIAR"}
               </Button>
             </>
           ) : (
@@ -235,6 +240,15 @@ export const ModalPedido = ({
           )}
         </div>
       </div>
+      <AlertModal 
+  isOpen={alerta.isOpen}
+  type={alerta.type}
+  title={alerta.title}
+  message={alerta.message}
+  onConfirm={alerta.type === 'confirm' ? (alerta.onConfirm || alerta.cerrar) : alerta.cerrar}
+  onCancel={alerta.cerrar}
+  confirmText={alerta.type === 'confirm' ? "ENVIAR" : "ENTENDIDO"}
+/>
     </div>
   );
 };

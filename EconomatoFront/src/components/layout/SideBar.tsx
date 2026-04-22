@@ -107,7 +107,7 @@ export default function SideBar() {
                       <li>
                         <NavLink to="/admin-usuarios" className={linkClass}>
                           <Users className="w-4 h-4" />
-                          <span className="ms-3 text-sm">Administrar usuarios</span>
+                          <span className="ms-3 text-sm">Usuarios</span>
                         </NavLink>
                       </li>
                     </ul>

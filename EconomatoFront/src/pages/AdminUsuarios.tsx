@@ -1,152 +1,129 @@
+import { useState } from "react";
+import { Plus, GraduationCap, Briefcase, Search } from "lucide-react";
 import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input"; 
-import { Select } from "../components/ui/select"; 
-import { Users, UserPlus, GraduationCap, Briefcase } from "lucide-react";
+import { Buscador } from "../components/ui/Buscador";
+import { Select } from "../components/ui/select";
 import { useAdminUsuarios } from "../hooks/useAdminUsuarios";
+import { ModalNuevoUsuario } from "../components/inventario/AdminUser/ModalAdminUsuarios";
 
 const AdminUsuarios = () => {
-  const { usuarios, loading, form, handleSubmit } = useAdminUsuarios();
+  const { usuarios, filtros, alerta, loading, ...adminProps } = useAdminUsuarios();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const opcionesRol = [
-    { value: "alumno", label: "Alumno" },
-    { value: "profe", label: "Profesor" },
+  const opcionesRoles = [
+    { value: "todos", label: "Todos los roles" },
+    { value: "alumno", label: "Alumnos" },
+    { value: "profe", label: "Profesores" },
   ];
 
   return (
-    <main className="w-full space-y-8">
+    <div className="space-y-0 animate-fade-in flex flex-col h-full gap-4">
       
-      <header className="text-left flex items-center gap-3">
-        <div className="p-3 bg-gray-100 rounded-lg text-gray-800">
-            <Users size={32} />
-        </div>
+      {/* HEADER PRINCIPAL */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 pb-4">
         <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-            <p className="text-gray-500">Panel de administración para alumnos y profesores.</p>
+          <h1 >Gestión de Usuarios</h1>
+          <h2 >Panel de administración para alumnos y profesores.</h2>
         </div>
+
+        <Button onClick={() => setIsModalOpen(true)} className="!bg-acento">
+          <Plus size={16} color="#ffffff" strokeWidth={3} className="mr-2" /> NUEVO USUARIO
+        </Button>
       </header>
 
-      <section className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full">
-        <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
-            <UserPlus className="text-gray-500" size={20} />
-            <h2 className="text-lg font-bold text-gray-800">Nuevo Registro</h2>
+      {/* BARRA DE FILTROS */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 shrink-0 mb-4 items-center">
+        <div className="flex-1 w-full">
+          <Buscador 
+            value={filtros.busqueda} 
+            onChange={filtros.setBusqueda} 
+            placeholder="Buscar por nombre, apellidos o usuario..." 
+          />
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Input 
-                type="text"
-                label="Nombre *"
-                placeholder="Ej: Juan"
-                value={form.nombre}
-                onChange={form.setNombre}
-            />
-            <Input 
-                type="text"
-                label="Primer Apellido *"
-                placeholder="Ej: Garcia"
-                value={form.apellido1}
-                onChange={form.setApellido1}
-            />
-            <Input 
-                type="text"
-                label="Segundo Apellido"
-                placeholder="Ej: Perez"
-                value={form.apellido2}
-                onChange={form.setApellido2}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input 
-                type="email"
-                label="Email (Opcional)"
-                placeholder="alumno@escuela.com"
-                value={form.email}
-                onChange={form.setEmail}
-            />
-            
-            <div className="grid grid-cols-2 gap-4 items-end">
-                <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-500 ml-1">Rol</label>
-                    <Select 
-                        value={form.rol}
-                        options={opcionesRol}
-                        onChange={(val) => form.setRol(val as "alumno" | "profe")}
-                    />
-                </div>
-
-                {form.rol === "alumno" && (
-                    <Input 
-                        type="text"
-                        label="Curso"
-                        placeholder="Ej: 1º Cocina"
-                        value={form.curso}
-                        onChange={form.setCurso}
-                    />
-                )}
-            </div>
-          </div>
-
-          <div className="pt-2 flex justify-end">
-            <Button type="submit" loading={loading} className="px-10">
-              {loading ? "Creando..." : "Crear Usuario"}
-            </Button>
-          </div>
-        </form>
-      </section>
-
-      {/* TABLA DE USUARIOS */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <Users size={18} /> Listado de Usuarios ({usuarios.length})
-            </h3>
+        <div className="w-full md:w-64">
+          <Select 
+            options={opcionesRoles} 
+            value={filtros.filtroRol} 
+            onChange={(val) => filtros.setFiltroRol(val)} 
+          />
         </div>
-        
-        <div className="overflow-x-auto">
-            <table className="w-full text-left">
-                <thead className="bg-white text-gray-500 text-xs uppercase font-bold border-b border-gray-100">
-                    <tr>
-                        <th className="p-4">Nombre Completo</th>
-                        <th className="p-4">Usuario</th>
-                        <th className="p-4">Email</th>
-                        <th className="p-4">Rol</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                    {usuarios.map((u) => (
-                        <tr key={u.id_usuario || u.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="p-4 font-medium text-gray-900">
-                                {u.nombre} {u.apellido1} {u.apellido2 || ''}
-                            </td>
-                            <td className="p-4">
-                                <span className="font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded border border-gray-200 text-sm">
-                                    {u.username}
-                                </span>
-                            </td>
-                            <td className="p-4 text-gray-500">
-                                {u.email || <span className="text-xs italic">Sin email</span>}
-                            </td>
-                            <td className="p-4">
-                                {String(u.rol).toLowerCase().includes("alumno") ? (
-                                    <div className="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-full w-fit">
-                                        <GraduationCap size={16} />
-                                        <span className="text-xs font-bold uppercase">Alumno</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full w-fit">
-                                        <Briefcase size={16} />
-                                        <span className="text-xs font-bold uppercase">Profe</span>
-                                    </div>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+      </div>
+
+      {/* TABLA */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1 mb-6 flex flex-col">
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-[10px] font-black tracking-widest sticky top-0 z-10 border-b border-gray-200">
+              <tr>
+                <th className="p-4">Nombre Completo</th>
+                <th className="p-4">Usuario</th>
+                <th className="p-4">Email</th>
+                <th className="p-4 text-center">Rol</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {usuarios.length > 0 ? (
+                usuarios.map((u) => (
+                  <tr key={u.id_usuario || u.id} className="hover:bg-gray-50 transition-colors group">
+                    <td className="p-4 font-bold text-gray-900 text-sm">
+                      {u.nombre} {u.apellido1} {u.apellido2 || ''}
+                    </td>
+                    <td className="p-4">
+                      <span className="font-mono bg-gray-100 text-gray-700 px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-bold group-hover:bg-white transition-colors">
+                        {u.username}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-gray-500 font-medium">
+                      {u.email || <span className="text-[10px] italic text-gray-300 uppercase tracking-tighter">Sin email</span>}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex justify-center">
+                        {String(u.rol).toLowerCase().includes("alumno") ? (
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-100 w-fit">
+                              <GraduationCap size={13} strokeWidth={3} />
+                              <span className="text-[10px] font-black uppercase tracking-widest">Alumno</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100 w-fit">
+                            <Briefcase size={13} strokeWidth={3} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Profesor</span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="p-24 text-center text-gray-400">
+                    <div className="flex flex-col items-center gap-2">
+                      <Search size={40} className="opacity-10 mb-2" />
+                      <p className="text-xs font-black uppercase tracking-[0.2em]">No hay coincidencias</p>
+                      <button 
+                        onClick={() => { filtros.setBusqueda(""); filtros.setFiltroRol("todos"); }}
+                        className="text-[10px] font-bold text-acento underline underline-offset-4 mt-2"
+                      >
+                        LIMPIAR FILTROS
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      </section>
-    </main>
+      </div>
+
+      {isModalOpen && (
+        <ModalNuevoUsuario 
+          onClose={() => setIsModalOpen(false)} 
+          adminProps={{ ...adminProps, alerta, loading }} 
+        />
+      )}
+    </div>
   );
 };
 

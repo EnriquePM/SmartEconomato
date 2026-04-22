@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { Receta } from "../models/Receta";
 import { recetaService } from "../services/recetaService";
 
+
 export type ConsumoIngrediente = {
   id_ingrediente: number;
   nombre: string;
@@ -10,7 +11,7 @@ export type ConsumoIngrediente = {
   disponible: number;
 };
 
-export const useRecetaDetail = (receta: Receta) => {
+export const useDetalleReceta = (receta: Receta) => {
   const [racionesDeseadas, setRacionesDeseadas] = useState<number>(
     Math.max(1, Number(receta.cantidad_platos || 1))
   );
@@ -41,6 +42,20 @@ export const useRecetaDetail = (receta: Receta) => {
   const faltantes = consumos.filter((item) => item.disponible < item.necesaria);
   const canMake = listaIngredientes.length > 0 && faltantes.length === 0;
 
+  const [alerta, setAlerta] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'confirm';
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: 'confirm',
+    title: '',
+    message: ''
+  });
+
+  const cerrarAlerta = () => setAlerta(prev => ({ ...prev, isOpen: false }));
+
   const onChangeRaciones = (rawValue: string) => {
     if (!rawValue) {
       setRacionesDeseadas(1);
@@ -67,6 +82,40 @@ export const useRecetaDetail = (receta: Receta) => {
     }
   };
 
+  const solicitarConfirmacionHacer = () => {
+    setAlerta({
+      isOpen: true,
+      type: 'confirm',
+      title: '¿Confirmar Elaboración?',
+      message: `Se descontarán del inventario los ingredientes necesarios para ${racionesDeseadas} platos de "${receta.nombre}".`,
+    });
+  };
+
+  const ejecutarHacerReceta = async (onSuccess: () => void) => {
+    cerrarAlerta();
+    if (!receta.id_receta) return;
+    setElaborando(true);
+    try {
+      await recetaService.makeReceta(receta.id_receta, racionesDeseadas);
+      setAlerta({
+        isOpen: true,
+        type: 'success',
+        title: '¡Hecho!',
+        message: 'Inventario actualizado correctamente.',
+      });
+      onSuccess();
+    } catch (error: any) {
+      setAlerta({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: error?.message || 'No se pudo procesar la solicitud.',
+      });
+    } finally {
+      setElaborando(false);
+    }
+  };
+
   return {
     racionesDeseadas,
     onChangeRaciones,
@@ -75,5 +124,6 @@ export const useRecetaDetail = (receta: Receta) => {
     faltantes,
     canMake,
     handleHacerReceta,
+    alerta: { ...alerta, cerrar: cerrarAlerta, solicitar: solicitarConfirmacionHacer, ejecutar: ejecutarHacerReceta }
   };
 };

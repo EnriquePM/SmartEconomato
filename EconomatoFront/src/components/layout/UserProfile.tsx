@@ -10,11 +10,11 @@ import defaultAvatar from '../../assets/Avatares/chef.png';
 export const UserProfile = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { logout } = useAuth();
-  
 
   const [avatarActual, setAvatarActual] = useState(() => {
     return localStorage.getItem("avatarUsuario") || defaultAvatar;
   });
+  
 
     const [user, setUser] = useState<Usuario | null>(null);
 

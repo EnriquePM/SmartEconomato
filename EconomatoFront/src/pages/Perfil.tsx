@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Mail, CheckCircle2, Save, UtensilsCrossed } from "lucide-react";
+import { Mail, LogOut, User, Save, UserCircle, ShieldCheck, AtSign } from "lucide-react";
+import { Button } from "../components/ui/Button";
+import { usePerfil } from "../hooks/useUserPerfil";
+import { AlertModal } from "../components/ui/AlertModal";
 
 // --- IMPORTAMOS TUS 8 IMÁGENES LOCALES ---
-// Asegúrate de que los nombres coinciden con tus archivos en la carpeta assets/Avatares
 import chef1 from '../assets/Avatares/chef.png';
 import chef2 from '../assets/Avatares/chef2.png';
 import chef3 from '../assets/Avatares/chef3.png';
@@ -12,149 +14,154 @@ import chef6 from '../assets/Avatares/chef6.png';
 import chef7 from '../assets/Avatares/chef7.png';
 import chef8 from '../assets/Avatares/chef8.png';
 
-// Creamos la lista para usarla en el selector
-const AVATARES_COCINA = [
-  chef1,
-  chef2,
-  chef3,
-  chef4,
-  chef5, 
-  chef6, 
-  chef7, 
-  chef8
-];
+const AVATARES_COCINA = [chef1, chef2, chef3, chef4, chef5, chef6, chef7, chef8];
 
 const Perfil = () => {
-  // ESTADO INICIAL
-  // Intentamos leer del localStorage primero para recordar la foto si recargas la página
-  const [usuario, setUsuario] = useState({
-    nombre: "Ayoze",
-    apellidos: "Pérez",
-    email: "ayoze.perez@escuela.com",
-    rol: "Alumno",
-    avatar: localStorage.getItem("avatarUsuario") || chef1 
-  });
+  const { 
+    usuario, 
+    avatarSeleccionado, 
+    setAvatarSeleccionado, 
+    guardado, 
+    guardarAvatar, 
+    handleLogout 
+  } = usePerfil();
 
-  const [avatarSeleccionado, setAvatarSeleccionado] = useState(usuario.avatar);
-  const [guardado, setGuardado] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // --- FUNCIÓN PARA GUARDAR Y ACTUALIZAR EL MENÚ ---
-  const guardarCambios = () => {
-    // 1. Actualizamos el estado de esta página
-    setUsuario({ ...usuario, avatar: avatarSeleccionado });
-    setGuardado(true);
-    
-    // 2. Guardamos en memoria permanente del navegador
-    localStorage.setItem("avatarUsuario", avatarSeleccionado);
-    
-    // 3. ¡EL TRUCO! Avisamos al resto de la App (al menú superior)
-    window.dispatchEvent(new Event("avatar-actualizado"));
-
-    // 4. Quitamos el mensaje de éxito a los 3 segundos
-    setTimeout(() => setGuardado(false), 3000);
-  };
 
   return (
-    <main className="w-full space-y-6 animate-fade-in pt-6">
+    // FONDO GRIS MUY CLARO (como la foto)
+    <main className="space-y-0 animate-fade-in flex flex-col h-full gap-4">
       
-      <header className="text-left">
-        <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-        <p className="text-gray-500 mt-1">Consulta tus datos y personaliza tu avatar.</p>
+      {/* TÍTULO PRINCIPAL (fuera de la tarjeta) */}
+     <header className="flex justify-between items-center px-2">
+        <div>
+          <h1 >Mi Perfil</h1>
+          <h2 >Tu información personal y personalización.</h2>
+        </div>
+        <Button 
+            onClick={() => {
+                console.log("Abriendo modal..."); // Si esto sale en consola, el estado está cambiando
+                setIsLogoutModalOpen(true);
+            }} 
+            variant="primario"
+            >
+            <LogOut size={16}  /> Cerrar Sesión
+            </Button>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      {/* --- TARJETA ÚNICA (Todo aquí dentro) --- */}
+      <div className="w-full  bg-white p-8 sm:p-10 rounded-3xl border border-gray-100 shadow-sm space-y-8">
         
-        {/* COLUMNA IZQUIERDA (Tarjeta Usuario) */}
-        <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center h-fit w-full">
-            <div className="relative w-32 h-32 mb-4">
-                <img 
-                    src={avatarSeleccionado} 
-                    alt="Avatar" 
-                    className="w-full h-full rounded-full border-4 border-blue-50 bg-white object-contain shadow-sm p-1"
-                />
-                <span className="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white" title="Conectado"></span>
-            </div>
-            
-            <h2 className="text-xl font-bold text-gray-900">{usuario.nombre} {usuario.apellidos}</h2>
-            
-            <span className="mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold uppercase rounded-full tracking-wider">
-                {usuario.rol}
-            </span>
+        {/* CABECERA: Avatar Grande y Nombre */}
+        <section className="flex items-center justify-start gap-8 relative ml-20">
+          {/* Columna Foto */}
+          <div className="w-32 h-32 rounded-full border border-gray-100 bg-gray-50 flex items-center justify-center overflow-hidden p-5 shrink-0 shadow-sm">
+            <img src={avatarSeleccionado} alt="Avatar" className="w-full h-full object-contain" />
+          </div>
+          
+          {/* Columna Datos */}
+          <div className="space-y-1 flex-1">
+            <h2 className="text-3xl font-bold text-primario tracking-tight leading-tight">
+              {usuario.nombre}
+            </h2>
+            <p className="text-sm font-medium text-gray-400">{usuario.username}</p>
+           
+          </div>
+          </section>
 
-            <div className="mt-6 w-full border-t border-gray-100 pt-6 flex justify-center">
-                <div className="flex items-center gap-3 text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
-                    <Mail size={16} />
-                    <span className="text-sm font-medium">{usuario.email}</span>
-                </div>
+        {/* LISTA DE DATOS: Nombre del dato y el dato */}
+        <section className="space-y-4 pt-0  px-8 sm:px-20 lg:px-60 border-t border-gray-50">
+          
+          {/* Nombre Completo */}
+          <div className="flex items-center gap-4 px-5 py-3.5 bg-gray-50/50 rounded-2xl mt-6 border border-gray-100">
+            <User size={18} className="text-gray-400 shrink-0" />
+            <div className="flex-1 flex justify-between items-center gap-4">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Nombre Completo</span>
+              <span className="text-sm font-bold text-primario">{usuario.nombre}</span>
             </div>
+          </div>
+
+          {/* Usuario */}
+          <div className="flex items-center gap-4 px-5 py-3.5 bg-gray-50/50 rounded-2xl border border-gray-100">
+            <AtSign size={18} className="text-gray-400 shrink-0" />
+            <div className="flex-1 flex justify-between items-center gap-4">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Nombre de Usuario</span>
+              <span className="text-sm font-bold text-primario">@{usuario.username}</span>
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="flex items-center gap-4 px-5 py-3.5 bg-gray-50/50 rounded-2xl border border-gray-100">
+            <Mail size={18} className="text-gray-400 shrink-0" />
+            <div className="flex-1 flex justify-between items-center gap-4">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Email Institucional</span>
+              <span className="text-sm font-bold text-primario">{usuario.email}</span>
+            </div>
+          </div>
+
+          {/* Rol */}
+          <div className="flex items-center gap-4 px-5 py-3.5 bg-gray-50/50 rounded-2xl border border-gray-100">
+            <ShieldCheck size={18} className="text-gray-400 shrink-0" />
+            <div className="flex-1 flex justify-between items-center gap-4">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Rol de Cuenta</span>
+              <span className="px-3 py-1 bg-gray-100 text-primario text-[9px] font-black uppercase rounded-full tracking-tighter">
+                {usuario.rol}
+              </span>
+            </div>
+          </div>
         </section>
 
-        {/* COLUMNA DERECHA (Selector) */}
-        <section className="lg:col-span-2 space-y-6">
-            
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex gap-3 text-blue-800 text-sm">
-                <UtensilsCrossed size={20} className="shrink-0" />
-                <p>
-                    Tus datos personales son gestionados por la administración. 
-                    Si necesitas cambiarlos, contacta con secretaría.
-                </p>
-            </div>
+       {/* SELECTOR DE AVATAR INTEGRADO */}
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <UtensilsCrossed size={20} className="text-gray-500"/> Elige tu personaje
-                </h3>
-                
-                {/* GRID DE AVATARES */}
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mb-6">
-                    {AVATARES_COCINA.map((imgSrc, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setAvatarSeleccionado(imgSrc)}
-                            className={`p-2 rounded-xl border-2 transition-all hover:bg-gray-50 flex justify-center items-center relative group aspect-square ${
-                                avatarSeleccionado === imgSrc 
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
-                                : 'border-gray-100'
-                            }`}
-                        >
-                            <img src={imgSrc} alt={`Chef ${index}`} className="w-full h-full object-contain group-hover:scale-110 transition-transform" />
-                            
-                            {avatarSeleccionado === imgSrc && (
-                                <div className="absolute top-2 right-2 text-blue-500 bg-white rounded-full shadow-sm p-0.5">
-                                    <CheckCircle2 size={14} />
-                                </div>
-                            )}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="flex items-center justify-between border-t border-gray-100 pt-6">
-                    <p className="text-xs text-gray-400 hidden sm:block">
-                       * Tu avatar será visible para los profesores.
-                    </p>
-                    <div className="flex gap-4 items-center ml-auto">
-                        {guardado && (
-                            <span className="text-green-600 text-sm font-bold animate-pulse flex items-center gap-1">
-                                <CheckCircle2 size={16}/> ¡Guardado!
-                            </span>
-                        )}
-                        
-                        <button 
-                            onClick={guardarCambios}
-                            className="bg-gray-900 hover:bg-black text-white px-6 py-2.5 rounded-lg font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-                        >
-                            <Save size={18} />
-                            <span>Guardar Avatar</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <section className="pt-8 px-8 sm:px-20 lg:px-60 border-t border-gray-100 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+              <UserCircle size={16} /> Selecciona tu icono
+            </h3>
             
-            <p className="text-center text-xs text-gray-300 mt-4">
-               Stickers diseñados por Flaticon
-            </p>
+            <div className="flex items-center gap-3">
+              {guardado && <span className="text-green-600 text-[10px] font-black uppercase animate-bounce">¡Guardado!</span>}
+              <button 
+                onClick={guardarAvatar}
+                disabled={avatarSeleccionado === (localStorage.getItem("avatarUsuario") || chef1)}
+                className="px-4 py-2 rounded-xl border font-bold text-[10px] uppercase tracking-widest transition-all bg-white text-gray-700 hover:bg-gray-50 border-gray-200 disabled:opacity-20"
+              >
+                <Save size={14} className="inline mr-1" /> Confirmar
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-4 pt-2 justify-center sm:justify-start">
+            {AVATARES_COCINA.map((imgSrc, index) => (
+              <button
+                key={index}
+                onClick={() => setAvatarSeleccionado(imgSrc)}
+                className={`relative w-14 h-14 rounded-full border-2 transition-all duration-300 flex items-center justify-center p-3 overflow-hidden ${
+                  avatarSeleccionado === imgSrc 
+                  ? 'border-acento bg-acento/10 scale-110' 
+                  : 'border-gray-50 bg-gray-50 hover:bg-white hover:border-gray-200'
+                }`}
+              >
+                <img 
+                  src={imgSrc} 
+                  className={`w-full h-full object-contain ${avatarSeleccionado === imgSrc ? 'scale-75' : 'opacity-60 hover:opacity-100'}`} 
+                />
+              </button>
+            ))}
+          </div>
         </section>
       </div>
+      <AlertModal 
+        isOpen={isLogoutModalOpen}
+        type="confirm"
+        title="¿Cerrar Sesión?"
+        message="¿Estás seguro de que deseas salir? Tendrás que volver a iniciar sesión para acceder."
+        confirmText="SALIR"
+        cancelText="CANCELAR"
+        onConfirm={handleLogout}
+        onCancel={() => setIsLogoutModalOpen(false)}
+      />
     </main>
   );
 };

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { X, Search, Trash2, ChefHat, ShoppingCart, Plus, FileText, AlertTriangle, Loader2 } from "lucide-react";
-import { useRecetaForm } from "../../hooks/useRecetasForm";
+import { X, Search, Trash2, ChefHat, ShoppingCart, Plus, FileText } from "lucide-react";
+import { useModalRecetas } from "../../hooks/useModalRecetas";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input"; 
 import type { Receta } from "../../models/Receta";
+import { AlertModal } from "../ui/AlertModal";
 
 interface ModalRecetaProps {
   onClose: () => void;
@@ -12,59 +13,10 @@ interface ModalRecetaProps {
 }
 
 export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: ModalRecetaProps) => {
-  const { form, lista, buscador, alergenos, acciones } = useRecetaForm({ onSuccess: onRecetaCreada, recetaInicial });
-  
-  const [eliminando, setEliminando] = useState(false);
+  const { form, lista, buscador, alergenos, acciones, alerta  } = useModalRecetas({ onSuccess: onRecetaCreada, recetaInicial });
   const [errorUI, setErrorUI] = useState<string | null>(null);
   
-  // 👇 Estado para mostrar/ocultar nuestro nuevo Pop-up de confirmación
-  const [mostrarConfirmacionEliminar, setMostrarConfirmacionEliminar] = useState(false);
-
-  // 1. Botón inicial: Solo abre el pop-up
-  const intentarEliminar = () => {
-    setMostrarConfirmacionEliminar(true);
-  };
-
-  // 2. Botón del pop-up: Ejecuta el borrado real
-  const confirmarEliminacion = async () => {
-    if (!recetaInicial?.id_receta) return;
-    
-    try {
-      setEliminando(true);
-      await acciones.handleEliminar();
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      // Si falla, mostramos el error en nuestra UI y cerramos el pop-up
-      setErrorUI("No se pudo eliminar. Puede que tenga pedidos asociados.");
-      setMostrarConfirmacionEliminar(false);
-    } finally {
-      setEliminando(false);
-    }
-  };
-
-  const handleGuardarLocal = () => {
-    if (!form.nombre || form.nombre.trim() === "") {
-      setErrorUI("Rellena los campos obligatorios.");
-      return; 
-    }
-
-    if (lista.ingredientes.length === 0) {
-      setErrorUI("Añade al menos un ingrediente.");
-      return;
-    }
-
-    const tieneCantidadesInvalidas = lista.ingredientes.some(
-      (ing: any) => !ing.cantidad || Number(ing.cantidad) <= 0
-    );
-
-    if (tieneCantidadesInvalidas) {
-      setErrorUI("Todas las cantidades deben ser mayores que 0.");
-      return;
-    }
-    
-    setErrorUI(null);
-    acciones.handleGuardar(); 
-  };
+  
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -264,83 +216,52 @@ export const ModalReceta = ({ onClose, onRecetaCreada, recetaInicial = null }: M
         </div>
 
         {/* FOOTER */}
-        <div className="px-8 py-6 border-t border-gray-100 bg-white flex justify-between items-center gap-3 shrink-0">
-          
-          {/* LADO IZQUIERDO: Botón de Borrar (ahora llama a intentarEliminar) */}
-          <div>
+      <div className="px-8 py-6 border-t border-gray-100 bg-white flex justify-between items-center gap-3 shrink-0">
+        <div>
+            {/* BOTÓN ELIMINAR (Solo en edición) */}
             {recetaInicial && (
-              <button
-                type="button"
-                onClick={intentarEliminar}
-                disabled={eliminando || acciones.guardando}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
-              >
-                <Trash2 size={18} />
-                {eliminando ? "ELIMINANDO..." : "ELIMINAR RECETA"}
-              </button>
+                <button
+                    type="button"
+                    onClick={acciones.handleEliminar} 
+                    disabled={acciones.guardando}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
+                >
+                    <Trash2 size={18} />
+                    {acciones.guardando ? "PROCESANDO..." : "ELIMINAR RECETA"}
+                </button>
             )}
-          </div>
+        </div>
 
-          {/* LADO DERECHO: Mensaje de error, Descartar y Guardar */}
-          <div className="flex items-center gap-4">
-            {errorUI && (
-              <span className="text-sm font-bold text-red-600 animate-pulse bg-red-50 px-4 py-2 rounded-xl border border-red-100">
-                {errorUI}
-              </span>
-            )}
-            
-            <Button variant="gris" onClick={onClose} className="px-8 font-bold">
-              DESCARTAR
+        <div className="flex items-center gap-4">
+            {/* BOTÓN DESCARTAR / CERRAR */}
+            <Button variant="gris" onClick={onClose}>
+                DESCARTAR
             </Button>
+            
+            {/* BOTÓN GUARDAR / CREAR */}
             <Button 
-              variant="primario" 
-              onClick={handleGuardarLocal} 
-              className="px-12 font-black uppercase tracking-widest shadow-lg"
-              disabled={acciones.guardando || eliminando}
-            >
-              {acciones.guardando ? "GUARDANDO..." : (recetaInicial ? "GUARDAR CAMBIOS" : "GUARDAR RECETA")}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* 👇 NUEVO POP-UP DE CONFIRMACIÓN DE ELIMINACIÓN */}
-      {mostrarConfirmacionEliminar && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
-            
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
-              <AlertTriangle size={32} strokeWidth={2.5} />
-            </div>
-            
-            <h3 className="text-xl font-black text-gray-900 mb-2">¿Eliminar Receta?</h3>
-            <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-              ¿Estás seguro de que quieres eliminar <span className="font-bold text-gray-800">"{recetaInicial?.nombre}"</span>? Esta acción no se puede deshacer.
-            </p>
-            
-            <div className="flex gap-3 w-full">
-              <Button 
-                variant="gris" 
-                onClick={() => setMostrarConfirmacionEliminar(false)} 
-                className="flex-1 py-3 font-bold" 
-                disabled={eliminando}
-              >
-                CANCELAR
-              </Button>
-              <Button 
                 variant="primario" 
-                onClick={confirmarEliminacion} 
-                className="flex-1 py-3 font-bold !bg-red-600 hover:!bg-red-700 shadow-md shadow-red-200" 
-                disabled={eliminando}
-              >
-                {eliminando ? <Loader2 size={18} className="animate-spin mx-auto" /> : "SÍ, ELIMINAR"}
-              </Button>
-            </div>
-
-          </div>
+                onClick={acciones.handleGuardar} 
+                disabled={acciones.guardando}
+            >
+                {acciones.guardando ? "GUARDANDO..." : acciones.textoBoton}
+            </Button>
         </div>
-      )}
-
     </div>
+    </div>
+
+      <AlertModal 
+        isOpen={alerta.isOpen}
+        type={alerta.type}
+        title={alerta.title}
+        message={alerta.message}
+        onConfirm={alerta.onConfirm}
+        onCancel={alerta.cerrar}
+        confirmText={alerta.type === 'confirm' ? "CONTINUAR" : "ACEPTAR"}
+        cancelText="CANCELAR"
+    />
+    </div>
+      
+
   );
 };

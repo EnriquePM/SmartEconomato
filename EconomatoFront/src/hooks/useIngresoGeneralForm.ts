@@ -39,6 +39,23 @@ export const useIngresoGeneralForm = () => {
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'exito' | 'error' } | null>(null);
   const [mostrarScanner, setMostrarScanner] = useState(false);
 
+  // --- AÑADIDO: ESTADO PARA EL ALERT MODAL ---
+  const [alerta, setAlerta] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    type: 'confirm',
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
+  const cerrarAlerta = () => setAlerta((prev) => ({ ...prev, isOpen: false }));
+
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -51,29 +68,22 @@ export const useIngresoGeneralForm = () => {
         setCargandoListas(false);
       }
     };
-
     void cargarDatos();
   }, []);
 
-  const opcionesCategorias = useMemo<SelectOption[]>(() => {
-    return [
-      { value: '', label: 'Selecciona categoría...' },
-      ...listaCategorias.map((c) => ({ value: c.id_categoria.toString(), label: c.nombre }))
-    ];
-  }, [listaCategorias]);
+  const opcionesCategorias = useMemo<SelectOption[]>(() => [
+    { value: '', label: 'Selecciona categoría...' },
+    ...listaCategorias.map((c) => ({ value: c.id_categoria.toString(), label: c.nombre }))
+  ], [listaCategorias]);
 
-  const opcionesProveedores = useMemo<SelectOption[]>(() => {
-    return [
-      { value: '', label: 'Selecciona proveedor...' },
-      ...listaProveedores.map((p) => ({ value: p.id_proveedor.toString(), label: p.nombre }))
-    ];
-  }, [listaProveedores]);
+  const opcionesProveedores = useMemo<SelectOption[]>(() => [
+    { value: '', label: 'Selecciona proveedor...' },
+    ...listaProveedores.map((p) => ({ value: p.id_proveedor.toString(), label: p.nombre }))
+  ], [listaProveedores]);
 
   const opcionesUnidad: SelectOption[] = [
-    { value: 'kg', label: 'Kilos (kg)' },
-    { value: 'g', label: 'Gramos (g)' },
-    { value: 'l', label: 'Litros (L)' },
-    { value: 'ml', label: 'Mililitros (ml)' },
+    { value: 'kg', label: 'Kilos (kg)' }, { value: 'g', label: 'Gramos (g)' },
+    { value: 'l', label: 'Litros (L)' }, { value: 'ml', label: 'Mililitros (ml)' },
     { value: 'ud', label: 'Unidades (ud)' }
   ];
 
@@ -86,47 +96,10 @@ export const useIngresoGeneralForm = () => {
     setMensaje(null);
   };
 
-  const buscarProductoOFF = async (codigoDesdeScanner?: string | MouseEvent) => {
-    const codigoABuscar = typeof codigoDesdeScanner === 'string' ? codigoDesdeScanner : form.codigo;
-    if (!codigoABuscar) return;
-
-    setBuscandoOFF(true);
-    setMensaje(null);
-
-    try {
-      const result = await buscarProductoOpenFoodFacts(codigoABuscar);
-      if (result.found) {
-        setForm((prev) => ({
-          ...prev,
-          codigo: codigoABuscar,
-          nombre: result.nombre || ''
-        }));
-        setMensaje({ texto: 'Producto encontrado.', tipo: 'exito' });
-      } else {
-        setForm((prev) => ({ ...prev, codigo: codigoABuscar }));
-        setMensaje({ texto: 'No encontrado en la base de datos mundial.', tipo: 'error' });
-      }
-    } catch (error) {
-      setMensaje({ texto: 'Error de conexión.', tipo: 'error' });
-    } finally {
-      setBuscandoOFF(false);
-    }
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    const faltaUnidad = activeTab === 'ingredientes' && !form.unidad_medida;
-    const faltaCategoria = !form.id_categoria;
-    const faltaProveedor = activeTab === 'ingredientes' && !form.id_proveedor;
-
-    if (!form.nombre || form.stock === '' || faltaUnidad || faltaCategoria || form.precio_unidad === '' || faltaProveedor) {
-      setMensaje({ texto: 'Rellena todos los campos obligatorios.', tipo: 'error' });
-      return;
-    }
-
+  // --- LÓGICA DE ENVÍO (Sigue siendo casi igual a la tuya) ---
+  const ejecutarEnvioReal = async () => {
+    cerrarAlerta();
     setGuardando(true);
-
     try {
       if (activeTab === 'ingredientes') {
         await createIngredienteEntry({
@@ -147,16 +120,68 @@ export const useIngresoGeneralForm = () => {
         });
       }
 
-      setMensaje({
-        texto: `${activeTab === 'ingredientes' ? 'Producto' : 'Utensilio'} registrado con éxito.`,
-        tipo: 'exito'
+      setAlerta({
+        isOpen: true,
+        type: 'success',
+        title: '¡Éxito!',
+        message: `${activeTab === 'ingredientes' ? 'Producto' : 'Utensilio'} registrado correctamente.`,
+        onConfirm: cerrarAlerta
       });
       setForm(formInicial);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al conectar con el servidor.';
-      setMensaje({ texto: message, tipo: 'error' });
+      setAlerta({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Error al conectar con el servidor.',
+        onConfirm: cerrarAlerta
+      });
     } finally {
       setGuardando(false);
+    }
+  };
+
+  // --- MANEJADOR DEL SUBMIT (Ahora controla la alerta) ---
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+
+    const faltaUnidad = activeTab === 'ingredientes' && !form.unidad_medida;
+    const faltaCategoria = !form.id_categoria;
+    const faltaProveedor = activeTab === 'ingredientes' && !form.id_proveedor;
+
+    if (!form.nombre || form.stock === '' || faltaUnidad || faltaCategoria || form.precio_unidad === '' || faltaProveedor) {
+      setAlerta({
+        isOpen: true,
+        type: 'error',
+        title: 'Campos incompletos',
+        message: 'Por favor, cumplimente todos los campos obligatorios.',
+        onConfirm: cerrarAlerta
+      });
+      return;
+    }
+
+    setAlerta({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Confirmar Registro',
+      message: `¿Estás seguro de que quieres registrar este ${activeTab === 'ingredientes' ? 'ingrediente' : 'material'}?`,
+      onConfirm: ejecutarEnvioReal
+    });
+  };
+
+  const buscarProductoOFF = async (codigoDesdeScanner?: string | MouseEvent) => {
+    const codigoABuscar = typeof codigoDesdeScanner === 'string' ? codigoDesdeScanner : form.codigo;
+    if (!codigoABuscar) return;
+    setBuscandoOFF(true);
+    try {
+      const result = await buscarProductoOpenFoodFacts(codigoABuscar);
+      if (result.found) {
+        setForm((prev) => ({ ...prev, codigo: codigoABuscar, nombre: result.nombre || '' }));
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setBuscandoOFF(false);
     }
   };
 
@@ -166,21 +191,10 @@ export const useIngresoGeneralForm = () => {
   };
 
   return {
-    activeTab,
-    setActiveTab: cambiarTab,
-    form,
-    setCampo,
-    cargandoListas,
-    buscandoOFF,
-    guardando,
-    mensaje,
-    mostrarScanner,
-    setMostrarScanner,
-    opcionesCategorias,
-    opcionesProveedores,
-    opcionesUnidad,
-    buscarProductoOFF,
-    handleSubmit,
-    limpiarFormulario
+    activeTab, setActiveTab: cambiarTab,
+    form, setCampo, cargandoListas, buscandoOFF, guardando, mensaje,
+    mostrarScanner, setMostrarScanner, opcionesCategorias, opcionesProveedores,
+    opcionesUnidad, buscarProductoOFF, handleSubmit, limpiarFormulario,
+    alerta: { ...alerta, cerrar: cerrarAlerta }
   };
 };
