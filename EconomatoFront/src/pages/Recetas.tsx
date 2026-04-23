@@ -4,8 +4,8 @@ import { Buscador } from '../components/ui/Buscador';
 import { ModalReceta } from "../components/recetas/ModalRecetas"; 
 import { ModalDetalleReceta } from "../components/recetas/ModalDetalleReceta";
 import { useRecetas } from "../hooks/useRecetas";
-import { Plus } from "lucide-react";
-import { RecetaCard } from '..//components/recetas/RecetaCard';
+import { Plus, Search } from "lucide-react";
+import { RecetaCard } from '../components/recetas/RecetaCard';
 import type { Receta } from "../models/Receta";
 
 const RecetasPage = () => {
@@ -48,44 +48,48 @@ const RecetasPage = () => {
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8">
-       <Buscador 
-                 value={busqueda} 
-                   onChange={setBusqueda} 
-                   placeholder="Buscar por nombre de la receta..." 
-                 />
+        <Buscador 
+          value={busqueda} 
+          onChange={setBusqueda} 
+          placeholder="Buscar por nombre de la receta..." 
+        />
       </div>
 
-<div className="bg-gray-50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
-  <div className="overflow-auto scrollbar-global">
+      <div className="bg-gray-50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+        <div className="overflow-auto scrollbar-global">
 
-      {cargando && (
-        <div className="text-center py-6 text-gray-500 font-bold animate-pulse">
-          Cargando el recetario...
+          {cargando && (
+            <div className="text-center py-6 text-gray-500 font-bold animate-pulse">
+              Cargando el recetario...
+            </div>
+          )}
+
+          {!cargando && (
+            <div className="flex-1 overflow-y-auto p-10 scrollbar-global">
+              {recetasFiltradas.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                  {recetasFiltradas.map((receta) => (
+                    <RecetaCard 
+                      key={receta.id_receta}
+                      receta={receta}
+                      onClick={(r) => setRecetaSeleccionada(r)}
+                      onEdit={(r) => openEditModal(r)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-gray-400 py-20">
+                  <Search size={32} className="mb-3 opacity-20" />
+                  <p className="text-sm font-semibold tracking-widest">
+                    No se encontraron recetas
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
-      )}
-
-      {error && !cargando && (
-        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-          {error}
-        </div>
-      )}
-
-      {!cargando && (
-        <div className="flex-1 overflow-y-auto p-10 scrollbar-global">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {recetasFiltradas.map((receta) => (
-          <RecetaCard 
-            key={receta.id_receta}
-            receta={receta}
-            onClick={(r) => setRecetaSeleccionada(r)}
-            onEdit={(r) => openEditModal(r)}
-          />
-        ))}
       </div>
-      </div>
-    )}
-    </div>
-    </div>
 
       {recetaSeleccionada && (
         <ModalDetalleReceta 

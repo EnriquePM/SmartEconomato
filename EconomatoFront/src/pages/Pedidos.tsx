@@ -3,12 +3,13 @@ import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
 import { Select } from '../components/ui/select';
 import { Button } from '../components/ui/Button';
-import { Eye, Plus, Pencil, Trash2, Printer } from 'lucide-react';
+import { Eye, Plus, Pencil, Trash2, Printer, Search } from 'lucide-react';
 import { ModalPedido } from '../components/pedidos/ModalPedidos';
 import type { EstadoPedido} from '../models/Pedidos';
 import { AlertModal } from '../components/ui/AlertModal';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { PedidoPDF } from '../components/pdf/PedidoPDF';
+
 
 const Pedidos = () => {
     const {
@@ -263,7 +264,13 @@ const Pedidos = () => {
                                     </tr>
                                 ))
                             ) : (
-                                <tr><td colSpan={6} className="p-10 text-center text-gray-400">No se encontraron pedidos de {tipoPedido}.</td></tr>
+                               <tr>
+                                <td colSpan={5} className="p-12 text-center text-gray-400">
+                                    <Search size={32} className="mx-auto mb-3 opacity-20" />
+                                    <p className="text-sm font-semibold tracking-widest">No se encontraron pedidos de {tipoPedido}</p>
+                                </td>
+                                </tr> 
+                               
                             )}
                         </tbody>
                     </table>

@@ -10,7 +10,8 @@ const router = createBrowserRouter(routes);
 export default function App() {
   return (
     <AuthProvider>
-      <Toaster richColors position="top-right" />
+      <Toaster richColors position="bottom-right"  visibleToasts={1}/>
+
       <RouterProvider router={router} />
     </AuthProvider>
   );

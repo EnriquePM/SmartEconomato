@@ -162,7 +162,7 @@ const Inventario = () => {
                 <tr>
                   <td colSpan={5} className="p-12 text-center text-gray-400">
                     <Search size={32} className="mx-auto mb-3 opacity-20" />
-                    <p className="text-sm font-bold uppercase tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
+                    <p className="text-sm font-semibold tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
                   </td>
                 </tr>
               )}
