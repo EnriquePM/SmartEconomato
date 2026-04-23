@@ -10,10 +10,9 @@ import Perfil from "../pages/Perfil";
 import Pedidos from "../pages/Pedidos";
 import IngresoGeneral from "../pages/IngresoGeneral";
 import Home from "../pages/Home";
-import PedidosPage from "../pages/recepcionPedidos";
+import PedidosPage from "../pages/RecepcionPedidos";
 import RecetasPage from "../pages/Recetas";
 import PaginaMantimiento from "../pages/PaginaMantenimiento";
-import AuditLog from "../pages/AuditLog";
 
 
 export const routes: RouteObject[] = [
@@ -66,10 +65,6 @@ export const routes: RouteObject[] = [
               {
                 path: "admin-usuarios",
                 element: <AdminUsuarios />,
-              },
-              {
-                path: "audit-log",
-                element: <AuditLog />,
               },
             ],
           },

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
-import { logAction } from '../services/audit.service';
 
 // 1. OBTENER TODOS LOS MATERIALES
 export const getMateriales = async (req: Request, res: Response) => {
@@ -50,7 +49,6 @@ export const createMaterial = async (req: Request, res: Response) => {
             }
         });
 
-        void logAction((req as any).user?.id ?? null, 'CREATE', 'Material', nuevoMaterial.id_material, { nombre: nuevoMaterial.nombre });
         res.json(nuevoMaterial);
     } catch (error) {
         console.error(error);
@@ -72,7 +70,6 @@ export const updateMaterial = async (req: Request, res: Response) => {
             }
         });
 
-        void logAction((req as any).user?.id ?? null, 'UPDATE', 'Material', Number(id), { nombre: actualizado.nombre });
         res.json(actualizado);
     } catch (error) {
         console.error(error);
@@ -84,12 +81,9 @@ export const updateMaterial = async (req: Request, res: Response) => {
 export const deleteMaterial = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const existente = await prisma.material.findUnique({
-            where: { id_material: Number(id) },
-            select: { nombre: true }
+        await prisma.material.delete({
+            where: { id_material: Number(id) }
         });
-        await prisma.material.delete({ where: { id_material: Number(id) } });
-        void logAction((req as any).user?.id ?? null, 'DELETE', 'Material', Number(id), { nombre: existente?.nombre });
         res.json({ message: 'Material eliminado correctamente' });
     } catch (error) {
         console.error(error);
