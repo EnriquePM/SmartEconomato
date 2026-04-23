@@ -38,8 +38,6 @@ export const useIngresoGeneralForm = () => {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'exito' | 'error' } | null>(null);
   const [mostrarScanner, setMostrarScanner] = useState(false);
-
-  // --- AÑADIDO: ESTADO PARA EL ALERT MODAL ---
   const [alerta, setAlerta] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'confirm';
@@ -96,7 +94,6 @@ export const useIngresoGeneralForm = () => {
     setMensaje(null);
   };
 
-  // --- LÓGICA DE ENVÍO (Sigue siendo casi igual a la tuya) ---
   const ejecutarEnvioReal = async () => {
     cerrarAlerta();
     setGuardando(true);
@@ -141,7 +138,7 @@ export const useIngresoGeneralForm = () => {
     }
   };
 
-  // --- MANEJADOR DEL SUBMIT (Ahora controla la alerta) ---
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 

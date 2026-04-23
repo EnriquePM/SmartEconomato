@@ -99,7 +99,6 @@ export const useModalRecetas = ({ onSuccess, recetaInicial }: UseRecetaFormOptio
 
         setIngredientes(iniciales);
 
-        // Pre-populate allergens from existing recipe
         const alergenosIniciales = (recetaInicial.receta_alergeno || []).map(
             (ra) => ra.id_alergeno
         );
@@ -193,9 +192,6 @@ export const useModalRecetas = ({ onSuccess, recetaInicial }: UseRecetaFormOptio
         }
     };
 
-
-
-    // LÓGICA DE ELIMINACIÓN CON CONFIRMACIÓN
     const solicitarConfirmacionEliminar = () => {
         if (!modoEdicion) return;
         setAlerta({
@@ -228,7 +224,6 @@ export const useModalRecetas = ({ onSuccess, recetaInicial }: UseRecetaFormOptio
     };
 
     const solicitarConfirmacionGuardar = () => {
-        // VALIDACIONES INTEGRADAS EN EL MODAL
         if (!nombre.trim()) {
             setAlerta({
                 isOpen: true,
@@ -251,7 +246,6 @@ export const useModalRecetas = ({ onSuccess, recetaInicial }: UseRecetaFormOptio
             return;
         }
 
-        // Si todo está bien, pide confirmación de guardado
         setAlerta({
             isOpen: true,
             type: 'confirm',

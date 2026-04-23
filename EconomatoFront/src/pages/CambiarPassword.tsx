@@ -34,9 +34,7 @@ const CambiarPassword = () => {
       <main className="relative z-20 flex-1 flex items-center justify-center w-full p-6">
         <div className="shadow-xl bg-white w-full max-w-xl p-10 md:p-16 rounded-[3rem] shadow-2xl  border border-white/50 animate-fade-in flex flex-col items-center">
           
-          {/* LOGO */}
-          <KeyRound className='text-acento w-20 h-20 mb-10' />
-          
+          <KeyRound className='text-acento w-20 h-20 mb-10' />    
           
           <div className="text-center mb-10">
             <h1 className='font-semibold text-[40px] mb-2 tracking-tighter leading-tight'>

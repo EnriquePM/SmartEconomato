@@ -23,9 +23,6 @@ const HomePage = () => {
   return (
     <div className="space-y-0 animate-fade-in flex flex-col h-full gap-4">
       
-
-
-        {/* HEADER */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mt-5 px-20 gap-4 shrink-0 pb-20">
           <h1 className="text-2xl md:text-3xl font-bold text-primario tracking-tight">
             ¡Hola, {user?.username || "Cargando..."}!
@@ -52,16 +49,12 @@ const HomePage = () => {
           </div>
         </header>
 
-        {/* GRID */}
         <div className="overflow-hidden flex-1">
           <div className="overflow-x-auto h-full">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
 
-
-          {/* IZQUIERDA */}
           <div className="lg:col-span-4 flex flex-col gap-10 w-full px-10">
 
-            {/* Calendario */}
             <section className="bg-white/30 backdrop-blur-md rounded-pill shadow-sm px-9 py-10 shrink-0">
               <Calendar
                 onChange={() => {}}
@@ -74,7 +67,6 @@ const HomePage = () => {
               />
             </section>
 
-            {/* Avisos */}
             <div className="flex flex-col gap-2 shrink-0">
               <div className="flex items-center gap-2">
                 <AlertCircle size={12} className="text-acento" />
@@ -106,10 +98,8 @@ const HomePage = () => {
 
           </div>
 
-          {/* DERECHA */}
           <div className="lg:col-span-8 flex flex-col gap-10 h-full">
 
-            {/* Recetas */}
             <section
               onClick={() => navigate('/recetas')}
               className="cursor-pointer rounded-pill px-10 py-3 flex flex-col gap-3 flex-1 min-h-0"

@@ -28,14 +28,9 @@ export const authFetch = async (url: string, options: RequestInit = {}): Promise
             headers,
         });
 
-        // --- MANEJO DE ERRORES DE RESPUESTA ---
         if (!response.ok) {
-            
-            // A. SESIÓN EXPIRADA (401 o 403)
             if (response.status === 401 || response.status === 403) {
                 localStorage.removeItem("token");
-
-                // Retornamos una promesa que no se resuelve para "congelar" la app
                 return new Promise((resolve) => {
                     Swal.fire({
                         title: 'SESIÓN EXPIRADA',
@@ -67,13 +62,10 @@ export const authFetch = async (url: string, options: RequestInit = {}): Promise
                 });
             }
 
-            // B. ERROR DEL SERVIDOR (>= 500)
             if (response.status >= 500) {
-                // Redirigimos a la página de mantenimiento
                 if (!window.location.pathname.includes("/mantenimiento")) {
                     window.location.href = "/mantenimiento";
                 }
-                // Retornamos una promesa vacía para evitar que el componente siga procesando
                 return new Promise(() => {}); 
             }
         }
@@ -81,13 +73,10 @@ export const authFetch = async (url: string, options: RequestInit = {}): Promise
         return response;
 
     } catch (error) {
-        // C. ERROR DE RED (Servidor apagado, sin internet, CORS)
         toast.error("Error de conexión", {
             description: "No se pudo conectar con el servidor. Revisa tu conexión a internet.",
             duration: 5000,
         });
-        
-        // Re-lanzamos el error para que el componente que llama pueda manejarlo si quiere
         throw error; 
     }
 };

@@ -64,7 +64,6 @@ export const usePedidos = () => {
     pedido_material: []
   });
 
-  // Cargar pedidos y proveedores
   useEffect(() => {
     getPedidosService()
       .then(data => {
@@ -78,7 +77,6 @@ export const usePedidos = () => {
       .catch(console.error);
   }, []);
 
-  // Cargar inventario según tipoPedido
   useEffect(() => {
     const cargarInventario = async () => {
       try {
@@ -91,7 +89,6 @@ export const usePedidos = () => {
     cargarInventario();
   }, [tipoPedido]);
 
-  // Agregar línea
   const agregarLinea = () => {
     if (tipoPedido === 'productos') {
       setPedidoActual((prev) => {
@@ -126,7 +123,6 @@ export const usePedidos = () => {
     }
   };
 
-  // Seleccionar producto/material
   const seleccionarProducto = (index: number, idStr: number) => {
     const id = Number(idStr);
     const item = catalogoProductos.find(p => p.id === id);
@@ -157,7 +153,6 @@ export const usePedidos = () => {
     }
   };
 
-  // Actualizar cantidad
   const actualizarLinea = (index: number, cantidad: number) => {
     const cantidadSegura = Math.max(0, Number.isFinite(cantidad) ? cantidad : 0);
 
@@ -186,7 +181,6 @@ export const usePedidos = () => {
     }
   };
 
-  // Borrar línea
   const borrarLinea = (index: number) => {
     if (tipoPedido === 'productos') {
       setPedidoActual((prev) => {
@@ -213,7 +207,6 @@ export const usePedidos = () => {
     }
   };
 
-  // Guardar pedido (Sin alertas nativas)
   const guardarPedido = async (nuevoEstado: EstadoPedido) => {
     try {
       const payload: Pedido = {
@@ -227,20 +220,18 @@ export const usePedidos = () => {
 
       await guardarPedidoService(payload);
       
-      // Ya no mostramos alert aquí. Se encarga el componente visual.
       setVista('lista');
 
       const pedidosActualizados = await getPedidosService();
       setPedidos(pedidosActualizados.map(normalizarPedido));
     } catch (e: any) {
       console.error("Error al guardar:", e);
-      throw new Error(e.message || "Error al guardar el pedido"); // Lanzamos el error para que la UI lo atrape si quiere
+      throw new Error(e.message || "Error al guardar el pedido"); 
     }
   };
 
-  // Eliminar pedido (Sin confirm nativo ni alerts)
+
   const eliminarPedido = async (id: number) => {
-    // El confirm nativo se ha eliminado. Se asume que la UI ya pidió confirmación antes de llamar a esta función.
     try {
       await eliminarPedidoService(id);
       setPedidos(prev => prev.filter(p => p.id_pedido !== id));

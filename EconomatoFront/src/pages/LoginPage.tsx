@@ -10,7 +10,6 @@ const LoginPage = () => {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validación local antes de llamar al servicio
     if (!user || !password) {
       setError("Por favor, rellena todos los campos.");
       return;
@@ -22,7 +21,6 @@ const LoginPage = () => {
   return (
     <div className="h-screen w-full relative flex flex-col items-center justify-center overflow-hidden font-sans">
       
-      {/* FONDO IDÉNTICO AL HOME */}
       <div 
         className="absolute inset-0 z-0"
         style={{
@@ -35,11 +33,11 @@ const LoginPage = () => {
       />
       <div className="absolute inset-0 z-10 bg-white/40" />
 
-      {/* CONTENEDOR CENTRAL */}
+
       <main className="relative z-20 flex-1 flex items-center justify-center w-full p-6">
         <div className="bg-white shadow-xl w-full max-w-xl p-10 md:p-12 rounded-[3rem] shadow-2xl border border-white/50 animate-fade-in flex flex-col items-center">
           
-          {/* LOGO DENTRO DEL CUADRADO */}
+
           <img 
             src={logoSmart} 
             alt="Logo SmartEconomato" 
@@ -56,7 +54,7 @@ const LoginPage = () => {
             </h1>
           </div>
 
-          {/* FORMULARIO USANDO TUS COMPONENTES LIMPIOS */}
+          
           <form onSubmit={onSubmit} className="w-full space-y-6">
             
             <div className="space-y-2">
@@ -82,17 +80,17 @@ const LoginPage = () => {
             </div>
 
            <div className="pt-4">
-  <Button 
-    loading={loading}
-    type="submit"
-    variant="primario"
-    className="w-full py-4" // Añadimos py-4 para igualar la altura si tu Input es alto
-  > Entrar
-  
-  </Button>
+            <Button 
+              loading={loading}
+              type="submit"
+              variant="primario"
+              className="w-full py-4"
+            > Entrar
+            
+            </Button>
 
-</div>
-<div className="h-6"> {/* Altura fija para que el layout no "salte" al aparecer el error */}
+          </div>
+          <div className="h-6"> 
           {error && (
             <p className="text-red-500 text-[14px] font-bold text-center animate-shake">
               {error}
@@ -108,7 +106,6 @@ const LoginPage = () => {
         </div>
       </main>
 
-      {/* TU FOOTER */}
       <div className="relative z-20 w-full">
         <footer>
             <div className="flex justify-center items-center gap-2 text-caption text-secundario font-normal text-[18px] mb-10 ">

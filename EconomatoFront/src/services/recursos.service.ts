@@ -1,5 +1,3 @@
-// src/services/recursos.service.ts
-
 import { authFetch } from './auth-service';
 import type { Alergeno, Categoria, Proveedor } from '../models/resources.model';
 
@@ -13,7 +11,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
         return await res.json();
     } catch (error) {
         console.error(error);
-        return []; // Si falla, devolvemos lista vacia
+        return [];
     }
 };
 

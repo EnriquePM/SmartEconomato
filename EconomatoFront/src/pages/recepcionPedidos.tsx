@@ -39,7 +39,6 @@ const RecepcionPage = () => {
         </div>
       </div>
 
-      {/* BARRA DE HERRAMIENTAS */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
 
         <Buscador 

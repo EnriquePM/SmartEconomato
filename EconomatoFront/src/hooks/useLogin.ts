@@ -10,11 +10,11 @@ export const useLogin = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Nuevo estado
+  const [error, setError] = useState<string | null>(null); 
 
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setError(null); // Limpiar errores al intentar login
+    setError(null); 
 
     setLoading(true);
 
@@ -55,7 +55,7 @@ export const useLogin = () => {
       const message = err instanceof Error
         ? err.message
         : "No se pudo conectar con el servidor.";
-      setError(message); // En lugar de alert(message)
+      setError(message); 
     } finally {
       setLoading(false);
     }
@@ -67,8 +67,8 @@ export const useLogin = () => {
     password,
     setPassword,
     loading,
-    error,      // Exportamos el error
-    setError,   // Exportamos el setter para errores locales
+    error,    
+    setError,  
     handleLogin,
   };
 };

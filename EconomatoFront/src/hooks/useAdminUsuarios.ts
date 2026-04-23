@@ -7,20 +7,14 @@ export type RolAlta = "alumno" | "profe";
 export const useAdminUsuarios = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // --- ESTADOS DE BÚSQUEDA Y FILTRADO ---
   const [busqueda, setBusqueda] = useState("");
   const [filtroRol, setFiltroRol] = useState("todos");
-
-  // --- ESTADOS DEL FORMULARIO ---
   const [nombre, setNombre] = useState("");
   const [apellido1, setApellido1] = useState("");
   const [apellido2, setApellido2] = useState("");
   const [email, setEmail] = useState("");
   const [rol, setRol] = useState<RolAlta>("alumno");
   const [curso, setCurso] = useState("");
-
-  // --- ESTADO DE ALERTA ---
   const [alerta, setAlerta] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'confirm';
@@ -50,7 +44,6 @@ export const useAdminUsuarios = () => {
     cargarUsuarios();
   }, []);
 
-  // --- LÓGICA DE FILTRADO (Se ejecuta cada vez que cambia usuarios, busqueda o filtroRol) ---
   const usuariosFiltrados = useMemo(() => {
     return usuarios.filter(u => {
       const nombreCompleto = `${u.nombre} ${u.apellido1} ${u.apellido2 || ''} ${u.username}`.toLowerCase();
@@ -129,16 +122,13 @@ export const useAdminUsuarios = () => {
   };
 
   return {
-    // Datos
-    usuarios: usuariosFiltrados, // Devolvemos la lista ya filtrada
+    usuarios: usuariosFiltrados, 
     totalUsuarios: usuarios.length,
     loading,
-    // Filtros
     filtros: {
       busqueda, setBusqueda,
       filtroRol, setFiltroRol
     },
-    // Formulario
     form: {
       nombre, setNombre,
       apellido1, setApellido1,
