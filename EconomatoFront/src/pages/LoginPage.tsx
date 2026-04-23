@@ -1,63 +1,133 @@
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import FooterBar from '../components/layout/Footer';
-import logoSmart from '../assets/logoSmart.png';
-import fondo from '../assets/fondo.png';
+import logoSmart from '../assets/logoTransparet.png';
+import fondo from "../assets/fondoHome.png";
 import { useLogin } from '../hooks/useLogin';
 
 const LoginPage = () => {
-  const { user, setUser, password, setPassword, loading, handleLogin } = useLogin();
+  const { user, setUser, password, setPassword, loading, handleLogin, error, setError } = useLogin();
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validación local antes de llamar al servicio
+    if (!user || !password) {
+      setError("Por favor, rellena todos los campos.");
+      return;
+    }
+    
+    handleLogin();
+  };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-4 py-4">
-      {/* Banner Superior */}
-      <div className="relative w-full h-64 md:h-75 overflow-hidden">
-        <img 
-          src={fondo} 
-          alt="Cocina" 
-          className="w-full h-full object-cover rounded-t-[15px] object-[50%_75%]" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-white from-0% via-white/20 via-20% to-transparent to-30% rounded-t-[20px]"></div>
+    <div className="h-screen w-full relative flex flex-col items-center justify-center overflow-hidden font-sans">
+      
+      {/* FONDO IDÉNTICO AL HOME */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url(${fondo})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(25px)', 
+          transform: 'scale(1.1)'
+        }}
+      />
+      <div className="absolute inset-0 z-10 bg-white/40" />
+
+      {/* CONTENEDOR CENTRAL */}
+      <main className="relative z-20 flex-1 flex items-center justify-center w-full p-6">
+        <div className="bg-white shadow-xl w-full max-w-xl p-10 md:p-12 rounded-[3rem] shadow-2xl border border-white/50 animate-fade-in flex flex-col items-center">
+          
+          {/* LOGO DENTRO DEL CUADRADO */}
+          <img 
+            src={logoSmart} 
+            alt="Logo SmartEconomato" 
+            className="h-11 w-auto object-contain mb-16" 
+          />
+          
+          <div className="text-center mb-8">
+  
+            <h1 className='font-semibold text-[50px] mb-6'>
+              Bienvenid@
+            </h1>
+             <h1 className='font-normal text-[20px] text-gray-400 '>
+              Introduce tus datos para iniciar sesión
+            </h1>
+          </div>
+
+          {/* FORMULARIO USANDO TUS COMPONENTES LIMPIOS */}
+          <form onSubmit={onSubmit} className="w-full space-y-6">
+            
+            <div className="space-y-2">
+              <Input 
+                type="text" 
+                label='Usuario'
+                placeholder="Nombre de usuario" 
+                value={user} 
+                id="usuario"
+                onChange={setUser} 
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Input 
+                label='Contraseña'
+                type="password" 
+                placeholder="••••••••" 
+                value={password} 
+                id="contrasena"
+                onChange={setPassword} 
+              />
+            </div>
+
+           <div className="pt-4">
+  <Button 
+    loading={loading}
+    type="submit"
+    variant="primario"
+    className="w-full py-4" // Añadimos py-4 para igualar la altura si tu Input es alto
+  > Entrar
+  
+  </Button>
+
+</div>
+<div className="h-6"> {/* Altura fija para que el layout no "salte" al aparecer el error */}
+          {error && (
+            <p className="text-red-500 text-[14px] font-bold text-center animate-shake">
+              {error}
+            </p>
+          )}
+        </div>
+          </form>
+          <div className="mt-6 pt-6  w-full text-center">
+            <p className="text-[12px] text-gray-400 leading-relaxed">
+              Proyecto financiado por el Gobierno de Canarias <br />
+            </p>
+          </div>
+        </div>
+      </main>
+
+      {/* TU FOOTER */}
+      <div className="relative z-20 w-full">
+        <footer>
+            <div className="flex justify-center items-center gap-2 text-caption text-secundario font-normal text-[18px] mb-10 ">
+                <span>Gobierno de Canarias</span>
+                <span className="opacity-50"> | </span>
+                <span>CEIP Virgen del Carmen</span>
+            </div>
+        </footer>
       </div>
 
-      <main className="max-w-6xl mx-auto w-full px-20 py-12 mt-4 flex flex-col md:flex-row justify-between">
-        <div className="md:w-1/2">
-          <img
-            src={logoSmart}
-            alt='Logo SmartEconomato' 
-            className="h-16 w-auto object-contain mb-4"
-          />
-          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
-            Bienvenido a SmartEconomato
-          </h1>
-          
-        </div>
-
-        {/* Formulario */}
-        <form  onSubmit={handleLogin} className="md:w-1/3 w-full space-y-4 mt-8 md:mt-0">
-          <Input 
-            type="text" 
-            placeholder="Usuario" 
-            value={user} 
-            id={'usuario'}
-            onChange={setUser} 
-          />
-          <Input 
-            type="password" 
-            placeholder="Contrasena" 
-            value={password} 
-            id={'contrasena'}
-            onChange={setPassword} 
-          />
-          
-          <Button 
-            loading={loading}
-            type="submit"
-            className="w-full"
-            >Entrar</Button>
-        </form>
-      </main>
-      <FooterBar />
+      <style>{`
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
