@@ -1,3 +1,5 @@
+import Swal from 'sweetalert2';
+import { toast } from 'sonner';
 import type {
     ChangePasswordPayload,
     LoginPayload,
@@ -15,14 +17,79 @@ export const authFetch = async (url: string, options: RequestInit = {}): Promise
     const token = getToken();
     const headers = new Headers(options.headers || {});
 
+    // 1. Añadimos el token si existe
     if (token) {
         headers.append("Authorization", `Bearer ${token}`);
     }
 
-    return fetch(url, {
-        ...options,
-        headers,
-    });
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers,
+        });
+
+        // --- MANEJO DE ERRORES DE RESPUESTA ---
+        if (!response.ok) {
+            
+            // A. SESIÓN EXPIRADA (401 o 403)
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem("token");
+
+                // Retornamos una promesa que no se resuelve para "congelar" la app
+                return new Promise((resolve) => {
+                    Swal.fire({
+                        title: 'SESIÓN EXPIRADA',
+                        html: `<p style="font-size: 1.1rem; padding: 10px 20px;">
+                                Tu sesión ha caducado por motivos de seguridad. 
+                                Por favor, vuelve a iniciar sesión para continuar trabajando.
+                               </p>`,
+                        icon: 'warning',
+                        iconColor: '#DC2626',
+                        width: '700px',
+                        padding: '2em',
+                        confirmButtonText: 'ENTENDIDO, IR AL LOGIN',
+                        buttonsStyling: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        customClass: {
+                            confirmButton: `
+                                py-4 px-8 rounded-full flex items-center justify-center gap-3
+                                font-bold text-[12px] uppercase tracking-[0.1em]
+                                transition-all duration-300 active:scale-[0.96]
+                                bg-[#DC2626] text-white hover:bg-red-700
+                            `
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/login";
+                        }
+                    });
+                });
+            }
+
+            // B. ERROR DEL SERVIDOR (>= 500)
+            if (response.status >= 500) {
+                // Redirigimos a la página de mantenimiento
+                if (!window.location.pathname.includes("/mantenimiento")) {
+                    window.location.href = "/mantenimiento";
+                }
+                // Retornamos una promesa vacía para evitar que el componente siga procesando
+                return new Promise(() => {}); 
+            }
+        }
+
+        return response;
+
+    } catch (error) {
+        // C. ERROR DE RED (Servidor apagado, sin internet, CORS)
+        toast.error("Error de conexión", {
+            description: "No se pudo conectar con el servidor. Revisa tu conexión a internet.",
+            duration: 5000,
+        });
+        
+        // Re-lanzamos el error para que el componente que llama pueda manejarlo si quiere
+        throw error; 
+    }
 };
 
 const parseJson = async <T>(response: Response): Promise<T | null> => {

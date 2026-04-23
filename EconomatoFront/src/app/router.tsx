@@ -1,7 +1,6 @@
 
 import type { RouteObject } from "react-router-dom";
 import { ProtectedRoute, RoleProtectedRoute } from "../components/ProtectedRoute";
-
 import LoginPage from "../pages/LoginPage";
 import CambiarPassword from "../pages/CambiarPassword";
 import Layout from "../layout/Layout";
@@ -13,6 +12,7 @@ import IngresoGeneral from "../pages/IngresoGeneral";
 import Home from "../pages/Home";
 import PedidosPage from "../pages/RecepcionPedidos";
 import RecetasPage from "../pages/Recetas";
+import PaginaMantimiento from "../pages/PaginaMantenimiento";
 
 
 export const routes: RouteObject[] = [
@@ -23,6 +23,10 @@ export const routes: RouteObject[] = [
   {
     path: "/cambiar-password",
     element: <CambiarPassword />,
+  },
+  {
+    path: "/mantenimiento",
+    element: <PaginaMantimiento />,
   },
   {
     element: <ProtectedRoute />,

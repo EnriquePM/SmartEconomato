@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Printer, Hash, Utensils, NotepadText, CookingPot, EggFried, BookMarked, Croissant, Soup} from 'lucide-react'; // Importamos Utensils
+import { Pencil, Printer, Soup} from 'lucide-react'; // Importamos Utensils
 import type { Receta } from '../../models/Receta';
 import { RecetaPDF } from '../pdf/RecetaPDF';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -58,18 +58,6 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
           </p>
         </div>
 
-        {/* ALÉRGENOS MINI */}
-        <div className="flex gap-1.5 mb-3 items-center">
-          {receta.receta_alergeno?.slice(0, 5).map((ra) => (
-            <div key={ra.id_alergeno} className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 p-1 flex items-center justify-center transition-transform hover:scale-110 shadow-sm">
-              {ra.alergeno.icono ? (
-                <img src={ra.alergeno.icono} className="w-full h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity" alt="" />
-              ) : (
-                <span className="text-[8px] font-bold text-gray-400">{ra.alergeno.nombre[0]}</span>
-              )}
-            </div>
-          ))}
-        </div>
 
         {/* FOOTER */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-50">
