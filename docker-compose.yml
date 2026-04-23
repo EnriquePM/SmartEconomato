@@ -1,0 +1,49 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: smarteconomato_nginx
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: smarteconomato_frontend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: smarteconomato_backend
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://admin:admin@db:5432/smart_economato?schema=public
+      JWT_SECRET: palabra_secreta_para_firmar_tokens_123
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    container_name: smarteconomato_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: smart_economato
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d/
+
+volumes:
+  pg_data:

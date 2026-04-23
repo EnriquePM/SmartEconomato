@@ -1,0 +1,63 @@
+{
+  "ingredientes": [
+    {
+      "id": "1",
+      "nombre": "Aceite de Oliva",
+      "stock": 10,
+      "categoria": "1",
+      "proveedor": "101"
+    },
+    {
+      "id": "2",
+      "nombre": "Harina de Trigo",
+      "stock": 50,
+      "categoria": "2",
+      "proveedor": "102"
+    },
+    {
+      "id": "964e",
+      "codigo": "",
+      "nombre": "pip",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "8db3",
+      "codigo": "",
+      "nombre": "sda",
+      "stock": 1,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    }
+  ],
+  "utensilios": [
+    {
+      "id": "u1",
+      "nombre": "Cuchillo Cebollero 20cm",
+      "categoria": "Cuchillos",
+      "stock": 15,
+      "estado": "Nuevo",
+      "id_proveedor": 101,
+      "codigo": "841001"
+    },
+    {
+      "id": "u2",
+      "nombre": "Tabla de Corte Roja",
+      "categoria": "Tablas",
+      "stock": 8,
+      "estado": "Usado",
+      "id_proveedor": 101,
+      "codigo": "841002"
+    },
+    {
+      "id": "u3",
+      "nombre": "Sartén 24cm",
+      "categoria": "Sartenes",
+      "stock": 4,
+      "estado": "Nuevo",
+      "id_proveedor": 103,
+      "codigo": "841003"
+    }
+  ]
+}

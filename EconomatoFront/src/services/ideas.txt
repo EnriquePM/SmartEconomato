@@ -1,0 +1,5 @@
+services: Son los camareros (Lógica pura).
+
+Aquí no hay HTML ni diseño. Solo funciones de JavaScript que piden datos (a una API, a una base de datos, etc.).
+
+Ejemplo: pedirProductos.js, enviarPedido.js.

@@ -1,0 +1,230 @@
+{
+  "ingredientes": [
+    {
+      "id_ingrediente": 1,
+      "nombre": "Aceite de Oliva Virgen Extra",
+      "stock": 50,
+      "id_categoria": 1,
+      "id_proveedor": 101,
+      "id": "538a"
+    },
+    {
+      "id_ingrediente": 2,
+      "nombre": "Arroz Bomba",
+      "stock": 100,
+      "id_categoria": 2,
+      "id_proveedor": 102,
+      "id": "1aab"
+    },
+    {
+      "id_ingrediente": 3,
+      "nombre": "Tomate Triturado (Lata)",
+      "stock": 30,
+      "id_categoria": 3,
+      "id_proveedor": 101,
+      "id": "bd68"
+    },
+    {
+      "id_ingrediente": 4,
+      "nombre": "Harina de Trigo (Fuerza)",
+      "stock": 25,
+      "id_categoria": 2,
+      "id_proveedor": 102,
+      "id": "7e9d"
+    },
+    {
+      "id_ingrediente": 5,
+      "nombre": "Huevos Camperos L",
+      "stock": 200,
+      "id_categoria": 4,
+      "id_proveedor": 103,
+      "id": "69bb"
+    },
+    {
+      "id_ingrediente": 6,
+      "nombre": "Leche Entera",
+      "stock": 60,
+      "id_categoria": 4,
+      "id_proveedor": 103,
+      "id": "2664"
+    },
+    {
+      "id_ingrediente": 7,
+      "nombre": "Sal Fina Yodada",
+      "stock": 40,
+      "id_categoria": 5,
+      "id_proveedor": 104,
+      "id": "df2b"
+    },
+    {
+      "id_ingrediente": 8,
+      "nombre": "Azúcar Blanco",
+      "stock": 15,
+      "id_categoria": 5,
+      "id_proveedor": 104,
+      "id": "3669"
+    },
+    {
+      "id_ingrediente": 9,
+      "nombre": "Spaghetti Nº5",
+      "stock": 80,
+      "id_categoria": 2,
+      "id_proveedor": 102,
+      "id": "d2d9"
+    },
+    {
+      "id_ingrediente": 10,
+      "nombre": "Vinagre de Jerez",
+      "stock": 20,
+      "id_categoria": 1,
+      "id_proveedor": 101,
+      "id": "5a00"
+    },
+    {
+      "id": "c382",
+      "nombre": "ejemplo1 ",
+      "stock": 4,
+      "id_categoria": 2,
+      "id_proveedor": 102
+    },
+    {
+      "id": "b72d",
+      "nombre": "sa",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "940f",
+      "nombre": "rrrr",
+      "stock": 1,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "5ea8",
+      "nombre": "pruebaDF",
+      "stock": 78,
+      "id_categoria": 3,
+      "id_proveedor": 103
+    },
+    {
+      "id": "0206",
+      "nombre": "efas",
+      "stock": 1,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "2afc",
+      "nombre": "sad",
+      "stock": 1,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "cb8d",
+      "nombre": "pan",
+      "stock": 3,
+      "id_categoria": 2,
+      "id_proveedor": 102
+    },
+    {
+      "id": "00f6",
+      "nombre": "bh",
+      "stock": 2,
+      "id_categoria": 2,
+      "id_proveedor": 102
+    },
+    {
+      "id": "b182",
+      "nombre": "Tiramizú",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 102
+    },
+    {
+      "id": "b050",
+      "nombre": "dssdsds",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "f4b9",
+      "nombre": "sdsd",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "0c9e",
+      "nombre": "sergio",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "3291",
+      "nombre": "enrique",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "f766",
+      "nombre": "qww",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "b4c1",
+      "codigo": "",
+      "nombre": "prueba sin code",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "e863",
+      "codigo": "5449000000996",
+      "nombre": "Coca-Cola",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "0356",
+      "codigo": "",
+      "nombre": "asdawe",
+      "stock": 1,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "5d13",
+      "codigo": "",
+      "nombre": "asd",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "c2cd",
+      "codigo": "",
+      "nombre": "sas",
+      "stock": 3,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    },
+    {
+      "id": "8df3",
+      "codigo": "",
+      "nombre": "sad",
+      "stock": 2,
+      "id_categoria": 1,
+      "id_proveedor": 101
+    }
+  ]
+}
