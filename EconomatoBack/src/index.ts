@@ -13,9 +13,11 @@ import movimientoRoutes from './routes/movimiento.routes';
 import recetaRoutes from './routes/receta.routes';
 import escandalloRoutes from './routes/escandallo.routes';
 import alergenoRoutes from './routes/alergeno.routes';
+import auditLogRoutes from './routes/auditLog.routes';
 import http from 'http';
 import { Server } from 'socket.io';
 import { iniciarServicioBascula } from './services/bascula.service';
+import { setIO } from './socket';
 
 dotenv.config();
 
@@ -40,6 +42,7 @@ app.use('/api/alergenos', alergenoRoutes);
 
 // Recursos (se monta en /api, por lo que afecta a las rutas de recursos si coinciden)
 app.use('/api', recursosRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // --- CONFIGURACIÓN DE SOCKET.IO Y BÁSCULA ---
 const server = http.createServer(app);
@@ -49,7 +52,7 @@ const io = new Server(server, {
   }
 });
 
-// Inicializamos el servicio de tu lector pasándole el IO
+setIO(io);
 iniciarServicioBascula(io);
 
 server.listen(port, () => {

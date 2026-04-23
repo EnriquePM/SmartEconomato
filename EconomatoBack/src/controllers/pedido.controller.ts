@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import { estado_pedido } from '@prisma/client';
+import { logAction } from '../services/audit.service';
 
 const pedidoInclude = {
     usuario: {
@@ -111,7 +112,7 @@ const buildPedidoData = (payload: ReturnType<typeof normalizePedidoPayload>, id_
 // 1. CREAR O ACTUALIZAR PEDIDO (Soporta Ingredientes y Materiales)
 export const createPedido = async (req: any, res: Response) => {
     // Verificamos el usuario
-    const id_usuario = req.user ? req.user.id_usuario : 1;
+    const id_usuario = req.user ? req.user.id : 1;
 
     try {
         const payload = normalizePedidoPayload(req.body);
@@ -122,6 +123,7 @@ export const createPedido = async (req: any, res: Response) => {
             include: pedidoInclude
         });
 
+        void logAction(id_usuario, 'CREATE', 'Pedido', nuevoPedido.id_pedido, { estado: nuevoPedido.estado, tipo: nuevoPedido.tipo_pedido });
         res.json(nuevoPedido);
 
     } catch (error) {
@@ -138,7 +140,7 @@ export const updatePedido = async (req: any, res: Response) => {
         return res.status(400).json({ error: 'ID de pedido no valido' });
     }
 
-    const id_usuario = req.user ? req.user.id_usuario : 1;
+    const id_usuario = req.user ? req.user.id : 1;
 
     try {
         const pedidoExistente = await prisma.pedido.findUnique({
@@ -171,6 +173,7 @@ export const updatePedido = async (req: any, res: Response) => {
             include: pedidoInclude
         });
 
+        void logAction(id_usuario, 'UPDATE', 'Pedido', idPedido, { estado: pedidoActualizado.estado });
         return res.json(pedidoActualizado);
     } catch (error) {
         return res.status(500).json({ error: 'Error al actualizar el pedido', detalle: error });
@@ -239,9 +242,8 @@ export const deletePedido = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        await prisma.pedido.delete({
-            where: { id_pedido: Number(id) }
-        });
+        await prisma.pedido.delete({ where: { id_pedido: Number(id) } });
+        void logAction((req as any).user?.id ?? null, 'DELETE', 'Pedido', Number(id), {});
         res.json({ message: 'Pedido eliminado correctamente' });
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar el pedido' });
@@ -352,6 +354,7 @@ export const confirmarPedido = async (req: Request, res: Response) => {
             });
         });
 
+        void logAction((req as any).user?.id ?? null, 'UPDATE', 'Pedido', Number(id), { estado: resultado.estado, accion: 'confirmar' });
         res.json(resultado);
     } catch (error: any) {
         console.error(error);

@@ -5,15 +5,15 @@ import { RecetaPDF } from '../pdf/RecetaPDF';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 
 interface RecetaCardProps {
-  receta: Receta; 
-  onClick: (receta: Receta) => void;
-  onEdit: (receta: Receta) => void;
+  receta: Receta;
+  onClick?: (receta: Receta) => void;
+  onEdit?: (receta: Receta) => void;
 }
 
 export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit }) => {
   return (
-    <div 
-      onClick={() => onClick(receta)}
+    <div
+      onClick={() => onClick?.(receta)}
       /* overflow-hidden es CRUCIAL para que el icono gigante se corte */
       className="relative group overflow-hidden bg-white rounded-[2rem] shadow-md border border-gray-100 hover:shadow-xl transition-all duration-500 cursor-pointer h-[210px] flex flex-col"
     >
@@ -41,7 +41,7 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
           </span>
           
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(receta); }}
+            onClick={(e) => { e.stopPropagation(); onEdit?.(receta); }}
             className="p-2 rounded-full bg-gray-50 text-gray-400 hover:bg-acento hover:text-white transition-all shadow-sm border border-gray-100"
           >
             <Pencil size={11} />

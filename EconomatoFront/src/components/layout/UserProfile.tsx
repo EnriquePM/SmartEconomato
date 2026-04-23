@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronUp, User, Settings, LogOut } from 'lucide-react';
+import { ChevronUp, User, ShieldCheck, LogOut } from 'lucide-react';
 import type { Usuario } from '../../models/user.model';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,7 +9,7 @@ import defaultAvatar from '../../assets/Avatares/chef.png';
 
 export const UserProfile = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, hasRole } = useAuth();
 
   const [avatarActual, setAvatarActual] = useState(() => {
     return localStorage.getItem("avatarUsuario") || defaultAvatar;
@@ -55,7 +55,7 @@ export const UserProfile = () => {
         />
         <div className="flex-1 ms-3 text-left overflow-hidden">
           <p className="text-sm font-bold text-gray-700 truncate">{user?.username || "Cargando..."}</p>
-          <p className="text-xs text-gray-500 truncate">{user?.rol|| "Cargando..."}</p>
+          <p className="text-xs text-gray-500 truncate">{user ? `${user.nombre} ${user.apellido1}` : "Cargando..."}</p>
         </div>
         <ChevronUp 
             size={16} 
@@ -77,15 +77,28 @@ export const UserProfile = () => {
                 <span>Mi Perfil</span>
               </Link>
             </li>
+            {hasRole(['Administrador', 'Profesor']) && (
+              <li>
+                <Link
+                  to="/audit-log"
+                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 hover:text-acento transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <ShieldCheck size={16} />
+                  <span>Panel de Control</span>
+                </Link>
+              </li>
+            )}
+
             <li className="border-t border-gray-100 mt-1 pt-1">
-              <button 
+              <button
                 onClick={() => {
                   setIsOpen(false);
                   logout();
                 }}
                 className="w-full flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-50 font-medium transition-colors text-left"
               >
-                <LogOut size={16} /> 
+                <LogOut size={16} />
                 <span>Cerrar Sesión</span>
               </button>
             </li>
