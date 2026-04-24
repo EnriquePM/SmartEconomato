@@ -1,0 +1,128 @@
+import { useState } from 'react';
+import { LayoutDashboard, ChevronDown, ChevronUp, Settings, Users, ChefHat } from "lucide-react";import { NavLink, Link } from 'react-router-dom';
+import logoSmart from '../../assets/logoTransparet.png';
+import { UserProfile } from './UserProfile';
+import { useAuth } from '../../context/AuthContext';
+
+
+export default function SideBar() {
+  const { hasRole } = useAuth();
+  const [adminOpen, setAdminOpen] = useState(false);
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center px-4 py-3 rounded-full transition-all duration-300 group ${
+      isActive
+        ? "bg-acento/10 text-acento font-bold shadow-sm"
+        : "text-gray-500 hover:bg-acento/5 hover:text-acento font-medium"
+    }`;
+
+  return (
+    <>
+      <button 
+        data-drawer-target="logo-sidebar" 
+        type="button" 
+        className="text-heading p-2 ms-3 mt-3 rounded-base inline-flex sm:hidden hover:bg-neutral-secondary-medium"
+      >
+        <span className="sr-only">Abrir menú</span>
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+      </button>
+
+      <aside id="logo-sidebar" className="fixed top-0 left-0 z-20 w-60 h-full transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+        <div className="flex flex-col h-full px-3 py-4 pt-6 bg-neutral-primary-soft border-default">
+          
+          <div className="flex-grow overflow-y-auto">
+            <Link to="/" className="flex items-center ps-2.5 mb-8">
+              <img src={logoSmart} className="h-9 me-4" alt="Logo Smart Economato" />
+            </Link>
+
+            <ul className="space-y-1.5 font-medium">
+              
+
+              <li>
+                <NavLink to="/" className={linkClass} end>
+                  <LayoutDashboard className="w-5 h-5" />
+                  <span className="ms-3">Panel Principal</span>
+                </NavLink>
+              </li>
+
+
+              <li>
+                <NavLink to="/inventario" className={linkClass}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <span className="ms-3">Inventario</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink to="/recepcion" className={linkClass}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <span className="ms-3">Recepcionar</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink to="/pedidos" className={linkClass}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  <span className="ms-3">Pedidos</span>
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink to="/recetas" className={linkClass}>
+                  <ChefHat className="w-5 h-5" />
+                  <span className="ms-3">Recetas</span>
+                </NavLink>
+              </li>
+              
+
+              <li>
+                <NavLink to="/registrar-general" className={linkClass}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="ms-3">Registrar producto</span>
+                </NavLink>
+              </li>
+              {hasRole(["Administrador", "Profesor"]) && (
+                <li>
+                  <button
+                    onClick={() => setAdminOpen(!adminOpen)}
+                    className="flex items-center w-full px-2 py-2 rounded-base group transition-colors text-body hover:bg-neutral-tertiary hover:text-fg-brand"
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span className="ms-3 flex-grow text-left">Administración</span>
+                    {adminOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {adminOpen && (
+                    <ul className="mt-1 ms-4 space-y-1 border-l border-neutral-secondary-medium pl-3">
+                      <li>
+                        <NavLink to="/admin-usuarios" className={linkClass}>
+                          <Users className="w-4 h-4" />
+                          <span className="ms-3 text-sm">Usuarios</span>
+                        </NavLink>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+              )}
+              
+          
+            </ul>
+          </div>
+
+          <UserProfile />
+          
+        </div>
+      </aside>
+    </>
+  );
+}
