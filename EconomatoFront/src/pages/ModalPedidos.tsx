@@ -2,7 +2,7 @@ import { X, Send, Trash2, Search, ShoppingCart, ShoppingBasket } from "lucide-re
 import { useState } from "react";
 import { Button } from "../components/ui/Button"; 
 import { Input } from "../components/ui/Input";  
-import { Select } from "../components/ui/select"; 
+import { Select } from "../components/ui/Select";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { PedidoPDF } from "./PedidoPDF"; 
 import { Printer } from "lucide-react";

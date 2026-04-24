@@ -1,7 +1,7 @@
 import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
 import { Eye, Plus, Pencil, Trash2, AlertTriangle, Send, CheckCircle } from 'lucide-react';
 import { ModalPedido } from '../pages/ModalPedidos';

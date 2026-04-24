@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
 import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import { useInventarioManager } from '../hooks/useInventarioManager';
 import { ModalEditarProducto } from '../components/ModalEditarProducto';
 import type { InventarioItem } from '../models/inventory.model';

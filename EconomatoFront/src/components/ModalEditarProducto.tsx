@@ -5,7 +5,7 @@ import type { Alergeno, Categoria, Proveedor } from '../models/resources.model';
 import { getCategorias, getProveedores, getAlergenos } from '../services/recursos.service';
 import { updateIngredienteEntry, updateMaterialEntry } from '../services/ingresoGeneral.service';
 import { Input } from './ui/Input';
-import { Select } from './ui/select';
+import { Select } from './ui/Select';
 import { Button } from './ui/Button';
 
 interface Props {
@@ -161,8 +161,37 @@ export const ModalEditarProducto = ({ item, vista, onClose, onGuardado }: Props)
 
               {alergenos.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-3 ml-1">Alérgenos</label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center justify-between mb-3 ml-1">
+                    <label className="block text-sm font-medium text-gray-500">Alérgenos</label>
+                    {alergenosSeleccionados.length > 0 && (
+                      <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                        {alergenosSeleccionados.length} seleccionado{alergenosSeleccionados.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  {alergenosSeleccionados.length > 0 && (
+                    <div className="flex flex-wrap gap-3 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-2xl">
+                      {alergenos
+                        .filter((al) => alergenosSeleccionados.includes(al.id_alergeno))
+                        .map((al) => {
+                          const imgName = al.icono ?? `${al.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}.png`;
+                          return (
+                            <div key={al.id_alergeno} className="flex flex-col items-center gap-1">
+                              <img
+                                src={`/alergenos/${imgName}`}
+                                alt={al.nombre}
+                                className="w-10 h-10 object-contain drop-shadow-sm"
+                                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                              />
+                              <span className="text-[10px] font-bold text-amber-700 leading-tight text-center max-w-[52px]">{al.nombre}</span>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
                     {alergenos.map((al) => {
                       const seleccionado = alergenosSeleccionados.includes(al.id_alergeno);
                       const imgName = al.icono ?? `${al.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}.png`;
@@ -171,19 +200,39 @@ export const ModalEditarProducto = ({ item, vista, onClose, onGuardado }: Props)
                           key={al.id_alergeno}
                           type="button"
                           onClick={() => toggleAlergeno(al.id_alergeno)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-full border-2 transition-all text-xs font-bold ${
+                          className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all duration-150 group ${
                             seleccionado
-                              ? 'bg-amber-50 border-amber-400 text-amber-700'
-                              : 'bg-gray-50 border-gray-200 text-gray-400 hover:border-gray-300'
+                              ? 'bg-amber-50 border-amber-400 shadow-md shadow-amber-100'
+                              : 'bg-gray-50 border-gray-200 hover:border-amber-200 hover:bg-amber-50/40'
                           }`}
                         >
+                          {seleccionado && (
+                            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                              <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.5 5L3.8 7.5L8.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                              </svg>
+                            </span>
+                          )}
                           <img
                             src={`/alergenos/${imgName}`}
                             alt={al.nombre}
-                            className="w-5 h-5 object-contain"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                            className={`w-9 h-9 object-contain transition-transform duration-150 ${seleccionado ? 'scale-110 drop-shadow-md' : 'opacity-60 group-hover:opacity-90 group-hover:scale-105'}`}
+                            onError={(e) => {
+                              const img = e.currentTarget as HTMLImageElement;
+                              img.style.display = 'none';
+                              const fallback = img.nextElementSibling as HTMLElement | null;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
                           />
-                          {al.nombre}
+                          <span
+                            className="hidden w-9 h-9 rounded-full bg-gray-200 items-center justify-center text-[10px] font-black text-gray-500"
+                            style={{ display: 'none' }}
+                          >
+                            {al.nombre.slice(0, 3).toUpperCase()}
+                          </span>
+                          <span className={`text-[10px] font-bold leading-tight text-center ${seleccionado ? 'text-amber-700' : 'text-gray-400'}`}>
+                            {al.nombre}
+                          </span>
                         </button>
                       );
                     })}
