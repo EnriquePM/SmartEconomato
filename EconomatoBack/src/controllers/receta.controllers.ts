@@ -74,7 +74,7 @@ const normalizeIngredientesPayload = (body: any): { data?: IngredientePayload[];
   return { data: normalized };
 };
 
-export const getRecetas = async (req: Request, res: Response): Promise<void> => {
+export const getRecetas = async (_req: Request, res: Response): Promise<void> => {
   try {
     const recetas = await prisma.receta.findMany({
       include: {
@@ -187,6 +187,18 @@ export const createReceta = async (req: Request, res: Response): Promise<void> =
 
       return recetaCompleta;
     });
+
+    if (nuevaReceta) {
+      const idUsuario = (req as AuthenticatedRequest).user?.id ?? (req as AuthenticatedRequest).user?.id_usuario;
+      void logActividad(
+        idUsuario ? Number(idUsuario) : null,
+        'Creó una receta',
+        'receta',
+        nuevaReceta.id_receta,
+        `Receta: ${nombre}`,
+        '/recetas'
+      );
+    }
 
     res.status(201).json(nuevaReceta);
   } catch (error: any) {
@@ -351,6 +363,18 @@ export const updateReceta = async (req: Request, res: Response): Promise<void> =
       return recetaCompleta;
     });
 
+    if (recetaActualizada) {
+      const idUsuario = (req as AuthenticatedRequest).user?.id ?? (req as AuthenticatedRequest).user?.id_usuario;
+      void logActividad(
+        idUsuario ? Number(idUsuario) : null,
+        'Editó una receta',
+        'receta',
+        recetaId,
+        `Receta: ${recetaActualizada.nombre}`,
+        '/recetas'
+      );
+    }
+
     res.json(recetaActualizada);
   } catch (error: any) {
     res.status(400).json({ error: error.message || 'Error al actualizar la receta' });
@@ -369,9 +393,25 @@ export const deleteReceta = async (req: Request, res: Response): Promise<void> =
 
     // Por el OnDelete: Cascade que configuramos en Prisma, 
     // borrar la receta borrará automáticamente las filas en receta_ingrediente
+    const recetaAEliminar = await prisma.receta.findUnique({
+      where: { id_receta: recetaId },
+      select: { nombre: true }
+    });
+
     await prisma.receta.delete({
       where: { id_receta: recetaId }
     });
+
+    const idUsuario = (req as AuthenticatedRequest).user?.id ?? (req as AuthenticatedRequest).user?.id_usuario;
+    void logActividad(
+      idUsuario ? Number(idUsuario) : null,
+      'Eliminó una receta',
+      'receta',
+      recetaId,
+      `Receta: ${recetaAEliminar?.nombre ?? recetaId}`,
+      '/recetas'
+    );
+
     res.status(204).send();
   } catch (error: any) {
     if (error?.code === 'P2025') {
@@ -506,6 +546,15 @@ export const makeReceta = async (req: AuthenticatedRequest, res: Response): Prom
         });
       }
     });
+
+    void logActividad(
+      idUsuario,
+      'Elaboró una receta',
+      'receta',
+      recetaId,
+      `Receta: ${receta.nombre} (${racionesInput} raciones)`,
+      '/recetas'
+    );
 
     res.json({
       mensaje: 'Receta elaborada y stock descontado correctamente',

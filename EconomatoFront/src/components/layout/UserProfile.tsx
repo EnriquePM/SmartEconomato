@@ -82,7 +82,7 @@ export const UserProfile = () => {
             {hasRole(['Administrador', 'Profesor']) && (
               <li>
                 <Link
-                  to="/admin-usuarios"
+                  to="/panel-control"
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >

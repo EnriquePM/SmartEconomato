@@ -13,6 +13,7 @@ import Home from "../pages/Home";
 import PedidosPage from "../pages/recepcionPedidos";
 import RecetasPage from "../pages/Recetas";
 import PaginaMantimiento from "../pages/PaginaMantenimiento";
+import PanelControl from "../pages/PanelControl";
 
 
 export const routes: RouteObject[] = [
@@ -65,6 +66,10 @@ export const routes: RouteObject[] = [
               {
                 path: "admin-usuarios",
                 element: <AdminUsuarios />,
+              },
+              {
+                path: "panel-control",
+                element: <PanelControl />,
               },
             ],
           },
