@@ -13,8 +13,6 @@ export default {
      },
 
       colors: {
-        // Esto le dice a Tailwind: "cuando veas 'text-principal', 
-        // usa el valor de la variable CSS --text-principal"
         primario: 'var(--text-principal)',
         secundario: 'var(--text-secundario)',
         terciario: 'var(--text-terciario)',
@@ -22,13 +20,10 @@ export default {
         fondo: 'var(--bg-pagina)',
         input: '#F1F5F9', 
         DEFAULT: '#DC2626',
-      
-
         acento: '#DC2626', 
         'acento': '#DC2626',
-        // Superficies
         fondo: '#f4f7fa',        
-        tarjeta: colors.white,        // Blanco Contenedor
+        tarjeta: colors.white,   
    
       },
       borderRadius: {
@@ -36,7 +31,7 @@ export default {
         'pill': '30px',              
       },
       boxShadow: {
-        'soft': '0 8px 30px rgba(0, 0, 0, 0.04)', // La sombra Apple que querías
+        'soft': '0 8px 30px rgba(0, 0, 0, 0.04)', 
       },
       spacing: {
         'sidebar': '15rem',           
