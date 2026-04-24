@@ -28,7 +28,7 @@ model usuario {
   email        String?  @unique @db.VarChar(100)
   contrasenya  String   @db.VarChar(255)
   primer_login Boolean  @default(true)
-  
+
   // Relación con el Rol
   id_rol       Int
   rol          rol      @relation(fields: [id_rol], references: [id_rol])
@@ -36,12 +36,13 @@ model usuario {
   // Relaciones inversas (Detalles de perfil)
   alumnado     alumnado?
   profesorado  profesorado?
-  
+
   // Relaciones inversas (Operaciones) <--- FALTABAN ESTAS LÍNEAS
   pedido             pedido[]
   movimiento         movimiento[]
   escandallo_detalle escandallo_detalle[]
   escandallo         escandallo[]
+  registro_actividad registro_actividad[]
 }
 
 model alumnado {
@@ -117,6 +118,7 @@ model ingrediente {
   tipo               String?              @db.VarChar(50)
   unidad_medida      String?              @db.VarChar(50)
   precio_unidad      Decimal              @default(0.00) @db.Decimal(10, 2)
+  fecha_caducidad    DateTime?            @db.Timestamp(6)
   id_categoria       Int?
   id_proveedor       Int?
   // Relaciones
@@ -235,6 +237,20 @@ model escandallo_detalle {
   usuario        usuario     @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction, map: "fk_ed_usuario")
 
   @@id([id_escandallo, id_usuario, id_ingrediente])
+}
+
+model registro_actividad {
+  id_log         Int      @id @default(autoincrement())
+  id_usuario     Int?
+  nombre_usuario String   @db.VarChar(200)
+  accion         String   @db.VarChar(100)
+  entidad        String   @db.VarChar(50)
+  id_entidad     Int?
+  descripcion    String?  @db.VarChar(500)
+  ruta           String?  @db.VarChar(255)
+  fecha          DateTime @default(now())
+
+  usuario        usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum tipo_movimiento_enum {

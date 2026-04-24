@@ -1,6 +1,6 @@
 import { ModalRecepcion } from "../components/recepcion/ModalRecepcion"; 
 import { Buscador } from '../components/ui/Buscador';
-import { Select } from "../components/ui/select";
+import { Select } from "../components/ui/Select";
 import { PackageCheck, PackageOpen, Loader2, Search } from "lucide-react";
 import { useRecepcion } from "../hooks/useRecepcion";
 import { AlertModal } from "../components/ui/AlertModal";

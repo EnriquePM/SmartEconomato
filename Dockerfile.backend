@@ -16,4 +16,4 @@ RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["npx", "ts-node", "src/index.ts"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && npx ts-node src/index.ts"]

@@ -1,7 +1,7 @@
 import { Buscador } from '../components/ui/Buscador';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
 import { Eye, Plus, Pencil, Trash2, Printer, Search } from 'lucide-react';
 import { ModalPedido } from '../components/pedidos/ModalPedidos';

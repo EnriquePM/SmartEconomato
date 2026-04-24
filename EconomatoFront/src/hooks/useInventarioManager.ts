@@ -3,13 +3,17 @@ import type { InventarioItem, InventarioVista, SelectOption } from '../models/in
 import { getInventarioIngredientes, getInventarioMateriales } from '../services/inventarioService';
 
 type OrdenState = { campo: string; asc: boolean } | null;
+type FiltroCaducidad = 'todos' | '7dias' | '30dias' | '90dias' | 'caducados';
 
 export const useInventarioManager = () => {
   const [productos, setProductos] = useState<InventarioItem[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
+  const [filtroCaducidad, setFiltroCaducidad] = useState<FiltroCaducidad>('todos');
   const [vista, setVista] = useState<InventarioVista>('ingredientes');
   const [orden, setOrden] = useState<OrdenState>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [itemEditando, setItemEditando] = useState<InventarioItem | null>(null);
 
   useEffect(() => {
     const cargar = async () => {
@@ -26,13 +30,17 @@ export const useInventarioManager = () => {
 
       setBusqueda('');
       setFiltroCategoria('todos');
+      setFiltroCaducidad('todos');
       setOrden(null);
     };
 
     void cargar();
-  }, [vista]);
+  }, [vista, refreshKey]);
 
   const productosFiltrados = useMemo(() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     return productos.filter((producto) => {
       const texto = busqueda.toLowerCase();
       const nombreMatch = producto.nombre ? producto.nombre.toLowerCase().includes(texto) : false;
@@ -43,9 +51,21 @@ export const useInventarioManager = () => {
         filtroCategoria === 'todos' ||
         String(producto.id_categoria) === filtroCategoria;
 
-      return coincideTexto && coincideCategoria;
+      let coincideCaducidad = true;
+      if (filtroCaducidad !== 'todos') {
+        const fechaCad = producto.fecha_caducidad ? new Date(producto.fecha_caducidad) : null;
+        if (!fechaCad) return false;
+        fechaCad.setHours(0, 0, 0, 0);
+        const dias = Math.floor((fechaCad.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
+        if (filtroCaducidad === 'caducados') coincideCaducidad = dias < 0;
+        else if (filtroCaducidad === '7dias') coincideCaducidad = dias >= 0 && dias <= 7;
+        else if (filtroCaducidad === '30dias') coincideCaducidad = dias >= 0 && dias <= 30;
+        else if (filtroCaducidad === '90dias') coincideCaducidad = dias >= 0 && dias <= 90;
+      }
+
+      return coincideTexto && coincideCategoria && coincideCaducidad;
     });
-  }, [productos, busqueda, filtroCategoria]);
+  }, [productos, busqueda, filtroCategoria, filtroCaducidad]);
 
   const productosFinales = useMemo(() => {
     return [...productosFiltrados].sort((a, b) => {
@@ -106,6 +126,10 @@ export const useInventarioManager = () => {
 
   const renderizarCategoria = (producto: InventarioItem) => producto.categoria_nombre || 'Sin categoría';
 
+  const abrirEditar = (item: InventarioItem) => setItemEditando(item);
+  const cerrarEditar = () => setItemEditando(null);
+  const recargarInventario = () => setRefreshKey(prev => prev + 1);
+
   return {
     productos,
     productosFinales,
@@ -113,11 +137,17 @@ export const useInventarioManager = () => {
     setBusqueda,
     filtroCategoria,
     setFiltroCategoria,
+    filtroCaducidad,
+    setFiltroCaducidad,
     vista,
     setVista,
     orden,
     cambiarOrden,
     renderizarCategoria,
-    opcionesFiltro
+    opcionesFiltro,
+    itemEditando,
+    abrirEditar,
+    cerrarEditar,
+    recargarInventario,
   };
 };

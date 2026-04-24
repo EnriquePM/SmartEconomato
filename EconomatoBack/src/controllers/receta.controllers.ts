@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
+import { logActividad } from '../services/actividadLog.service';
 
 interface AuthenticatedRequest extends Request {
   user?: {

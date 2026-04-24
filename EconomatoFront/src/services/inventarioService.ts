@@ -51,9 +51,11 @@ export const getInventarioIngredientes = async (): Promise<InventarioItem[]> => 
     codigo: item.codigo || String(item.id_ingrediente),
     stock: Number(item.stock_actual ?? item.stock ?? 0),
     unidad_medida: item.unidad_medida || 'ud',
+    precio: Number(item.precio_unidad ?? 0),
     id_categoria: item.id_categoria ?? null,
     categoria_nombre: item.categoria?.nombre || 'Sin categoría',
     id_proveedor: item.id_proveedor,
+    fecha_caducidad: item.fecha_caducidad ?? null,
     alergenos: Array.isArray(item.alergenos)
       ? item.alergenos.map((al: any) => ({
           id_alergeno: al.id_alergeno,
@@ -62,6 +64,43 @@ export const getInventarioIngredientes = async (): Promise<InventarioItem[]> => 
         }))
       : []
   }));
+};
+
+export const updateIngrediente = async (id: number, payload: {
+  nombre?: string;
+  stock?: number;
+  precio_unidad?: number;
+  id_categoria?: number;
+  id_proveedor?: number;
+  unidad_medida?: string;
+  fecha_caducidad?: string | null;
+}): Promise<void> => {
+  const res = await authFetch(`${API_URL}/ingredientes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any)?.error || 'Error al actualizar ingrediente');
+  }
+};
+
+export const updateMaterial = async (id: number, payload: {
+  nombre?: string;
+  stock?: number;
+  precio_unidad?: number;
+  id_categoria?: number;
+}): Promise<void> => {
+  const res = await authFetch(`${API_URL}/materiales/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any)?.error || 'Error al actualizar material');
+  }
 };
 
 export const getInventarioMateriales = async (): Promise<InventarioItem[]> => {

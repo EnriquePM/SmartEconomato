@@ -1,6 +1,6 @@
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import { Globe, Loader2, Camera, Eraser, Search } from 'lucide-react';
 import { ModalScanner } from '../components/ModalScanner';
 import { useIngresoGeneralForm } from '../hooks/useIngresoGeneralForm';
@@ -153,9 +153,18 @@ const IngresoGeneral = () => {
                 onChange={(val) => setCampo('id_proveedor', val)}
               />
             </div>
+            <div>
+              <Input
+                label="Fecha de Caducidad (opcional)"
+                type="date"
+                placeholder=""
+                value={form.fecha_caducidad}
+                onChange={(val) => setCampo('fecha_caducidad', val)}
+              />
+            </div>
           </>
         ) : (
-          <div className="md:col-span-2"></div> 
+          <div className="md:col-span-2"></div>
         )}
       </div>
     </div>

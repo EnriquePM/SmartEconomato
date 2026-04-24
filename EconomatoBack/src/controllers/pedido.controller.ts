@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 import { estado_pedido } from '@prisma/client';
+import { logActividad } from '../services/actividadLog.service';
 
 const pedidoInclude = {
     usuario: {
@@ -122,6 +123,15 @@ export const createPedido = async (req: any, res: Response) => {
             include: pedidoInclude
         });
 
+        void logActividad(
+            id_usuario,
+            'Creó un pedido',
+            'pedido',
+            nuevoPedido.id_pedido,
+            `Pedido #${nuevoPedido.id_pedido} — ${payload.tipo_pedido}`,
+            '/pedidos'
+        );
+
         res.json(nuevoPedido);
 
     } catch (error) {
@@ -170,6 +180,15 @@ export const updatePedido = async (req: any, res: Response) => {
             },
             include: pedidoInclude
         });
+
+        void logActividad(
+            id_usuario,
+            'Actualizó un pedido',
+            'pedido',
+            idPedido,
+            `Pedido #${idPedido}`,
+            '/pedidos'
+        );
 
         return res.json(pedidoActualizado);
     } catch (error) {
@@ -220,14 +239,25 @@ export const getPedidoById = async (req: Request, res: Response) => {
 };
 
 // 3. VALIDAR PEDIDO
-export const validarPedido = async (req: Request, res: Response) => {
+export const validarPedido = async (req: any, res: Response) => {
     const { id } = req.params;
+    const id_usuario = req.user ? req.user.id_usuario : null;
 
     try {
         const pedidoValidado = await prisma.pedido.update({
             where: { id_pedido: Number(id) },
             data: { estado: estado_pedido.VALIDADO }
         });
+
+        void logActividad(
+            id_usuario,
+            'Validó un pedido',
+            'pedido',
+            Number(id),
+            `Pedido #${id}`,
+            '/pedidos'
+        );
+
         res.json(pedidoValidado);
     } catch (error) {
         res.status(500).json({ error: 'Error al validar el pedido' });
@@ -351,6 +381,16 @@ export const confirmarPedido = async (req: Request, res: Response) => {
                 data: { estado: nuevoEstado }
             });
         });
+
+        const id_usuario = (req as any).user ? (req as any).user.id_usuario : null;
+        void logActividad(
+            id_usuario,
+            'Confirmó recepción de pedido',
+            'pedido',
+            Number(id),
+            `Pedido #${id}`,
+            '/recepcion'
+        );
 
         res.json(resultado);
     } catch (error: any) {

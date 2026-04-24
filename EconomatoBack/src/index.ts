@@ -13,6 +13,7 @@ import movimientoRoutes from './routes/movimiento.routes';
 import recetaRoutes from './routes/receta.routes';
 import escandalloRoutes from './routes/escandallo.routes';
 import alergenoRoutes from './routes/alergeno.routes';
+import actividadLogRoutes from './routes/actividadLog.routes';
 import http from 'http';
 import { Server } from 'socket.io';
 import { iniciarServicioBascula } from './services/bascula.service';
@@ -37,6 +38,7 @@ app.use('/api/movimientos', movimientoRoutes);
 app.use('/api/recetas', recetaRoutes);
 app.use('/api/escandallos', escandalloRoutes);
 app.use('/api/alergenos', alergenoRoutes);
+app.use('/api/actividades', actividadLogRoutes);
 
 // Recursos (se monta en /api, por lo que afecta a las rutas de recursos si coinciden)
 app.use('/api', recursosRoutes);

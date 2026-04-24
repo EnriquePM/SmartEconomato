@@ -195,6 +195,7 @@ CREATE TABLE public.ingrediente (
     id_categoria integer,
     id_proveedor integer,
     precio_unidad numeric(10,2) DEFAULT 0.00 NOT NULL,
+    fecha_caducidad timestamp(6),
     unidad_medida character varying(50)
 );
 

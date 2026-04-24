@@ -1,7 +1,8 @@
-import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
 import { Buscador } from '../components/ui/Buscador';
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import { useInventarioManager } from '../hooks/useInventarioManager';
+import { ModalEditarProducto } from '../components/inventario/ModalEditarProducto';
 
 const Inventario = () => {
   const {
@@ -11,13 +12,27 @@ const Inventario = () => {
     setBusqueda,
     filtroCategoria,
     setFiltroCategoria,
+    filtroCaducidad,
+    setFiltroCaducidad,
     vista,
     setVista,
     orden,
     cambiarOrden,
     renderizarCategoria,
-    opcionesFiltro
+    opcionesFiltro,
+    itemEditando,
+    abrirEditar,
+    cerrarEditar,
+    recargarInventario,
   } = useInventarioManager();
+
+  const opcionesCaducidad = [
+    { value: 'todos', label: 'Todas las caducidades' },
+    { value: 'caducados', label: 'Caducados' },
+    { value: '7dias', label: 'Caducan en 7 días' },
+    { value: '30dias', label: 'Caducan en 30 días' },
+    { value: '90dias', label: 'Caducan en 90 días' },
+  ];
 
   const IconoOrden = ({ campo }: { campo: string }) => {
     if (orden?.campo !== campo) return <ArrowUpDown size={14} className="text-gray-300" />;
@@ -71,6 +86,12 @@ const Inventario = () => {
         <div className="w-full md:w-80">
           <Select options={opcionesFiltro} value={filtroCategoria} onChange={(val) => setFiltroCategoria(val)} />
         </div>
+
+        {vista === 'ingredientes' && (
+          <div className="w-full md:w-80">
+            <Select options={opcionesCaducidad} value={filtroCaducidad} onChange={(val) => setFiltroCaducidad(val as any)} />
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1 mb-6">
@@ -95,6 +116,7 @@ const Inventario = () => {
                     Stock <IconoOrden campo="stock" />
                   </div>
                 </th>
+                <th className="p-4 border-b border-gray-200 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -156,11 +178,20 @@ const Inventario = () => {
                         {item.stock} {item.unidad_medida || 'ud'}
                       </span>
                     </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => abrirEditar(item)}
+                        className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="Editar"
+                      >
+                        <Pencil size={15} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-gray-400">
+                  <td colSpan={6} className="p-12 text-center text-gray-400">
                     <Search size={32} className="mx-auto mb-3 opacity-20" />
                     <p className="text-sm font-semibold tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
                   </td>
@@ -170,6 +201,15 @@ const Inventario = () => {
           </table>
         </div>
       </div>
+
+      {itemEditando && (
+        <ModalEditarProducto
+          item={itemEditando}
+          vista={vista}
+          onClose={cerrarEditar}
+          onSaved={recargarInventario}
+        />
+      )}
     </div>
   );
 };

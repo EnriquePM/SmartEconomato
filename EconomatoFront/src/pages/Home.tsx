@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   CloudSun, Clock, Utensils, ShoppingBasket,
   AlertCircle, ChevronRight
@@ -14,6 +14,16 @@ const HomePage = () => {
   const { user, avisos, loadingAvisos, pedidos, loadingPedidos, recetas, loadingRecetas, temperatura } = useHome();
   const navigate = useNavigate();
   const sinRecetas = !loadingRecetas && recetas.length === 0;
+
+  const fechasLlegada = useMemo(() => {
+    return pedidos
+      .filter(p => p.fecha_pedido)
+      .map(p => {
+        const d = new Date(p.fecha_pedido as string);
+        d.setDate(d.getDate() + 14);
+        return d.toDateString();
+      });
+  }, [pedidos]);
 
   useEffect(() => {
     const timer = setInterval(() => setFecha(new Date()), 1000);
@@ -71,6 +81,16 @@ const HomePage = () => {
                   date.toLocaleDateString(locale, { month: 'long' })
                 }
                 className="border-none w-full"
+                tileContent={({ date, view }) =>
+                  view === 'month' && fechasLlegada.includes(date.toDateString())
+                    ? <div className="pedido-llegada-dot" title="Llegada estimada de pedido" />
+                    : null
+                }
+                tileClassName={({ date, view }) =>
+                  view === 'month' && fechasLlegada.includes(date.toDateString())
+                    ? 'tiene-pedido'
+                    : ''
+                }
               />
             </section>
 
@@ -247,6 +267,15 @@ const HomePage = () => {
         }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .pedido-llegada-dot {
+          width: 5px; height: 5px; border-radius: 50%;
+          background: #f97316; margin: 1px auto 0; flex-shrink: 0;
+        }
+        .tiene-pedido { background: rgba(249,115,22,0.10) !important; }
+        .react-calendar__tile.tiene-pedido:enabled:hover,
+        .react-calendar__tile.tiene-pedido:enabled:focus {
+          background: rgba(249,115,22,0.20) !important;
+        }
       `}</style>
     </div>
   );

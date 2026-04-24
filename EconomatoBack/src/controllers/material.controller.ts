@@ -1,13 +1,21 @@
 import { Request, Response } from 'express';
 import { prisma } from '../prisma';
+import { logActividad } from '../services/actividadLog.service';
 
-// 1. OBTENER TODOS LOS MATERIALES
-export const getMateriales = async (req: Request, res: Response) => {
+interface AuthRequest extends Request {
+  user?: { id_usuario?: number; id?: number };
+}
+
+const getUserId = (req: AuthRequest): number | null => {
+  const raw = req.user?.id_usuario ?? req.user?.id;
+  const id = Number(raw);
+  return Number.isInteger(id) && id > 0 ? id : null;
+};
+
+export const getMateriales = async (_req: Request, res: Response) => {
     try {
         const materiales = await prisma.material.findMany({
-            include: {
-                categoria: true // Incluimos el nombre de la categoría
-            }
+            include: { categoria: true }
         });
         res.json(materiales);
     } catch (error) {
@@ -16,8 +24,7 @@ export const getMateriales = async (req: Request, res: Response) => {
     }
 };
 
-// 2. CREAR UN MATERIAL (Solo Profesores/Admin)
-export const createMaterial = async (req: Request, res: Response) => {
+export const createMaterial = async (req: AuthRequest, res: Response) => {
     try {
         const { nombre, unidad_medida, precio_unidad, id_categoria, stock, stock_minimo } = req.body;
         const nombreNormalizado = typeof nombre === 'string' ? nombre.trim() : '';
@@ -49,6 +56,15 @@ export const createMaterial = async (req: Request, res: Response) => {
             }
         });
 
+        void logActividad(
+            getUserId(req),
+            'Creó un utensilio',
+            'material',
+            nuevoMaterial.id_material,
+            `Utensilio: ${nombreNormalizado}`,
+            '/inventario'
+        );
+
         res.json(nuevoMaterial);
     } catch (error) {
         console.error(error);
@@ -56,8 +72,7 @@ export const createMaterial = async (req: Request, res: Response) => {
     }
 };
 
-// 3. MODIFICAR MATERIAL (Solo Profesores/Admin)
-export const updateMaterial = async (req: Request, res: Response) => {
+export const updateMaterial = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const datos = req.body;
@@ -70,6 +85,15 @@ export const updateMaterial = async (req: Request, res: Response) => {
             }
         });
 
+        void logActividad(
+            getUserId(req),
+            'Editó un utensilio',
+            'material',
+            Number(id),
+            `Utensilio: ${actualizado.nombre}`,
+            '/inventario'
+        );
+
         res.json(actualizado);
     } catch (error) {
         console.error(error);
@@ -77,13 +101,28 @@ export const updateMaterial = async (req: Request, res: Response) => {
     }
 };
 
-// 4. ELIMINAR MATERIAL (Solo Profesores/Admin)
-export const deleteMaterial = async (req: Request, res: Response) => {
+export const deleteMaterial = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
+
+        const material = await prisma.material.findUnique({
+            where: { id_material: Number(id) },
+            select: { nombre: true }
+        });
+
         await prisma.material.delete({
             where: { id_material: Number(id) }
         });
+
+        void logActividad(
+            getUserId(req),
+            'Eliminó un utensilio',
+            'material',
+            Number(id),
+            `Utensilio: ${material?.nombre ?? id}`,
+            '/inventario'
+        );
+
         res.json({ message: 'Material eliminado correctamente' });
     } catch (error) {
         console.error(error);
