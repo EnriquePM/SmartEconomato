@@ -14,27 +14,15 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
   return (
     <div 
       onClick={() => onClick(receta)}
-      /* overflow-hidden es CRUCIAL para que el icono gigante se corte */
-      className="relative group overflow-hidden bg-white rounded-[2rem] shadow-md border border-gray-100 hover:shadow-xl transition-all duration-500 cursor-pointer h-[210px] flex flex-col"
-    >
-      
-      {/* 1. FONDO DECORATIVO GIGANTE Y CORTADO */}
-      {/* - Usamos coordenadas negativas (bottom-[-50px] right-[-40px]) para "empujar" el icono fuera de la tarjeta.
-         - Al tener overflow-hidden arriba, el icono se corta por la mitad.
-         - La opacidad es extremadamente baja (0.03 o 3%) para que sea una marca de agua sutil.
-      */}
+      className="relative group overflow-hidden bg-white rounded-[2rem] shadow-md border border-gray-100 hover:shadow-xl transition-all duration-500 cursor-pointer min-h-[160px] h-full flex flex-col">
+    
       <div className="absolute bottom-[-60px] right-[-40px] text-acento/10   group-hover:scale-105 transition-all duration-700 pointer-events-none">
         <Soup
           size={180} 
           strokeWidth={1} 
         />
       </div>
-
-     
-      {/* 3. CONTENIDO PRINCIPAL (Por encima, z-10) */}
       <div className="p-5 flex flex-col h-full relative z-10">
-        
-        {/* TOP: Indicador y Botón Editar */}
         <div className="flex justify-between items-start mb-2">
           <span className="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em]">
             Receta
@@ -48,7 +36,6 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
           </button>
         </div>
 
-        {/* CONTENIDO CENTRAL */}
         <div className="flex-1 mt-1">
           <h3 className="text-lg font-extrabold text-gray-800 leading-tight line-clamp-2 group-hover:text-acento transition-colors">
             {receta.nombre}
@@ -57,9 +44,7 @@ export const RecetaCard: React.FC<RecetaCardProps> = ({ receta, onClick, onEdit 
             {receta.descripcion || "Detalles de la receta..."}
           </p>
         </div>
-
-
-        {/* FOOTER */}
+        
         <div className="flex items-center justify-between pt-3 border-t border-gray-50">
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-acento/40 group-hover:bg-acento transition-colors" />
