@@ -80,7 +80,7 @@ export const useIngresoGeneralForm = () => {
   ], [listaProveedores]);
 
   const opcionesUnidad: SelectOption[] = [
-    { value: 'kg', label: 'Kilos (kg)' }, { value: 'g', label: 'Gramos (g)' },
+     { value: '', label: 'Selecciona unidad...' },{ value: 'kg', label: 'Kilos (kg)' }, { value: 'g', label: 'Gramos (g)' },
     { value: 'l', label: 'Litros (L)' }, { value: 'ml', label: 'Mililitros (ml)' },
     { value: 'ud', label: 'Unidades (ud)' }
   ];
