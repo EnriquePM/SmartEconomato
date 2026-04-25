@@ -43,6 +43,7 @@ model usuario {
   escandallo_detalle escandallo_detalle[]
   escandallo         escandallo[]
   audit_log          audit_log[]
+  registro_actividad registro_actividad[]
 }
 
 model alumnado {
@@ -120,6 +121,7 @@ model ingrediente {
   precio_unidad      Decimal              @default(0.00) @db.Decimal(10, 2)
   id_categoria       Int?
   id_proveedor       Int?
+  fecha_caducidad    DateTime?            @db.Date
   // Relaciones
   categoria          categoria?           @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_categoria")
   proveedor          proveedor?           @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_ingrediente_proveedor")
@@ -255,4 +257,18 @@ model audit_log {
   created_at DateTime @default(now())
 
   usuario    usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: SetNull)
+}
+
+model registro_actividad {
+  id_log        Int      @id @default(autoincrement())
+  id_usuario    Int?
+  nombre_usuario String  @db.VarChar(150)
+  accion        String   @db.VarChar(200)
+  entidad       String   @db.VarChar(100)
+  id_entidad    Int?
+  descripcion   String?  @db.VarChar(500)
+  ruta          String?  @db.VarChar(300)
+  fecha         DateTime @default(now())
+
+  usuario       usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: SetNull)
 }

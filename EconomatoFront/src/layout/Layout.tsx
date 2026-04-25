@@ -31,7 +31,11 @@ export default function Layout() {
                             </>
                         )}
 
+<<<<<<< Updated upstream
                         <div className="relative z-20 h-full overflow-y-auto scrollbar-custom p-6 lg:p-10">
+=======
+                        <div className="relative z-20 h-full overflow-y-auto scrollbar-custom p-6 lg:p-10"> 
+>>>>>>> Stashed changes
                             <Outlet />
                         </div>
                     </div>

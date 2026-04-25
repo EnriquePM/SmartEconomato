@@ -10,6 +10,7 @@ export const useInventarioManager = () => {
   const [productos, setProductos] = useState<InventarioItem[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
+  const [filtroCaducidad, setFiltroCaducidad] = useState('todos');
   const [vista, setVista] = useState<InventarioVista>(
     (searchParams.get('vista') as InventarioVista) || 'ingredientes'
   );
@@ -47,9 +48,34 @@ export const useInventarioManager = () => {
         filtroCategoria === 'todos' ||
         String(producto.id_categoria) === filtroCategoria;
 
-      return coincideTexto && coincideCategoria;
+      let coincideCaducidad = true;
+      if (vista === 'ingredientes' && filtroCaducidad !== 'todos') {
+        if (!producto.fecha_caducidad) {
+          coincideCaducidad = false;
+        } else {
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          const caducidad = new Date(producto.fecha_caducidad);
+          caducidad.setHours(0, 0, 0, 0);
+          
+          const diffTime = caducidad.getTime() - hoy.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          if (filtroCaducidad === 'caducado') {
+            coincideCaducidad = diffDays < 0;
+          } else if (filtroCaducidad === '7dias') {
+            coincideCaducidad = diffDays >= 0 && diffDays <= 7;
+          } else if (filtroCaducidad === '14dias') {
+            coincideCaducidad = diffDays >= 0 && diffDays <= 14;
+          } else if (filtroCaducidad === '1mes') {
+            coincideCaducidad = diffDays >= 0 && diffDays <= 30;
+          }
+        }
+      }
+
+      return coincideTexto && coincideCategoria && coincideCaducidad;
     });
-  }, [productos, busqueda, filtroCategoria]);
+  }, [productos, busqueda, filtroCategoria, filtroCaducidad, vista]);
 
   const productosFinales = useMemo(() => {
     return [...productosFiltrados].sort((a, b) => {
@@ -114,6 +140,14 @@ export const useInventarioManager = () => {
     setProductos((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   };
 
+  const opcionesFiltroCaducidad: SelectOption[] = [
+    { value: 'todos', label: 'Cualquier caducidad' },
+    { value: 'caducado', label: 'Caducados' },
+    { value: '7dias', label: 'Próximos 7 días' },
+    { value: '14dias', label: 'Próximas 2 semanas' },
+    { value: '1mes', label: 'Próximo mes' },
+  ];
+
   return {
     productos,
     productosFinales,
@@ -121,12 +155,15 @@ export const useInventarioManager = () => {
     setBusqueda,
     filtroCategoria,
     setFiltroCategoria,
+    filtroCaducidad,
+    setFiltroCaducidad,
     vista,
     setVista,
     orden,
     cambiarOrden,
     renderizarCategoria,
     opcionesFiltro,
+    opcionesFiltroCaducidad,
     actualizarProducto
   };
 };

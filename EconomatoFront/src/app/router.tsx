@@ -14,6 +14,7 @@ import Home from "../pages/Home";
 import PedidosPage from "../pages/recepcionPedidos";
 import RecetasPage from "../pages/Recetas";
 import AuditLog from "../pages/AuditLog";
+import PanelControl from "../pages/PanelControl";
 
 
 export const routes: RouteObject[] = [
@@ -66,6 +67,10 @@ export const routes: RouteObject[] = [
               {
                 path: "audit-log",
                 element: <AuditLog />,
+              },
+              {
+                path: "mantenimiento",
+                element: <PanelControl />,
               },
             ],
           },

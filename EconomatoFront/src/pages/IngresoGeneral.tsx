@@ -147,6 +147,19 @@ const IngresoGeneral = () => {
                 />
               </div>
             )}
+            
+            {activeTab === 'ingredientes' && (
+              <div className="col-span-12 md:col-span-6">
+                <Input
+                  label="Fecha de caducidad (opcional)"
+                  id="fecha_caducidad"
+                  type="date"
+                  placeholder=""
+                  value={form.fecha_caducidad || ''}
+                  onChange={(val) => setCampo('fecha_caducidad', val)}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-100">

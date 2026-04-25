@@ -1,1 +1,0 @@
-Esto es para el estado global (como saber que el user esta logueado en toda la app)

@@ -16,6 +16,7 @@ interface IngresoForm {
   precio_unidad: number | '';
   id_categoria: string;
   id_proveedor: string;
+  fecha_caducidad?: string;
 }
 
 const formInicial: IngresoForm = {
@@ -25,7 +26,8 @@ const formInicial: IngresoForm = {
   unidad_medida: '',
   precio_unidad: '',
   id_categoria: '',
-  id_proveedor: ''
+  id_proveedor: '',
+  fecha_caducidad: ''
 };
 
 export const useIngresoGeneralForm = () => {
@@ -135,7 +137,8 @@ export const useIngresoGeneralForm = () => {
           id_categoria: Number(form.id_categoria),
           id_proveedor: Number(form.id_proveedor),
           precio_unidad: Number(form.precio_unidad),
-          unidad_medida: form.unidad_medida
+          unidad_medida: form.unidad_medida,
+          fecha_caducidad: form.fecha_caducidad || undefined
         });
       } else {
         await createMaterialEntry({

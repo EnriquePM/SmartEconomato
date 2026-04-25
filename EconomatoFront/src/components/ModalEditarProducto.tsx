@@ -23,6 +23,9 @@ export const ModalEditarProducto = ({ item, vista, onClose, onGuardado }: Props)
   const [unidadMedida, setUnidadMedida] = useState(item.unidad_medida ?? '');
   const [idCategoria, setIdCategoria] = useState(String(item.id_categoria ?? ''));
   const [idProveedor, setIdProveedor] = useState(String(item.id_proveedor ?? ''));
+  const [fechaCaducidad, setFechaCaducidad] = useState(
+    item.fecha_caducidad ? new Date(item.fecha_caducidad).toISOString().split('T')[0] : ''
+  );
   const [alergenosSeleccionados, setAlergenosSeleccionados] = useState<number[]>(
     item.alergenos?.map((a) => a.id_alergeno) ?? []
   );
@@ -70,6 +73,7 @@ export const ModalEditarProducto = ({ item, vista, onClose, onGuardado }: Props)
           unidad_medida: unidadMedida,
           id_categoria: idCategoria ? Number(idCategoria) : undefined,
           id_proveedor: idProveedor ? Number(idProveedor) : undefined,
+          fecha_caducidad: fechaCaducidad || undefined,
           alergenosIds: alergenosSeleccionados
         });
       } else {
@@ -92,6 +96,7 @@ export const ModalEditarProducto = ({ item, vista, onClose, onGuardado }: Props)
         id_categoria: idCategoria ? Number(idCategoria) : null,
         categoria_nombre: categorias.find((c) => String(c.id_categoria) === idCategoria)?.nombre ?? item.categoria_nombre,
         id_proveedor: idProveedor ? Number(idProveedor) : undefined,
+        fecha_caducidad: fechaCaducidad || undefined,
         alergenos: alergenos
           .filter((a) => alergenosSeleccionados.includes(a.id_alergeno))
           .map((a) => ({ id_alergeno: a.id_alergeno, nombre: a.nombre, icono: a.icono }))
@@ -158,6 +163,14 @@ export const ModalEditarProducto = ({ item, vista, onClose, onGuardado }: Props)
                 <label className="block text-sm font-medium text-gray-500 mb-1 ml-1">Proveedor</label>
                 <Select options={opcionesProveedores} value={idProveedor} onChange={setIdProveedor} />
               </div>
+              
+              <Input 
+                type="date" 
+                label="Fecha de caducidad (opcional)" 
+                placeholder="" 
+                value={fechaCaducidad} 
+                onChange={setFechaCaducidad} 
+              />
 
               {alergenos.length > 0 && (
                 <div>
