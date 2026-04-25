@@ -9,12 +9,10 @@ const LoginPage = () => {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!user || !password) {
       setError("Por favor, rellena todos los campos.");
       return;
     }
-    
     handleLogin();
   };
 
@@ -33,86 +31,69 @@ const LoginPage = () => {
       />
       <div className="absolute inset-0 z-10 bg-white/40" />
 
-
-      <main className="relative z-20 flex-1 flex items-center justify-center w-full p-6">
-        <div className="bg-white shadow-xl w-full max-w-xl p-10 md:p-12 rounded-[3rem] shadow-2xl border border-white/50 animate-fade-in flex flex-col items-center">
+      <main className="relative z-20 flex-1 flex items-center justify-center w-full px-4">
+        <div className="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl border border-white/50 animate-fade-in flex flex-col items-center gap-4">
           
-
           <img 
             src={logoSmart} 
             alt="Logo SmartEconomato" 
-            className="h-11 w-auto object-contain mb-16" 
+            className="h-7 w-auto object-contain" 
           />
           
-          <div className="text-center mb-8">
-  
-            <h1 className='font-semibold text-[50px] mb-6'>
-              Bienvenid@
-            </h1>
-             <h1 className='font-normal text-[20px] text-gray-400 '>
+          <div className="text-center">
+            <h1 className='font-semibold text-4xl mb-1'>Bienvenid@</h1>
+            <p className='font-normal text-sm text-gray-400'>
               Introduce tus datos para iniciar sesión
-            </h1>
+            </p>
           </div>
 
-          
-          <form onSubmit={onSubmit} className="w-full space-y-6">
-            
-            <div className="space-y-2">
-              <Input 
-                type="text" 
-                label='Usuario'
-                placeholder="Nombre de usuario" 
-                value={user} 
-                id="usuario"
-                onChange={setUser} 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Input 
-                label='Contraseña'
-                type="password" 
-                placeholder="••••••••" 
-                value={password} 
-                id="contrasena"
-                onChange={setPassword} 
-              />
-            </div>
-
-           <div className="pt-4">
+          <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
+            <Input 
+              type="text" 
+              label='Usuario'
+              placeholder="Nombre de usuario" 
+              value={user} 
+              id="usuario"
+              onChange={setUser} 
+            />
+            <Input 
+              label='Contraseña'
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              id="contrasena"
+              onChange={setPassword} 
+            />
             <Button 
               loading={loading}
               type="submit"
               variant="primario"
-              className="w-full py-4"
-            > Entrar
-            
+              className="w-full mt-1"
+            >
+              Entrar
             </Button>
-
-          </div>
-          <div className="h-6"> 
-          {error && (
-            <p className="text-red-500 text-[14px] font-bold text-center animate-shake">
-              {error}
-            </p>
-          )}
-        </div>
+            <div className="h-4">
+              {error && (
+                <p className="text-red-500 text-xs font-bold text-center">
+                  {error}
+                </p>
+              )}
+            </div>
           </form>
-          <div className="mt-6 pt-6  w-full text-center">
-            <p className="text-[12px] text-gray-400 leading-relaxed">
-              Proyecto financiado por el Gobierno de Canarias <br />
-            </p>
-          </div>
+
+          <p className="text-[11px] text-gray-400 text-center">
+            Proyecto financiado por el Gobierno de Canarias
+          </p>
         </div>
       </main>
 
       <div className="relative z-20 w-full">
         <footer>
-            <div className="flex justify-center items-center gap-2 text-caption text-secundario font-normal text-[18px] mb-10 ">
-                <span>Gobierno de Canarias</span>
-                <span className="opacity-50"> | </span>
-                <span>CEIP Virgen del Carmen</span>
-            </div>
+          <div className="flex justify-center items-center gap-2 text-secundario font-normal text-sm mb-6">
+            <span>Gobierno de Canarias</span>
+            <span className="opacity-50"> | </span>
+            <span>CEIP Virgen del Carmen</span>
+          </div>
         </footer>
       </div>
 
