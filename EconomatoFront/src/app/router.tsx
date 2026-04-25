@@ -14,6 +14,8 @@ import Home from "../pages/Home";
 import PedidosPage from "../pages/recepcionPedidos";
 import RecetasPage from "../pages/Recetas";
 import AuditLog from "../pages/AuditLog";
+import PaginaMantenimiento from "../pages/PaginaMantenimiento";
+import PanelControl from "../pages/PanelControl"
 
 
 export const routes: RouteObject[] = [
@@ -25,6 +27,10 @@ export const routes: RouteObject[] = [
     path: "/cambiar-password",
     element: <CambiarPassword />,
   },
+  {
+    path: "/mantenimiento",
+    element: <PaginaMantenimiento />,
+},
   {
     element: <ProtectedRoute />,
     children: [
@@ -62,6 +68,10 @@ export const routes: RouteObject[] = [
               {
                 path: "admin-usuarios",
                 element: <AdminUsuarios />,
+              },
+              {
+                path: "panel-control",
+                element: <PanelControl />,
               },
               {
                 path: "audit-log",

@@ -17,7 +17,6 @@ export const authFetch = async (url: string, options: RequestInit = {}): Promise
     const token = getToken();
     const headers = new Headers(options.headers || {});
 
-    // 1. Añadimos el token si existe
     if (token) {
         headers.append("Authorization", `Bearer ${token}`);
     }

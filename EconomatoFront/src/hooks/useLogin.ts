@@ -35,7 +35,7 @@ export const useLogin = () => {
       }
 
       if (data.token) {
-        sessionStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token);
       }
 
       if (data.usuario) {

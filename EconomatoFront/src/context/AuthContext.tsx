@@ -29,7 +29,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [usuario, setUsuarioState] = useState<UsuarioAuth | null>(() => {
     try {
-      const stored = sessionStorage.getItem('usuario');
+      const stored = localStorage.getItem('usuario');
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -39,12 +39,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const setUsuario = (u: UsuarioAuth | null) => {
     setUsuarioState(u);
     if (u) {
-      sessionStorage.setItem('usuario', JSON.stringify(u));
-      sessionStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('usuario', JSON.stringify(u));
+      localStorage.setItem('isAuthenticated', 'true');
     } else {
-      sessionStorage.removeItem('usuario');
-      sessionStorage.removeItem('isAuthenticated');
-      sessionStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('token');
     }
   };
 
@@ -55,9 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    sessionStorage.removeItem('usuario');
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('token');
     setUsuarioState(null);
     window.location.href = '/login';
   };
