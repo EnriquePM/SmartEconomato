@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="EconomatoFront/public/logo.png" alt="Logo SmartEconomato" width="200"/>
+  <img src="EconomatoFront/public/logoB.png" alt="Logo SmartEconomato" width="200"/>
   
   # 
 </div>
