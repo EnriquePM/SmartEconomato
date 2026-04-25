@@ -3,7 +3,7 @@
   
   # 
 </div>
-*SmartEconomato* es una plataforma integral de gestión diseñada para entornos educativos de hostelería (economatos). El sistema digitaliza y optimiza todo el ciclo operativo de una cocina profesional: desde la compra de ingredientes y el control de inventario, hasta la creación de recetas con cálculo de escandallo y validación de stock en tiempo real.
+
 
 ---
 
