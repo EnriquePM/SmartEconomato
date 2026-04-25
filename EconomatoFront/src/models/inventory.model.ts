@@ -11,6 +11,7 @@ export interface InventarioItem {
   codigo?: string;
   nombre: string;
   stock: number;
+  stock_minimo?: number;
   unidad_medida?: string;
   precio?: number;
   id_categoria: number | null;

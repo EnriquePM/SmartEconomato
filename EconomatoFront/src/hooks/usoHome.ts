@@ -20,7 +20,7 @@ export const useHome = () => {
 
   useEffect(() => {
 
-    const dataUser = localStorage.getItem('usuario');
+    const dataUser = sessionStorage.getItem('usuario');
     if (dataUser) {
       setUser(JSON.parse(dataUser));
     }

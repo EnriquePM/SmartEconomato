@@ -13,14 +13,16 @@ import movimientoRoutes from './routes/movimiento.routes';
 import recetaRoutes from './routes/receta.routes';
 import escandalloRoutes from './routes/escandallo.routes';
 import alergenoRoutes from './routes/alergeno.routes';
+import auditLogRoutes from './routes/auditLog.routes';
 import http from 'http';
 import { Server } from 'socket.io';
 import { iniciarServicioBascula } from './services/bascula.service';
+import { setIO } from './socket';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3002;
 
 app.use(cors());
 app.use(express.json());
@@ -37,6 +39,7 @@ app.use('/api/movimientos', movimientoRoutes);
 app.use('/api/recetas', recetaRoutes);
 app.use('/api/escandallos', escandalloRoutes);
 app.use('/api/alergenos', alergenoRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // Recursos (se monta en /api, por lo que afecta a las rutas de recursos si coinciden)
 app.use('/api', recursosRoutes);
@@ -45,11 +48,11 @@ app.use('/api', recursosRoutes);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // Podrías restringir esto luego a tu front-end en producción
+    origin: '*',
   }
 });
 
-// Inicializamos el servicio de tu lector pasándole el IO
+setIO(io);
 iniciarServicioBascula(io);
 
 server.listen(port, () => {

@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile.backend
     container_name: smarteconomato_backend
     environment:
-      PORT: 3000
+      PORT: 3002
       DATABASE_URL: postgresql://admin:admin@db:5432/smart_economato?schema=public
       JWT_SECRET: palabra_secreta_para_firmar_tokens_123
     depends_on:

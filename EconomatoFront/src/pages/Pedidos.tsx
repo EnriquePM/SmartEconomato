@@ -1,15 +1,11 @@
-import { Buscador } from '../components/ui/Buscador';
+import { Input } from '../components/ui/Input';
 import { usePedidos } from '../hooks/usePedidos';
 import { useState } from "react";
-import { Select } from '../components/ui/select';
+import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
-import { Eye, Plus, Pencil, Trash2, Printer, Search } from 'lucide-react';
-import { ModalPedido } from '../components/pedidos/ModalPedidos';
+import { Eye, Plus, Pencil, Trash2, AlertTriangle, Send, CheckCircle } from 'lucide-react';
+import { ModalPedido } from '../pages/ModalPedidos';
 import type { EstadoPedido} from '../models/Pedidos';
-import { AlertModal } from '../components/ui/AlertModal';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import { PedidoPDF } from '../components/pdf/PedidoPDF';
-
 
 const Pedidos = () => {
     const {
@@ -23,9 +19,11 @@ const Pedidos = () => {
 
     const [busqueda, setBusqueda] = useState("");
     const [filtroProveedor, setFiltroProveedor] = useState("todos");
+
+    // 👇 Estados para los Pop-ups personalizados
     const [errorUI, setErrorUI] = useState<string | null>(null);
     const [mostrarConfirmacionEnvio, setMostrarConfirmacionEnvio] = useState(false);
-    const [exitoUI, setExitoUI] = useState<string | null>(null); 
+    const [exitoUI, setExitoUI] = useState<string | null>(null); // Nuevo estado para el éxito
 
     const pedidosFiltrados = pedidos.filter(p => {
         const coincideBusqueda =
@@ -52,6 +50,7 @@ const Pedidos = () => {
 
     const cerrarModal = () => setVista('lista');
     
+    // Guardar Borrador 
     const manejarGuardarBorrador = async () => {
         if (!pedidoActual.proveedor?.trim()) {
             setErrorUI("Debes seleccionar un proveedor antes de guardar el borrador.");
@@ -59,9 +58,10 @@ const Pedidos = () => {
         }
         await guardarPedido('BORRADOR');
         cerrarModal();
-        setExitoUI("Borrador guardado con éxito."); 
+        setExitoUI("Borrador guardado con éxito."); // Mostramos nuestro pop-up
     };
 
+    // Intentar Enviar Pedido 
     const intentarEnviarPedido = () => {
         if (!pedidoActual.proveedor?.trim()) {
             setErrorUI("Debes seleccionar un proveedor antes de enviar el pedido.");
@@ -70,11 +70,12 @@ const Pedidos = () => {
         setMostrarConfirmacionEnvio(true);
     };
 
+    // Confirmación final de envío
     const confirmarEnvioPedido = async () => {
         await guardarPedido('PENDIENTE');
         setMostrarConfirmacionEnvio(false);
         cerrarModal();
-        setExitoUI("Pedido enviado con éxito."); 
+        setExitoUI("Pedido enviado con éxito."); // Mostramos nuestro pop-up
     };
 
     return (
@@ -99,8 +100,8 @@ const Pedidos = () => {
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                    <h1>Pedidos a Proveedores</h1>
-                    <h2>Gestiona y envía tus órdenes de compra</h2>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Pedidos a Proveedores</h1>
+                    <p className="text-gray-500 mt-1">Gestiona y envía tus órdenes de compra</p>
                 </div>
                 <div className="w-full md:w-auto">
                     <Button 
@@ -127,12 +128,18 @@ const Pedidos = () => {
                 </div>
             </div>
 
+            {/* BARRA DE HERRAMIENTAS */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 mb-6">
-               <Buscador 
-                         value={busqueda} 
-                           onChange={setBusqueda} 
-                           placeholder="Buscar por proveedor o ID..." 
-                         />
+                <div className="flex-1 relative">
+                    <Input
+                        id="search-orders"
+                        type="text"
+                        placeholder="Buscar por proveedor o ID..."
+                        value={busqueda}
+                        onChange={(val) => setBusqueda(val)}
+                        className="pl-12"
+                    />
+                </div>
 
                 <div className="min-w-[200px]">
                     <Select
@@ -147,6 +154,7 @@ const Pedidos = () => {
                 </div>
             </div>
 
+            {/* TABLA DE PEDIDOS */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
                 <div className="overflow-auto scrollbar-global">
                     <table className="w-full text-left">
@@ -226,92 +234,90 @@ const Pedidos = () => {
                                                     <Trash2 size={18} strokeWidth={2.5} />
                                                 </button>
                                             )}
-                                            {p.estado !== 'BORRADOR' && (
-                                                <PDFDownloadLink
-                                                    document={
-                                                        <PedidoPDF 
-                                                            pedido={p} 
-                                                            catalogoProductos={catalogoProductos} 
-                                                            tipoPedido={p.tipo_pedido === 'utensilios' ? 'utensilios' : 'productos'} 
-                                                        />
-                                                    }
-                                                    fileName={`Pedido_${p.id_pedido}.pdf`}
-                                                    style={{ textDecoration: 'none' }}
-                                                >
-                                                    {({ loading }) => (
-                                                        <button 
-                                                            className="
-                                                                inline-flex items-center gap-2 
-                                                                px-4 py-2 rounded-xl 
-                                                                font-bold text-xs tracking-tight 
-                                                                transition-all duration-200
-                                                                bg-acento/10 text-acento border border-acento/20
-                                                                hover:bg-acento hover:text-white 
-                                                                hover:shadow-lg hover:shadow-acento/20
-                                                                active:scale-95
-                                                                disabled:opacity-50
-                                                            "
-                                                            title="Descargar PDF"
-                                                            disabled={loading}
-                                                        >
-                                                            <Printer size={14} strokeWidth={3} className={loading ? 'animate-pulse' : ''} />
-                                                            <span>{loading ? '...' : 'PDF'}</span>
-                                                        </button>
-                                                    )}
-                                                </PDFDownloadLink>
-                                            )}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
-                               <tr>
-                                <td colSpan={5} className="p-12 text-center text-gray-400">
-                                    <Search size={32} className="mx-auto mb-3 opacity-20" />
-                                    <p className="text-sm font-semibold tracking-widest">No se encontraron pedidos de {tipoPedido}</p>
-                                </td>
-                                </tr> 
-                               
+                                <tr><td colSpan={6} className="p-10 text-center text-gray-400">No se encontraron pedidos de {tipoPedido}.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
+            {/* POP-UP DE ERROR (Falta Proveedor) */}
             {errorUI && (
-                <AlertModal
-                    isOpen={!!errorUI}
-                    type="error"
-                    title="¡Falta información!"
-                    message={errorUI}
-                    onConfirm={() => setErrorUI(null)}
-                />
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                            <AlertTriangle size={32} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">¡Falta información!</h3>
+                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                            {errorUI}
+                        </p>
+                        <Button 
+                            variant="primario" 
+                            onClick={() => setErrorUI(null)} 
+                            className="w-full py-3 font-bold shadow-md shadow-red-200"
+                        >
+                            ENTENDIDO
+                        </Button>
+                    </div>
+                </div>
             )}
 
+            {/* POP-UP DE CONFIRMACIÓN DE ENVÍO */}
             {mostrarConfirmacionEnvio && (
-                <AlertModal
-                    isOpen={mostrarConfirmacionEnvio}
-                    type="confirm"
-                    title="¿Enviar Pedido?"
-                    message={
-                        <>
-                        ¿Estás seguro de enviar este pedido a <span className="font-bold text-gray-800">{pedidoActual.proveedor}</span>? 
-                        Pasará a estado <span className="font-bold text-acento">PENDIENTE</span>.
-                        </>
-                    }
-                    confirmText="SÍ, ENVIAR"
-                    onConfirm={confirmarEnvioPedido}
-                    onCancel={() => setMostrarConfirmacionEnvio(false)}
-                />
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                            <Send size={32} strokeWidth={2.5} className="ml-1" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">¿Enviar Pedido?</h3>
+                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                            ¿Estás seguro de enviar este pedido a <span className="font-bold text-gray-800">{pedidoActual.proveedor}</span>? Pasará a estado <span className="font-bold text-red-600">PENDIENTE</span> y el borrador se cerrará.
+                        </p>
+                        <div className="flex gap-3 w-full">
+                            <Button 
+                                variant="gris" 
+                                onClick={() => setMostrarConfirmacionEnvio(false)} 
+                                className="flex-1 py-3 font-bold"
+                            >
+                                CANCELAR
+                            </Button>
+                            <Button 
+                                variant="primario" 
+                                onClick={confirmarEnvioPedido} 
+                                className="flex-1 py-3 font-bold !bg-red-600 hover:!bg-red-700 shadow-md shadow-red-200"
+                            >
+                                SÍ, ENVIAR
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             )}
 
+            {/* 👇 NUEVO POP-UP DE ÉXITO */}
             {exitoUI && (
-                <AlertModal
-                    isOpen={!!exitoUI}
-                    type="success"
-                    title="¡Completado!"
-                    message={exitoUI}
-                    onConfirm={() => setExitoUI(null)}
-                />
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 p-8 flex flex-col items-center text-center">
+                        <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                            <CheckCircle size={32} strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 mb-2">¡Completado!</h3>
+                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                            {exitoUI}
+                        </p>
+                        <Button 
+                            variant="primario" 
+                            onClick={() => setExitoUI(null)} 
+                            className="w-full py-3 font-bold !bg-green-600 hover:!bg-green-700 shadow-md shadow-green-200"
+                        >
+                            ACEPTAR
+                        </Button>
+                    </div>
+                </div>
             )}
 
         </div>

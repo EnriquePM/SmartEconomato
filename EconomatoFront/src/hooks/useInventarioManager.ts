@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { InventarioItem, InventarioVista, SelectOption } from '../models/inventory.model';
 import { getInventarioIngredientes, getInventarioMateriales } from '../services/inventarioService';
 
 type OrdenState = { campo: string; asc: boolean } | null;
 
 export const useInventarioManager = () => {
+  const [searchParams] = useSearchParams();
   const [productos, setProductos] = useState<InventarioItem[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
-  const [vista, setVista] = useState<InventarioVista>('ingredientes');
+  const [vista, setVista] = useState<InventarioVista>(
+    (searchParams.get('vista') as InventarioVista) || 'ingredientes'
+  );
   const [orden, setOrden] = useState<OrdenState>(null);
 
   useEffect(() => {
@@ -106,6 +110,10 @@ export const useInventarioManager = () => {
 
   const renderizarCategoria = (producto: InventarioItem) => producto.categoria_nombre || 'Sin categoría';
 
+  const actualizarProducto = (updated: InventarioItem) => {
+    setProductos((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  };
+
   return {
     productos,
     productosFinales,
@@ -118,6 +126,7 @@ export const useInventarioManager = () => {
     orden,
     cambiarOrden,
     renderizarCategoria,
-    opcionesFiltro
+    opcionesFiltro,
+    actualizarProducto
   };
 };

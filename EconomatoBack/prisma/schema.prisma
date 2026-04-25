@@ -42,6 +42,7 @@ model usuario {
   movimiento         movimiento[]
   escandallo_detalle escandallo_detalle[]
   escandallo         escandallo[]
+  audit_log          audit_log[]
 }
 
 model alumnado {
@@ -242,4 +243,16 @@ enum tipo_movimiento_enum {
   SALIDA
   AJUSTE
   MERMA
+}
+
+model audit_log {
+  id         String   @id @default(uuid())
+  action     String   @db.VarChar(50)
+  entity     String   @db.VarChar(100)
+  entity_id  String   @db.VarChar(100)
+  details    Json?
+  id_usuario Int?
+  created_at DateTime @default(now())
+
+  usuario    usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: SetNull)
 }

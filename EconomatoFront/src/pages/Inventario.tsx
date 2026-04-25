@@ -1,7 +1,10 @@
-import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { Buscador } from '../components/ui/Buscador';
-import { Select } from '../components/ui/select';
+import { useState } from 'react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
 import { useInventarioManager } from '../hooks/useInventarioManager';
+import { ModalEditarProducto } from '../components/ModalEditarProducto';
+import type { InventarioItem } from '../models/inventory.model';
 
 const Inventario = () => {
   const {
@@ -16,8 +19,11 @@ const Inventario = () => {
     orden,
     cambiarOrden,
     renderizarCategoria,
-    opcionesFiltro
+    opcionesFiltro,
+    actualizarProducto
   } = useInventarioManager();
+
+  const [productoEditando, setProductoEditando] = useState<InventarioItem | null>(null);
 
   const IconoOrden = ({ campo }: { campo: string }) => {
     if (orden?.campo !== campo) return <ArrowUpDown size={14} className="text-gray-300" />;
@@ -25,11 +31,11 @@ const Inventario = () => {
   };
 
   return (
-    <div className="space-y-0 animate-fade-in flex flex-col h-full gap-4">
+    <div className="space-y-0 animate-fade-in flex flex-col h-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 pb-4">
         <div>
-          <h1>Inventario General</h1>
-          <h2>Gestión de stock y existencias en tiempo real.</h2>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Inventario General</h1>
+          <p className="text-gray-500 mt-1 font-medium text-sm">Gestión de stock y existencias en tiempo real.</p>
         </div>
 
         <div className="flex gap-2">
@@ -61,14 +67,19 @@ const Inventario = () => {
         </button>
       </div>
 
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 shrink-0 mb-4">
-        <Buscador 
-          value={busqueda} 
-            onChange={setBusqueda} 
-            placeholder="Buscar por nombre del producto o ID..." 
+      <div className="bg-white p-5 rounded-b-2xl rounded-tr-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 shrink-0 mb-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={18} />
+          <Input
+            type="text"
+            placeholder={`Buscar ${vista === 'ingredientes' ? 'producto' : 'utensilio'} por nombre o ID...`}
+            value={busqueda}
+            onChange={(val) => setBusqueda(val)}
+            className="pl-12 !bg-gray-50/50"
           />
+        </div>
 
-        <div className="w-full md:w-80">
+        <div className="w-full md:w-72">
           <Select options={opcionesFiltro} value={filtroCategoria} onChange={(val) => setFiltroCategoria(val)} />
         </div>
       </div>
@@ -95,6 +106,7 @@ const Inventario = () => {
                     Stock <IconoOrden campo="stock" />
                   </div>
                 </th>
+                <th className="p-4 border-b border-gray-200 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -156,13 +168,22 @@ const Inventario = () => {
                         {item.stock} {item.unidad_medida || 'ud'}
                       </span>
                     </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => setProductoEditando(item)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all"
+                        title="Editar"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-gray-400">
+                  <td colSpan={6} className="p-12 text-center text-gray-400">
                     <Search size={32} className="mx-auto mb-3 opacity-20" />
-                    <p className="text-sm font-semibold tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
+                    <p className="text-sm font-bold uppercase tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
                   </td>
                 </tr>
               )}
@@ -170,6 +191,17 @@ const Inventario = () => {
           </table>
         </div>
       </div>
+      {productoEditando && (
+        <ModalEditarProducto
+          item={productoEditando}
+          vista={vista}
+          onClose={() => setProductoEditando(null)}
+          onGuardado={(updated) => {
+            actualizarProducto(updated);
+            setProductoEditando(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,0 +1,6 @@
+components: Son los muebles reutilizables.
+
+Piezas pequeñas que usas dentro de las páginas.
+
+Ejemplos: Boton.jsx, TarjetaProducto.jsx, Navbar.jsx, InputBuscador.jsx.
+

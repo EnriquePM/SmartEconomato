@@ -12,7 +12,8 @@
   },
   "include": [
     "src",
-    "scripts"
+    "scripts",
+    "seed.ts"
   ],
   "exclude": [
     "node_modules",

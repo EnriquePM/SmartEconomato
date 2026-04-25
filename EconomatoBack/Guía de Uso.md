@@ -67,9 +67,9 @@ npm run dev
 
 Con este modo:
 
-- El backend corre en `http://localhost:3000`.
+- El backend corre en `http://localhost:3002`.
 - El frontend corre en `http://localhost:5173`.
-- El frontend ya está preparado para llamar al backend usando `/api`, porque Vite redirige esas peticiones automáticamente a `http://localhost:3000` en desarrollo.
+- El frontend ya está preparado para llamar al backend usando `/api`, porque Vite redirige esas peticiones automáticamente a `http://localhost:3002` en desarrollo.
 
 ## Qué opción usar
 
@@ -81,36 +81,36 @@ Con este modo:
 
 # Rutas
 ## Usuario
-- Registrar Alumno	        POST	http://localhost:3000/api/auth/register/alumno
-- Iniciar Sesión	        POST	http://localhost:3000/api/auth/login
-- Ver todos los usuarios	GET     http://localhost:3000/api/usuarios
-- Cambiar Contraseña	    POST	http://localhost:3000/api/auth/change-password
-- Resetear Password 	    PUT 	http://localhost:3000/api/usuarios/:id/reset-password
-- ¿Modificar valores?       PUT     http://localhost:3000/api//usuarios/:id
-- Registrar Profesor        POST    http://localhost:3000/api/auth/register/profesor
-- Eliminar Usuario          DELETE  http://localhost:3000/api/users/:id
+- Registrar Alumno	        POST	http://localhost:3002/api/auth/register/alumno
+- Iniciar Sesión	        POST	http://localhost:3002/api/auth/login
+- Ver todos los usuarios	GET     http://localhost:3002/api/usuarios
+- Cambiar Contraseña	    POST	http://localhost:3002/api/auth/change-password
+- Resetear Password 	    PUT 	http://localhost:3002/api/usuarios/:id/reset-password
+- ¿Modificar valores?       PUT     http://localhost:3002/api//usuarios/:id
+- Registrar Profesor        POST    http://localhost:3002/api/auth/register/profesor
+- Eliminar Usuario          DELETE  http://localhost:3002/api/users/:id
 ## Ingredientes
-- Listar todos              GET     http://localhost:3000/api/ingredientes
-- Ver un ingrediente        GET     http://localhost:3000/api/ingredientes/:id
-- Crear ingrediente         POST    http://localhost:3000/api/ingredientes
-- Editar ingrediente        PUT     http://localhost:3000/api/ingredientes/:id
-- Borrar ingrediente        DELETE  http://localhost:3000/api/ingredientes/:id
+- Listar todos              GET     http://localhost:3002/api/ingredientes
+- Ver un ingrediente        GET     http://localhost:3002/api/ingredientes/:id
+- Crear ingrediente         POST    http://localhost:3002/api/ingredientes
+- Editar ingrediente        PUT     http://localhost:3002/api/ingredientes/:id
+- Borrar ingrediente        DELETE  http://localhost:3002/api/ingredientes/:id
 ## Recursos
-- Categorías                GET     http://localhost:3000/api/categorias
-- Proveedores               GET     http://localhost:3000/api/proveedores 
+- Categorías                GET     http://localhost:3002/api/categorias
+- Proveedores               GET     http://localhost:3002/api/proveedores 
 ## Pedidos 
-- Listar pedidos            GET     http://localhost:3000/api/pedidos
-- Crear Pedido              POST    http://localhost:3000/api/pedidos
-- Eliminar Pedido           DELETE  http://localhost:3000/api/pedidos/:id
-- Validar                   PUT     http://localhost:3000/api/pedidos/:id
-- Confirmar                 PUT     http://localhost:3000/api/pedidos/:id/confirmar
+- Listar pedidos            GET     http://localhost:3002/api/pedidos
+- Crear Pedido              POST    http://localhost:3002/api/pedidos
+- Eliminar Pedido           DELETE  http://localhost:3002/api/pedidos/:id
+- Validar                   PUT     http://localhost:3002/api/pedidos/:id
+- Confirmar                 PUT     http://localhost:3002/api/pedidos/:id/confirmar
 
 ## Recetas
-- Listar recetas            GET     http://localhost:3000/api/recetas
-- Ver una receta            GET     http://localhost:3000/api/recetas/:id
-- Crear receta              POST    http://localhost:3000/api/recetas
-- Editar receta             PUT     http://localhost:3000/api/recetas/:id
-- Eliminar receta           DELETE  http://localhost:3000/api/recetas/:id
+- Listar recetas            GET     http://localhost:3002/api/recetas
+- Ver una receta            GET     http://localhost:3002/api/recetas/:id
+- Crear receta              POST    http://localhost:3002/api/recetas
+- Editar receta             PUT     http://localhost:3002/api/recetas/:id
+- Eliminar receta           DELETE  http://localhost:3002/api/recetas/:id
 
 ### Body de creación/edición de recetas
 Se aceptan ambas formas para los ingredientes:
@@ -140,7 +140,7 @@ Opción B (compatibilidad con frontend hardcodeado):
 
 # Como crear un usuario mediante Thunder Client
 ## Paso 1
-http://localhost:3000/api/auth/register Método POST
+http://localhost:3002/api/auth/register Método POST
 body:
 {
   "nombre": "Nombre",

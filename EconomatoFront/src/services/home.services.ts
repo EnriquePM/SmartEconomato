@@ -20,7 +20,7 @@ export const getAccesos = async (): Promise<Acceso[]> => {
 // --- ACTIVIDAD RECIENTE (Solo Stock y Utensilios) ---
 export const getActividadReciente = async (): Promise<ActividadReciente[]> => {
   try {
-    const token = localStorage.getItem("token"); 
+    const token = sessionStorage.getItem("token"); 
     const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`

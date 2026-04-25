@@ -1,7 +1,7 @@
 import { X, UserPlus} from "lucide-react";
 import { Button } from "../../ui/Button";
 import { Input } from "../../ui/Input";
-import { Select } from "../../ui/select";
+import { Select } from "../../ui/Select";
 import { AlertModal } from "../../ui/AlertModal";
 
 interface ModalNuevoUsuarioProps {
