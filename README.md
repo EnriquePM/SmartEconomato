@@ -1,7 +1,7 @@
 <div align="center">
   <img src="EconomatoFront/public/logoB.png" alt="Logo SmartEconomato" width="200"/>
   
-  # 
+  
 </div>
 
 
