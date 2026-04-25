@@ -1,115 +1,98 @@
-# SmartEconomato 🛒
+<div align="center">
+  <img src="EconomatoFront/public/logoB.png" alt="Logo SmartEconomato" width="200"/>
+  
+  
+</div>
 
-**Repositorio de Trabajo del SmartEconomato del grupo Hopper**
 
-## 👥 Miembros del Equipo
 
-- [ ] Javier
-- [ ] Cristina
-- [ ] Sergio
-- [ ] Enrique
 
-## 🎯 Objetivo del Proyecto
+## Características Principales
 
-Desarrollar una aplicación SmartEconomato que permita gestionar productos, inventario, pedidos y usuarios de manera eficiente.
+### Gestión de Inventario y Almacén
+- **Registro Unificado:** Control total de ingredientes y materiales no alimentarios.
+- **Escaneo de Código de Barras:** Integración para el registro rápido de productos durante la entrada de mercancía.
+- **Alertas de Stock:** Dashboard con avisos automáticos de productos bajo mínimos o próximos a caducar.
 
-## 🚀 Características Principales
+### Recepción de Pedidos con Pesaje Real
+- **Integración con Hardware:** Conexión directa con básculas físicas mediante **Web Serial API**.
+- **Validación en Tiempo Real:** Comunicación mediante **Socket.io** para mostrar el peso exacto mientras se recibe el pedido, asegurando que lo que llega coincide con lo pedido.
 
-- Gestión de productos y categorías
-- Control de inventario en tiempo real
-- Sistema de pedidos y carrito de compra
-- Autenticación y gestión de usuarios
-- Interfaz responsive para móvil y escritorio
+### Recetario y Escandallo
+- **Fichas Técnicas:** Creación de recetas detalladas con gestión automática de alérgenos.
+- **Cálculo de Costes:** Generación automática del escandallo basado en el precio actual de los ingredientes en el inventario.
+- **Exportación:** Generación de fichas de receta en PDF.
 
-## 🛠️ Tecnologías Utilizadas
-
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: Node.js, Express
-- **Base de Datos**: MongoDB
-- **Autenticación**: JWT, bcrypt
-- **Despliegue**: Vercel
-
-## 📂 Estructura del Proyecto
-
-```
-SmartEconomato/
-├── public/              # Archivos estáticos y frontend
-├── src/                 # Lógica de la aplicación
-│   ├── controllers/     # Controladores de la lógica
-│   ├── models/          # Modelos de datos
-│   ├── routes/          # Rutas de la API
-│   └── server.js        # Punto de entrada de la aplicación
-├── .env                 # Variables de entorno
-├── package.json         # Dependencias del proyecto
-└── README.md            # Documentación del proyecto
-```
-
-## ⚙️ Instalación
-
-1. **Clonar el repositorio**
-
-   ```bash
-   git clone <url-del-repositorio>
-   cd SmartEconomato
-   ```
-
-2. **Instalar dependencias**
-
-   ```bash
-   npm install
-   ```
-
-3. **Configurar variables de entorno**
-   Crea un archivo `.env` en la raíz con las siguientes variables:
-
-   ```env
-   PORT=3002
-   MONGODB_URI=mongodb://localhost:27017/smarteconomato
-   JWT_SECRET=tu_secreto_jwt
-   ```
-
-4. **Iniciar la aplicación**
-   ```bash
-   npm start
-   ```
-
-## 💻 Uso
-
-La aplicación estará disponible en `http://localhost:3002`
-
-## 🤝 Contribuciones
-
-1. Crear una rama para tu feature:
-
-   ```bash
-   git checkout -b feature/nombre-de-la-feature
-   ```
-
-2. Realizar cambios y commitear:
-
-   ```bash
-   git add .
-   git commit -m "feat: descripción de los cambios"
-   ```
-
-3. Subir la rama al repositorio:
-
-   ```bash
-   git push origin feature/nombre-de-la-feature
-   ```
-
-4. Crear un Pull Request para revisión.
-
-## 📝 Notas Importantes
-
-- Mantener el código limpio y bien documentado
-- Seguir las convenciones de nombrado del proyecto
-- Realizar pruebas antes de subir cambios
-
-## 📄 Licencia
-
-Este proyecto es de código cerrado y pertenece al grupo Hopper.
+### Seguridad y Roles
+- **RBAC (Role-Based Access Control):** Interfaz adaptativa según el rol del usuario (Admin, Alumno, Profesor).
+- **Auditoría:** Sistema de logs para trazar todos los movimientos críticos del almacén.
 
 ---
 
-**Desarrollado por el grupo Hopper**
+## Stack Tecnológico
+
+**Frontend:**
+- React 19 + Vite
+- Tailwind CSS (Diseño UI)
+- Lucide React (Iconografía)
+- Socket.io-client (Tiempo real)
+
+**Backend:**
+- Node.js + Express + TypeScript
+- Prisma ORM (Modelado de datos)
+- PostgreSQL (Base de datos persistente)
+- Socket.io (Broadcasting de pesaje)
+
+**Infraestructura:**
+- Docker & Docker Compose (Containerización)
+- Nginx (Proxy inverso y terminación TLS)
+
+---
+
+## Instalación y Despliegue
+
+Sigue estos pasos para levantar el entorno de desarrollo local usando Docker:
+
+### 1. Clonar el repositorio
+~~~bash
+git clone [https://github.com/EnriquePM/SmartEconomato.git](https://github.com/EnriquePM/SmartEconomato.git)
+cd SmartEconomato
+~~~
+
+### 2. Configurar variables de entorno
+Crea un archivo `.env` en la carpeta `EconomatoBack` basándote en el archivo de ejemplo:
+~~~bash
+cp EconomatoBack/.env.example EconomatoBack/.env
+~~~
+*Asegúrate de que la `DATABASE_URL` apunte a `localhost:5432` para comandos locales.*
+
+### 3. Levantar contenedores con Docker
+~~~bash
+docker-compose up -d --build
+~~~
+
+### 4. Inicializar la Base de Datos
+Una vez que los contenedores estén corriendo, sincroniza las tablas y carga los datos iniciales (seed):
+~~~bash
+cd EconomatoBack
+npm run db:setup
+~~~
+
+---
+
+## Estructura del Proyecto
+
+- `/EconomatoFront`: Aplicación SPA en React.
+- `/EconomatoBack`: Servidor API REST en Node.js.
+- `/nginx`: Configuración del servidor web y certificados.
+- `/db-init`: Scripts de inicialización para PostgreSQL.
+
+
+
+---
+
+## Contribuidores
+- **Cristina, Javier, Sergio y Enrique**
+
+---
+© 2026 Grupo Hopper - IES Domingo Pérez Minik
