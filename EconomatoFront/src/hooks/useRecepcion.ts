@@ -9,6 +9,9 @@ export const useRecepcion = () => {
 	const [abriendoPedidoId, setAbriendoPedidoId] = useState<number | null>(null);
 	const [busqueda, setBusqueda] = useState("");
 	const [filtroEstado, setFiltroEstado] = useState("todos");
+	const [errorUI, setErrorUI] = useState<string | null>(null);
+  	const [exitoUI, setExitoUI] = useState<string | null>(null);
+  	const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
 
 	const refrescarLista = async () => {
 		try {
@@ -18,7 +21,7 @@ export const useRecepcion = () => {
 
 			setPedidoSeleccionado((prev) => {
 				if (!prev?.id_pedido) {
-					return prev;
+					return null;
 				}
 
 				return data.find((pedido) => pedido.id_pedido === prev.id_pedido) ?? prev;
@@ -41,7 +44,7 @@ export const useRecepcion = () => {
 			setPedidoSeleccionado(pedidoDetalle);
 		} catch (error) {
 			console.error("Error al abrir pedido:", error);
-			alert("No se pudo cargar el detalle del pedido.");
+			setErrorUI("No se pudo cargar el detalle del pedido. Revisa la conexión.");
 		} finally {
 			setAbriendoPedidoId(null);
 		}
@@ -82,6 +85,14 @@ export const useRecepcion = () => {
 		abrirPedido,
 		refrescarLista,
 		guardarCambiosLocal,
-		cerrarModal: () => setPedidoSeleccionado(null),
+		errorUI,
+		setErrorUI,
+		exitoUI,
+		setExitoUI,
+		confirmarFinalizar,
+		setConfirmarFinalizar,
+		cerrarModal: () => {
+  			setPedidoSeleccionado(null);
+		}
 	};
 };
