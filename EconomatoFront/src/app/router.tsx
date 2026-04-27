@@ -77,10 +77,6 @@ export const routes: RouteObject[] = [
                 path: "audit-log",
                 element: <AuditLog />,
               },
-              {
-                path: "mantenimiento",
-                element: <PanelControl />,
-              },
             ],
           },
           {

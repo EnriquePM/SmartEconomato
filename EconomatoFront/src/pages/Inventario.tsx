@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, Pencil } from 'lucide-react';
 import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
+import { Select } from '../components/ui/select';
 import { useInventarioManager } from '../hooks/useInventarioManager';
 import { ModalEditarProducto } from '../components/ModalEditarProducto';
 import type { InventarioItem } from '../models/inventory.model';
@@ -14,15 +14,12 @@ const Inventario = () => {
     setBusqueda,
     filtroCategoria,
     setFiltroCategoria,
-    filtroCaducidad,
-    setFiltroCaducidad,
     vista,
     setVista,
     orden,
     cambiarOrden,
     renderizarCategoria,
     opcionesFiltro,
-    opcionesFiltroCaducidad,
     actualizarProducto
   } = useInventarioManager();
 
@@ -82,15 +79,8 @@ const Inventario = () => {
           />
         </div>
 
-        <div className="w-full md:w-72 flex gap-2">
-          {vista === 'ingredientes' && (
-            <div className="flex-1">
-              <Select options={opcionesFiltroCaducidad} value={filtroCaducidad} onChange={(val) => setFiltroCaducidad(val)} />
-            </div>
-          )}
-          <div className="flex-1">
-            <Select options={opcionesFiltro} value={filtroCategoria} onChange={(val) => setFiltroCategoria(val)} />
-          </div>
+        <div className="w-full md:w-72">
+          <Select options={opcionesFiltro} value={filtroCategoria} onChange={(val) => setFiltroCategoria(val)} />
         </div>
       </div>
 
@@ -130,27 +120,7 @@ const Inventario = () => {
                         <span className="text-xs text-gray-300 italic">Sin ID</span>
                       )}
                     </td>
-                    <td className="p-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-gray-900 text-sm">{item.nombre}</span>
-                        {item.fecha_caducidad && (
-                          <span className={`text-[10px] font-black tracking-wider uppercase mt-1 w-fit px-2 py-0.5 rounded-full border ${
-                            (() => {
-                              const hoy = new Date();
-                              hoy.setHours(0,0,0,0);
-                              const caducidad = new Date(item.fecha_caducidad);
-                              caducidad.setHours(0,0,0,0);
-                              const diffDays = Math.ceil((caducidad.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-                              if (diffDays < 0) return 'bg-red-50 text-red-600 border-red-200';
-                              if (diffDays <= 7) return 'bg-orange-50 text-orange-600 border-orange-200';
-                              return 'bg-blue-50 text-blue-600 border-blue-200';
-                            })()
-                          }`}>
-                            Vence: {new Date(item.fecha_caducidad).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                    <td className="p-4 font-bold text-gray-900 text-sm">{item.nombre}</td>
                     <td className="p-4 text-sm text-gray-500 font-medium">{renderizarCategoria(item)}</td>
                     <td className="p-4">
                       {item.alergenos && item.alergenos.length > 0 ? (

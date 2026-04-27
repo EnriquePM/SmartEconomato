@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, GraduationCap, Briefcase, Search } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Buscador } from "../components/ui/Buscador";
-import { Select } from "../components/ui/Select";
+import { Select } from "../components/ui/select";
 import { useAdminUsuarios } from "../hooks/useAdminUsuarios";
 import { ModalNuevoUsuario } from "../components/inventario/AdminUser/ModalAdminUsuarios";
 

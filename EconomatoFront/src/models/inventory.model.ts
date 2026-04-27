@@ -17,7 +17,6 @@ export interface InventarioItem {
   id_categoria: number | null;
   categoria_nombre?: string;
   id_proveedor?: number;
-  fecha_caducidad?: string | null;
   alergenos?: AlergenoInventario[];
 }
 

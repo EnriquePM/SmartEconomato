@@ -1,6 +1,6 @@
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
+import { Select } from '../components/ui/select';
 import { Globe, Loader2, Camera, Eraser, Search } from 'lucide-react';
 import { ModalScanner } from '../components/ModalScanner';
 import { useIngresoGeneralForm } from '../hooks/useIngresoGeneralForm';

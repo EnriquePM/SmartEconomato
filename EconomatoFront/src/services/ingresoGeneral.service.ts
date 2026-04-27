@@ -7,7 +7,6 @@ export interface IngresoIngredientePayload {
   id_proveedor: number;
   precio_unidad: number;
   unidad_medida: string;
-  fecha_caducidad?: string;
 }
 
 export interface IngresoMaterialPayload {
@@ -55,7 +54,6 @@ export interface UpdateIngredientePayload {
   id_proveedor?: number;
   precio_unidad?: number;
   unidad_medida?: string;
-  fecha_caducidad?: string;
   alergenosIds?: number[];
 }
 

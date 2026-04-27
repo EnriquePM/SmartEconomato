@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Select } from '../ui/Select';
+import { Select } from '../ui/select';
 import { AlertModal } from '../ui/AlertModal';
 import type { InventarioItem, InventarioVista, SelectOption } from '../../models/inventory.model';
 import { getCategorias, getProveedores } from '../../services/recursos.service';

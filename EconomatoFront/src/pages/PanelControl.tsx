@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Users, Search, ExternalLink, ChevronRight } from 'lucide-react';
 import { Buscador } from '../components/ui/Buscador';
-import { Select } from '../components/ui/Select';
+import { Select } from '../components/ui/select';
 import { getActividades } from '../services/actividadService';
 import type { RegistroActividad } from '../models/actividad.model';
 
