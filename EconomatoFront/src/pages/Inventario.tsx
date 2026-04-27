@@ -14,6 +14,9 @@ const Inventario = () => {
     setBusqueda,
     filtroCategoria,
     setFiltroCategoria,
+    filtroCaducidad,
+    setFiltroCaducidad,
+    opcionesCaducidad,
     vista,
     setVista,
     orden,
@@ -82,6 +85,12 @@ const Inventario = () => {
         <div className="w-full md:w-72">
           <Select options={opcionesFiltro} value={filtroCategoria} onChange={(val) => setFiltroCategoria(val)} />
         </div>
+
+        {vista === 'ingredientes' && (
+          <div className="w-full md:w-72">
+            <Select options={opcionesCaducidad} value={filtroCaducidad} onChange={(val) => setFiltroCaducidad(val)} />
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1 mb-6">
@@ -106,6 +115,9 @@ const Inventario = () => {
                     Stock <IconoOrden campo="stock" />
                   </div>
                 </th>
+                {vista === 'ingredientes' && (
+                  <th className="p-4 border-b border-gray-200 text-center">Caducidad</th>
+                )}
                 <th className="p-4 border-b border-gray-200 text-center">Acciones</th>
               </tr>
             </thead>
@@ -168,6 +180,29 @@ const Inventario = () => {
                         {item.stock} {item.unidad_medida || 'ud'}
                       </span>
                     </td>
+                    {vista === 'ingredientes' && (
+                      <td className="p-4 text-center">
+                        {item.fecha_caducidad ? (() => {
+                          const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+                          const cad = new Date(item.fecha_caducidad); cad.setHours(0, 0, 0, 0);
+                          const dias = Math.ceil((cad.getTime() - hoy.getTime()) / 86400000);
+                          const estilo = dias < 0
+                            ? 'bg-red-50 text-red-700 border-red-100'
+                            : dias <= 7
+                              ? 'bg-orange-50 text-orange-700 border-orange-100'
+                              : dias <= 30
+                                ? 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                                : 'bg-gray-50 text-gray-500 border-gray-100';
+                          return (
+                            <span className={`px-3 py-1 rounded-full text-xs font-black tracking-widest border ${estilo}`}>
+                              {cad.toLocaleDateString('es-ES')}
+                            </span>
+                          );
+                        })() : (
+                          <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="p-4 text-center">
                       <button
                         onClick={() => setProductoEditando(item)}
@@ -181,7 +216,7 @@ const Inventario = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="p-12 text-center text-gray-400">
+                  <td colSpan={vista === 'ingredientes' ? 7 : 6} className="p-12 text-center text-gray-400">
                     <Search size={32} className="mx-auto mb-3 opacity-20" />
                     <p className="text-sm font-bold uppercase tracking-widest">No se encontraron {vista === 'ingredientes' ? 'productos' : 'utensilios'}</p>
                   </td>

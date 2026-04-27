@@ -56,6 +56,7 @@ export const getInventarioIngredientes = async (): Promise<InventarioItem[]> => 
     id_categoria: item.id_categoria ?? null,
     categoria_nombre: item.categoria?.nombre || 'Sin categoría',
     id_proveedor: item.id_proveedor,
+    fecha_caducidad: item.fecha_caducidad ?? null,
     alergenos: Array.isArray(item.alergenos)
       ? item.alergenos.map((al: any) => ({
           id_alergeno: al.id_alergeno,

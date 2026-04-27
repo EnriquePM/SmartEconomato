@@ -18,6 +18,7 @@ export interface InventarioItem {
   categoria_nombre?: string;
   id_proveedor?: number;
   alergenos?: AlergenoInventario[];
+  fecha_caducidad?: string | null;
 }
 
 export interface SelectOption {

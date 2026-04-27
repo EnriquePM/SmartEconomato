@@ -10,6 +10,7 @@ export const useInventarioManager = () => {
   const [productos, setProductos] = useState<InventarioItem[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
+  const [filtroCaducidad, setFiltroCaducidad] = useState('todos');
   const [vista, setVista] = useState<InventarioVista>(
     (searchParams.get('vista') as InventarioVista) || 'ingredientes'
   );
@@ -30,6 +31,7 @@ export const useInventarioManager = () => {
 
       setBusqueda('');
       setFiltroCategoria('todos');
+      setFiltroCaducidad('todos');
       setOrden(null);
     };
 
@@ -37,6 +39,9 @@ export const useInventarioManager = () => {
   }, [vista]);
 
   const productosFiltrados = useMemo(() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     return productos.filter((producto) => {
       const texto = busqueda.toLowerCase();
       const nombreMatch = producto.nombre ? producto.nombre.toLowerCase().includes(texto) : false;
@@ -47,9 +52,25 @@ export const useInventarioManager = () => {
         filtroCategoria === 'todos' ||
         String(producto.id_categoria) === filtroCategoria;
 
-      return coincideTexto && coincideCategoria;
+      let coincideCaducidad = true;
+      if (filtroCaducidad !== 'todos') {
+        if (!producto.fecha_caducidad) return false;
+        const fechaCad = new Date(producto.fecha_caducidad);
+        fechaCad.setHours(0, 0, 0, 0);
+
+        if (filtroCaducidad === 'caducados') {
+          coincideCaducidad = fechaCad < hoy;
+        } else {
+          const diasMap: Record<string, number> = { '7dias': 7, '2semanas': 14, '30dias': 30 };
+          const limite = new Date(hoy);
+          limite.setDate(limite.getDate() + diasMap[filtroCaducidad]);
+          coincideCaducidad = fechaCad >= hoy && fechaCad < limite;
+        }
+      }
+
+      return coincideTexto && coincideCategoria && coincideCaducidad;
     });
-  }, [productos, busqueda, filtroCategoria]);
+  }, [productos, busqueda, filtroCategoria, filtroCaducidad]);
 
   const productosFinales = useMemo(() => {
     return [...productosFiltrados].sort((a, b) => {
@@ -80,6 +101,14 @@ export const useInventarioManager = () => {
       return 0;
     });
   }, [productosFiltrados, orden]);
+
+  const opcionesCaducidad: SelectOption[] = [
+    { value: 'todos', label: 'Todas las caducidades' },
+    { value: 'caducados', label: 'Caducados' },
+    { value: '7dias', label: 'Caducan en 7 días' },
+    { value: '2semanas', label: 'Caducan en 2 semanas' },
+    { value: '30dias', label: 'Caducan en 30 días' },
+  ];
 
   const opcionesFiltro = useMemo<SelectOption[]>(() => {
     const categoriesById = new Map<string, string>();
@@ -121,6 +150,9 @@ export const useInventarioManager = () => {
     setBusqueda,
     filtroCategoria,
     setFiltroCategoria,
+    filtroCaducidad,
+    setFiltroCaducidad,
+    opcionesCaducidad,
     vista,
     setVista,
     orden,

@@ -55,6 +55,7 @@ export interface UpdateIngredientePayload {
   precio_unidad?: number;
   unidad_medida?: string;
   alergenosIds?: number[];
+  fecha_caducidad?: string | null;
 }
 
 export interface UpdateMaterialPayload {
