@@ -1,51 +1,275 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { Receta } from "../models/Receta";
+import { recetaService } from "../services/recetaService";
+import { getAlergenos, type Alergeno } from "../services/recursos.service";
 
-export const useRecetaModal = () => {
-  const [nombre, setNombre] = useState("");
-  const [platos, setPlatos] = useState<number>(1);
-  const [ingredientesElegidos, setIngredientesElegidos] = useState<any[]>([]);
-  const [busqueda, setBusqueda] = useState("");
-  const [ingredienteEnFoco, setIngredienteEnFoco] = useState<any | null>(null);
+interface IngredienteDB {
+    id_ingrediente: number;
+    nombre: string;
+    unidad_medida: string;
+}
 
-  // Handlers para tus Inputs
-  const handleNombreChange = (val: string) => setNombre(val);
-  const handlePlatosChange = (val: string) => setPlatos(Number(val));
-  const handleBusquedaChange = (val: string) => setBusqueda(val);
+interface IngredienteSeleccionado {
+    id_ingrediente: number;
+    nombre: string;
+    cantidad: string;
+    unidad_medida: string;
+    rendimiento: string;
+}
 
-  const agregarIngrediente = (ing: any) => {
-    const existe = ingredientesElegidos.find(i => i.id_ingrediente === ing.id_ingrediente);
-    setIngredienteEnFoco(existe ? { ...existe } : {
-      ...ing,
-      cantidad: 0,
-      rendimiento: 100
+interface UseRecetaFormOptions {
+    onSuccess: () => void;
+    recetaInicial?: Receta | null;
+}
+
+const sanitizeNonNegative = (value: string): string => {
+    if (value === "") return "";
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) return "0";
+    return value;
+};
+
+export const useModalRecetas = ({ onSuccess, recetaInicial }: UseRecetaFormOptions) => {
+    const modoEdicion = Boolean(recetaInicial?.id_receta);
+
+    const [nombre, setNombre] = useState("");
+    const [descripcion, setDescripcion] = useState("");
+    const [raciones, setRaciones] = useState<string>("1");
+    const [ingredientes, setIngredientes] = useState<IngredienteSeleccionado[]>([]);
+
+    const [ingredientesDB, setIngredientesDB] = useState<IngredienteDB[]>([]);
+    const [cargando, setCargando] = useState(true);
+    const [busqueda, setBusqueda] = useState("");
+    const [guardando, setGuardando] = useState(false);
+
+
+    const [listaAlergenos, setListaAlergenos] = useState<Alergeno[]>([]);
+    const [alergenosSeleccionados, setAlergenosSeleccionados] = useState<number[]>([]);
+
+    const [alerta, setAlerta] = useState<{
+        isOpen: boolean;
+        type: 'error' | 'success' | 'confirm';
+        title: string;
+        message: string | React.ReactNode;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        type: 'confirm',
+        title: '',
+        message: '',
+        onConfirm: () => {},
     });
-  };
 
-  const actualizarFoco = (campo: string, valor: string) => {
-    setIngredienteEnFoco((prev: any) => ({
-      ...prev,
-      [campo]: Number(valor)
-    }));
-  };
+    const cerrarAlerta = () => setAlerta(prev => ({ ...prev, isOpen: false }));
 
-  const confirmarIngrediente = () => {
-    if (!ingredienteEnFoco) return;
-    setIngredientesElegidos(prev => {
-      const filtrados = prev.filter(i => i.id_ingrediente !== ingredienteEnFoco.id_ingrediente);
-      return [...filtrados, ingredienteEnFoco];
-    });
-    setIngredienteEnFoco(null);
-    setBusqueda("");
-  };
 
-  return {
-    nombre, handleNombreChange,
-    platos, handlePlatosChange,
-    ingredientesElegidos,
-    ingredienteEnFoco, setIngredienteEnFoco,
-    busqueda, handleBusquedaChange,
-    agregarIngrediente,
-    actualizarFoco,
-    confirmarIngrediente
-  };
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [ingredientesData, alergenosData] = await Promise.all([
+                    recetaService.getIngredientesDisponibles(),
+                    getAlergenos()
+                ]);
+                setIngredientesDB(ingredientesData);
+                setListaAlergenos(alergenosData);
+            } catch (error) {
+                console.error("Error al cargar datos:", error);
+            } finally {
+                setCargando(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (!recetaInicial) return;
+
+        setNombre(recetaInicial.nombre || "");
+        setDescripcion(recetaInicial.descripcion || "");
+        setRaciones(String(recetaInicial.cantidad_platos || 1));
+
+        const iniciales = (recetaInicial.receta_ingrediente || []).map((ri) => ({
+            id_ingrediente: ri.id_ingrediente,
+            nombre: ri.ingrediente?.nombre || "Ingrediente",
+            cantidad: String(ri.cantidad ?? ""),
+            unidad_medida: ri.ingrediente?.unidad_medida || "ud",
+            rendimiento: String(ri.rendimiento ?? 100)
+        }));
+
+        setIngredientes(iniciales);
+
+        const alergenosIniciales = (recetaInicial.receta_alergeno || []).map(
+            (ra) => ra.id_alergeno
+        );
+        setAlergenosSeleccionados(alergenosIniciales);
+    }, [recetaInicial]);
+
+    const ingredientesFiltrados = useMemo(
+        () => ingredientesDB.filter((ing) => ing.nombre.toLowerCase().includes(busqueda.toLowerCase())),
+        [ingredientesDB, busqueda]
+    );
+
+    const agregarIngrediente = (ingDB: IngredienteDB) => {
+        if (ingredientes.find((i) => i.id_ingrediente === ingDB.id_ingrediente)) return;
+
+        setIngredientes((prev) => [
+            ...prev,
+            {
+                id_ingrediente: ingDB.id_ingrediente,
+                nombre: ingDB.nombre,
+                cantidad: "",
+                unidad_medida: ingDB.unidad_medida || "ud",
+                rendimiento: "100"
+            }
+        ]);
+        setBusqueda("");
+    };
+
+    const actualizarIngrediente = (id: number, campo: "cantidad" | "rendimiento", valor: string) => {
+        const sanitized = sanitizeNonNegative(valor);
+        setIngredientes((prev) =>
+            prev.map((ing) => (ing.id_ingrediente === id ? { ...ing, [campo]: sanitized } : ing))
+        );
+    };
+
+    const eliminarIngrediente = (id: number) => {
+        setIngredientes((prev) => prev.filter((ing) => ing.id_ingrediente !== id));
+    };
+
+    const toggleAlergeno = (id: number) => {
+        setAlergenosSeleccionados((prev) =>
+            prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+        );
+    };
+
+    const handleRacionesChange = (valor: string) => {
+        if (valor === "") {
+            setRaciones("");
+            return;
+        }
+        const parsed = Number(valor);
+        if (!Number.isFinite(parsed) || parsed < 1) {
+            setRaciones("1");
+            return;
+        }
+        setRaciones(valor);
+    };
+
+
+    const ejecutarGuardado = async () => {
+        cerrarAlerta();
+        setGuardando(true);
+        try {
+            const payload = {
+                nombre: nombre.trim(),
+                descripcion,
+                cantidad_platos: Number(raciones || 1),
+                ingredientes: ingredientes.map(ing => ({
+                    id_ingrediente: ing.id_ingrediente,
+                    cantidad: Number(ing.cantidad),
+                    rendimiento: Number(ing.rendimiento || 100)
+                })),
+                alergenos: alergenosSeleccionados
+            };
+
+            if (modoEdicion && recetaInicial?.id_receta) {
+                await recetaService.update(recetaInicial.id_receta, payload);
+            } else {
+                await recetaService.create(payload);
+            }
+            onSuccess();
+        } catch (error: any) {
+            setAlerta({
+                isOpen: true,
+                type: 'error',
+                title: 'Error al guardar',
+                message: error?.message || 'No se pudo procesar la solicitud.',
+                onConfirm: cerrarAlerta
+            });
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const solicitarConfirmacionEliminar = () => {
+        if (!modoEdicion) return;
+        setAlerta({
+            isOpen: true,
+            type: 'confirm',
+            title: '¿Eliminar Elaboración?',
+            message: `¿Estás seguro de que deseas eliminar "${nombre}"? Esta acción no se puede deshacer.`,
+            onConfirm: ejecutarEliminacion
+        });
+    };
+
+    const ejecutarEliminacion = async () => {
+        cerrarAlerta();
+        if (!recetaInicial?.id_receta) return;
+        setGuardando(true);
+        try {
+            await recetaService.delete(recetaInicial.id_receta);
+            onSuccess();
+        } catch (error: any) {
+            setAlerta({
+                isOpen: true,
+                type: 'error',
+                title: 'No se pudo eliminar',
+                message: 'Es posible que esta receta esté asociada a pedidos activos.',
+                onConfirm: cerrarAlerta
+            });
+        } finally {
+            setGuardando(false);
+        }
+    };
+
+    const solicitarConfirmacionGuardar = () => {
+        if (!nombre.trim()) {
+            setAlerta({
+                isOpen: true,
+                type: 'error',
+                title: 'Nombre requerido',
+                message: 'Por favor, introduce un nombre para la receta antes de continuar.',
+                onConfirm: cerrarAlerta
+            });
+            return;
+        }
+
+        if (ingredientes.length === 0) {
+            setAlerta({
+                isOpen: true,
+                type: 'error',
+                title: 'Faltan ingredientes',
+                message: 'Debes añadir al menos un ingrediente a la elaboración.',
+                onConfirm: cerrarAlerta
+            });
+            return;
+        }
+
+        setAlerta({
+            isOpen: true,
+            type: 'confirm',
+            title: modoEdicion ? '¿Guardar Cambios?' : '¿Crear Receta?',
+            message: modoEdicion 
+                ? `¿Deseas actualizar los datos de "${nombre}"?`
+                : `Se registrará "${nombre}" como una nueva elaboración.`,
+            onConfirm: ejecutarGuardado
+        });
+    };
+
+
+    return {
+        form: { nombre, setNombre, descripcion, setDescripcion, raciones, setRaciones: handleRacionesChange },
+        lista: { ingredientes, agregarIngrediente, actualizarIngrediente, eliminarIngrediente },
+        buscador: { busqueda, setBusqueda, sugerencias: ingredientesFiltrados, cargando },
+        alergenos: { lista: listaAlergenos, seleccionados: alergenosSeleccionados, toggle: toggleAlergeno },
+        alerta: { ...alerta, cerrar: cerrarAlerta },
+        acciones: {
+            handleGuardar: solicitarConfirmacionGuardar, 
+            handleEliminar: solicitarConfirmacionEliminar, 
+            guardando,
+            textoBoton: modoEdicion ? "GUARDAR CAMBIOS" : "CREAR RECETA",
+            titulo: modoEdicion ? "Editar Elaboración" : "Nueva Elaboración"
+        }
+    };
 };

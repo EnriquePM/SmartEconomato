@@ -3,13 +3,11 @@ import type { Receta } from "../models/Receta";
 import { recetaService } from "../services/recetaService";
 
 export const useRecetas = () => {
-  // --- ESTADOS ---
+
   const [recetas, setRecetas] = useState<Receta[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // --- LÓGICA DE CARGA ---
   const fetchRecetas = async () => {
     try {
       setCargando(true);
@@ -29,7 +27,7 @@ export const useRecetas = () => {
     fetchRecetas();
   }, []);
 
-  // --- LÓGICA DE FILTRADO ---
+
   const recetasFiltradas = useMemo(() => {
     return recetas.filter((r) =>
       r.nombre.toLowerCase().includes(busqueda.toLowerCase())

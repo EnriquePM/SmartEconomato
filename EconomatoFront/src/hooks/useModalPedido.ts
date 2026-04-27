@@ -10,7 +10,6 @@ export const useModalPedidos = (
   const [mostrarResultados, setMostrarResultados] = useState(false);
   const [procesando, setProcesando] = useState(false);
 
-  // Inicializamos con funciones reales para que TS no se queje
   const [alerta, setAlerta] = useState<{
     isOpen: boolean;
     type: 'success' | 'error' | 'confirm';
@@ -28,7 +27,7 @@ export const useModalPedidos = (
   const cerrarAlerta = () => setAlerta((prev) => ({ ...prev, isOpen: false }));
 
   const validarPedido = (): boolean => {
-    // 1. Validar Proveedor
+
     if (!pedidoActual.proveedor || pedidoActual.proveedor === "") {
       setAlerta({
         isOpen: true,
@@ -40,7 +39,6 @@ export const useModalPedidos = (
       return false;
     }
 
-    // 2. Validar Líneas (Ingredientes/Materiales)
     const lineas = tipoPedido === 'productos' 
       ? pedidoActual.pedido_ingrediente || [] 
       : pedidoActual.pedido_material || [];
@@ -64,7 +62,6 @@ export const useModalPedidos = (
     setProcesando(true);
     try {
       await enviarPedido();
-      // No ponemos alerta de éxito aquí porque normalmente el Modal se cierra
     } catch (error: any) {
       setAlerta({
         isOpen: true,
@@ -91,7 +88,6 @@ export const useModalPedidos = (
   };
 
   const manejarBorrador = async () => {
-    // Para el borrador quizás solo validamos el proveedor
     if (!pedidoActual.proveedor) {
         setAlerta({
             isOpen: true,

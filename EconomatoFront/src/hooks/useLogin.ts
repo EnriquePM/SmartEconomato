@@ -10,14 +10,11 @@ export const useLogin = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); 
 
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-
-    if (!user || !password) {
-      alert("Por favor, rellena todos los campos.");
-      return;
-    }
+    setError(null); 
 
     setLoading(true);
 
@@ -38,7 +35,7 @@ export const useLogin = () => {
       }
 
       if (data.token) {
-        sessionStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token);
       }
 
       if (data.usuario) {
@@ -54,11 +51,11 @@ export const useLogin = () => {
       }
 
       navigate("/");
-    } catch (error) {
-      const message = error instanceof Error
-        ? error.message
+    } catch (err) {
+      const message = err instanceof Error
+        ? err.message
         : "No se pudo conectar con el servidor.";
-      alert(message);
+      setError(message); 
     } finally {
       setLoading(false);
     }
@@ -70,6 +67,8 @@ export const useLogin = () => {
     password,
     setPassword,
     loading,
+    error,    
+    setError,  
     handleLogin,
   };
 };

@@ -16,6 +16,7 @@ export const useChangePassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); // Nuevo estado de error
 
   useEffect(() => {
     if (!username || !oldPassword) {
@@ -25,14 +26,15 @@ export const useChangePassword = () => {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setError(null);
 
     if (!newPassword || !confirmPassword) {
-      alert("Por favor, rellena ambos campos.");
+      setError("Por favor, rellena ambos campos.");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("Las contrasenas no coinciden.");
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -50,11 +52,10 @@ export const useChangePassword = () => {
         newPassword,
       });
 
-      alert("Contrasena actualizada con exito. Inicia sesion con la nueva clave.");
-      navigate("/login");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Error de conexion con el servidor.";
-      alert(message);
+      navigate("/login", { state: { successMessage: "Contraseña actualizada con éxito." } });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Error de conexión con el servidor.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -66,6 +67,8 @@ export const useChangePassword = () => {
     confirmPassword,
     setConfirmPassword,
     loading,
+    error,      
+    setError,   
     handleSubmit,
   };
 };

@@ -7,13 +7,11 @@ export const usePerfil = () => {
   });
 
   const [usuario] = useState(() => {
-    // 1. Leemos la misma clave que usas en el otro componente
     const dataUser = localStorage.getItem('usuario'); 
     
     if (dataUser) {
       try {
         const parsed = JSON.parse(dataUser);
-        // 2. Extraemos los datos del objeto parseado
         return {
           nombre: parsed.nombre || "",
           apellido1: parsed.apellido1 || "",
@@ -28,7 +26,6 @@ export const usePerfil = () => {
       }
     }
 
-    // Valores por defecto si no hay nada en 'usuario'
     return {
       nombre: "Invitado",
       username: "invitado",
